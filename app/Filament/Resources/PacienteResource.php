@@ -75,8 +75,7 @@ class PacienteResource extends Resource
                 
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->iconButton(),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->requiresConfirmation()
                     ->iconButton(),
