@@ -13,8 +13,7 @@ class ListPacientes extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Nuevo Paciente'),
+            Actions\CreateAction::make(),
         ];
     }
 }
