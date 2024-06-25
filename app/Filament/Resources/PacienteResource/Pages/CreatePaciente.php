@@ -13,4 +13,11 @@ class CreatePaciente extends CreateRecord
     
     protected static string $resource = PacienteResource::class;
 
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction(),
+            $this->getCancelFormAction(),
+        ];
+    }
 }
