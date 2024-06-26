@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Table;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,6 +23,12 @@ class AppServiceProvider extends ServiceProvider
     {
         EditAction::configureUsing(function (EditAction $action): void {
             $action->iconButton();
+        });
+
+        Table::configureUsing(function (Table $table): void {
+            $table->filtersTriggerAction(
+                fn ($action) => $action->button()->label('Filtrar'),
+            );
         });
     }
 }
