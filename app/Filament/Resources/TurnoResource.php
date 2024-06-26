@@ -102,7 +102,7 @@ class TurnoResource extends Resource
                             );
                     })
                 
-            ], layout: FiltersLayout::AboveContentCollapsible)
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

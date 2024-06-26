@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -72,7 +73,13 @@ class PacienteResource extends Resource
                     }),
             ])
             ->filters([
-                
+                Filter::make('nombre')
+                    ->form([
+                        Forms\Components\TextInput::make('nombre')
+                    ])
+                    ->query(function (Builder $query, $data) {
+                        return $query->where('nombre', 'like', '%' . $data['nombre'] . '%');
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

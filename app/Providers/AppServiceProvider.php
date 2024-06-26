@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
             $table->filtersTriggerAction(
                 fn ($action) => $action->button()->label('Filtrar'),
             );
+            $table->filtersLayout(FiltersLayout::Modal);
         });
     }
 }
