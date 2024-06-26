@@ -14,6 +14,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class PacienteResource extends Resource
 {
@@ -46,7 +47,7 @@ class PacienteResource extends Resource
                     ->label('Fecha de Nacimiento')
                     ->required(),
                 Forms\Components\Hidden::make('medico_id')
-                    ->default(1),
+                    ->default(Auth::user()->id),
             ]);
     }
 
@@ -54,26 +55,18 @@ class PacienteResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('apellido')
-                    ->searchable(),
-                TextColumn::make('nombre')
-                    ->searchable(),
-                TextColumn::make('email')
-                    ->searchable(),
-                TextColumn::make('telefono')
-                    ->label('Teléfono')
-                    ->searchable(),
-                TextColumn::make('dni')
-                    ->label('DNI')
-                    ->searchable(),
-                TextColumn::make('afiliado')
-                    ->searchable(),
-                TextColumn::make('fecha_nacimiento')
-                    ->label('Nacimiento')
-                    ->date('d/m/Y')
-                    ->searchable(),
-                TextColumn::make('medico.name')
-                    ->label('Médico')
+                TextColumn::make('apellido')->searchable(),
+                TextColumn::make('nombre')->searchable(),
+                TextColumn::make('email')->searchable(),
+                TextColumn::make('telefono')->label('Teléfono'),
+                TextColumn::make('dni')->label('DNI')->copyable()->badge()->color('info'),
+                TextColumn::make('afiliado')->copyable()->badge()->color('info'),
+                TextColumn::make('fecha_nacimiento')->label('Nacimiento')->date('d/m/Y'),
+                TextColumn::make('fecha_nacimiento')->label('Edad')
+                    ->formatStateUsing(function ($record) {
+                        return \Carbon\Carbon::parse($record->fecha_nacimiento)->age . ' años';
+                    }),
+                TextColumn::make('medico.name')->label('Médico')
                     ->formatStateUsing(function ($record) {
                         return ucfirst($record->medico->name);
                     }),
