@@ -11,16 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pacientes', function (Blueprint $table) {
+        Schema::create('turnos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre');
-            $table->string('apellido');
-            $table->string('email')->nullable();
-            $table->string('telefono')->nullable();
-            $table->string('dni');
-            $table->string('afiliado');
-            $table->date('fecha_nacimiento');
+            $table->foreignId('paciente_id')->constrained();
             $table->foreignId('medico_id')->references('id')->on('users');
+            $table->dateTime('fecha');
+            $table->string('estado');
+            $table->text('notas')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pacientes');
+        Schema::dropIfExists('turnos');
     }
 };

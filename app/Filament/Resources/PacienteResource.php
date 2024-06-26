@@ -19,7 +19,7 @@ class PacienteResource extends Resource
 {
     protected static ?string $model = Paciente::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
     public static function form(Form $form): Form
     {
@@ -45,6 +45,8 @@ class PacienteResource extends Resource
                 Forms\Components\Datepicker::make('fecha_nacimiento')
                     ->label('Fecha de Nacimiento')
                     ->required(),
+                Forms\Components\Hidden::make('medico_id')
+                    ->default(1),
             ]);
     }
 
@@ -70,6 +72,11 @@ class PacienteResource extends Resource
                     ->label('Nacimiento')
                     ->date('d/m/Y')
                     ->searchable(),
+                TextColumn::make('medico.name')
+                    ->label('Médico')
+                    ->formatStateUsing(function ($record) {
+                        return ucfirst($record->medico->name);
+                    }),
             ])
             ->filters([
                 

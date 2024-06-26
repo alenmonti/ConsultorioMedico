@@ -16,6 +16,22 @@ class Paciente extends Model
         'telefono',
         'dni',
         'afiliado',
-        'fecha_nacimiento'
+        'fecha_nacimiento',
+        'medico_id'
     ];
+
+    public function historiasClinicas()
+    {
+        return $this->hasMany(HistoriaClinica::class);
+    }
+
+    public function turnos()
+    {
+        return $this->hasMany(Turno::class);
+    }
+
+    public function medico()
+    {
+        return $this->belongsTo(User::class, 'medico_id', 'id');
+    }
 }
