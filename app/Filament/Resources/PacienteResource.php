@@ -59,8 +59,8 @@ class PacienteResource extends Resource
                 TextColumn::make('nombre')->searchable(),
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('telefono')->label('Teléfono'),
-                TextColumn::make('dni')->label('DNI')->copyable()->badge()->color('info'),
-                TextColumn::make('afiliado')->copyable()->badge()->color('info'),
+                TextColumn::make('dni')->label('DNI')->copyable()->badge()->color('primary'),
+                TextColumn::make('afiliado')->copyable()->badge()->color('primary'),
                 TextColumn::make('fecha_nacimiento')->label('Nacimiento')->date('d/m/Y'),
                 TextColumn::make('fecha_nacimiento')->label('Edad')
                     ->formatStateUsing(function ($record) {
