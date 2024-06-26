@@ -25,9 +25,9 @@ enum Roles: string implements HasLabel, HasColor
     public function getColor(): string
     {
         return match ($this) {
-            self::Admin => 'primary',
-            self::Medico => 'success',
-            self::Paciente => 'info',
+            self::Admin => 'info',
+            self::Medico => 'primary',
+            self::Paciente => 'gray',
             self::Secretario => 'warning',
         };
     }
