@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EstadosTurno;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,6 +17,13 @@ class Turno extends Model
         'estado',
         'notas'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'estado' => EstadosTurno::class,
+        ];
+    }
 
     public function paciente()
     {

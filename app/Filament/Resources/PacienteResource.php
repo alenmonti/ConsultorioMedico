@@ -57,7 +57,7 @@ class PacienteResource extends Resource
             ->columns([
                 TextColumn::make('apellido')->searchable(),
                 TextColumn::make('nombre')->searchable(),
-                TextColumn::make('email')->searchable(),
+                TextColumn::make('email'),
                 TextColumn::make('telefono')->label('Teléfono'),
                 TextColumn::make('dni')->label('DNI')->copyable()->badge()->color('primary'),
                 TextColumn::make('afiliado')->copyable()->badge()->color('primary'),
