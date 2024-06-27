@@ -23,6 +23,7 @@ class HistoriaClinicaResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
     protected static ?string $title = 'Historias Clinicas';
     protected static ?string $navigationLabel = 'Historias Clinicas';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
