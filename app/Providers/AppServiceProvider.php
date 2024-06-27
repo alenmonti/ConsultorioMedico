@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\{DeleteAction, EditAction, ViewAction};
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +23,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         EditAction::configureUsing(function (EditAction $action): void {
+            $action->iconButton();
+        });
+
+        DeleteAction::configureUsing(function (DeleteAction $action): void {
+            $action->iconButton();
+        });
+
+        ViewAction::configureUsing(function (ViewAction $action): void {
             $action->iconButton();
         });
 
