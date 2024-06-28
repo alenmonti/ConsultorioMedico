@@ -1,10 +1,10 @@
 ---
 name: "\U0001F680 Feature"
 about: 'Submit a new feature request '
-title: "[FEATURE]"
+title: "[FEATURE]: "
 labels: Feature
-assignees: ''
-
+projects: 'Consultorio Agile Proyect'
+assignees: 'alenmonti'
 ---
 
 ## 🚀 Feature
