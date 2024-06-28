@@ -4,11 +4,12 @@ namespace App\Filament\Widgets;
 
 use Filament\Widgets\Widget;
 
-class AccountWidget extends Widget
+class BienvenidoWidget extends Widget
 {
     protected static ?int $sort = 1;
     protected array|string|int $columnSpan = 12;
     protected static bool $isLazy = false;
+    protected static ?string $pollingInterval = null;
 
     /**
      * @var view-string
