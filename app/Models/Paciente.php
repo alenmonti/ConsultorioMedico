@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\Own;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,5 +34,10 @@ class Paciente extends Model
     public function medico()
     {
         return $this->belongsTo(User::class, 'medico_id', 'id');
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(Own::class);
     }
 }
