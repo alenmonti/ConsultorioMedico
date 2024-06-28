@@ -15,6 +15,16 @@ assignees: 'alenmonti'
 
 (Write your description here)
 
+### Implementation
+
+<!--
+    What needs to be built for the feature to be supported in the project?
+    What components of the project will be affected by this design (if any)?
+    How should this feature be implemented?
+-->
+
+(Outline your implementation here)
+
 ### Motivation
 
 <!--
@@ -27,13 +37,8 @@ assignees: 'alenmonti'
 
 (Outline your motivation here)
 
-### Implementation
+### Additional context
 
 <!--
-    What needs to be built for the feature to be supported in the project?
-    What components of the project will be affected by this design (if any)?
-    How should this feature be implemented?
+    Add any other context or screenshots about the feature request here.
 -->
-
-### Additional context
-Add any other context or screenshots about the feature request here.
