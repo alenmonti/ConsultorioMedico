@@ -34,14 +34,22 @@ class HistoriaClinicaResource extends Resource
                     ->required(),
                 DatePicker::make('fecha')
                     ->default(now())
+                    ->native(false)
                     ->required(),
-                Textarea::make('diagnostico'),
-                Textarea::make('motivo'),
-                Textarea::make('estudios'),
-                Textarea::make('tratamiento'),
-                Textarea::make('medicamentos'),
-                Textarea::make('examen_fisico'),
-                Textarea::make('resultados'),
+                Textarea::make('diagnostico')
+                    ->placeholder('Diagnostico del paciente'),
+                Textarea::make('motivo')
+                    ->placeholder('Motivo de la consulta'),
+                Textarea::make('estudios')
+                    ->placeholder('Estudios realizados'),
+                Textarea::make('tratamiento')
+                    ->placeholder('Tratamiento del paciente'),
+                Textarea::make('medicamentos')
+                    ->placeholder('Medicamentos recetados'),
+                Textarea::make('examen_fisico')
+                    ->placeholder('Resultados del examen fisico'),
+                Textarea::make('resultados')
+                    ->placeholder('Resultados de los estudios'),
             ]);
     }
 
@@ -49,14 +57,14 @@ class HistoriaClinicaResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('paciente.nombre'),
+                TextColumn::make('paciente.nombre')
+                    ->formatStateUsing(function ($record) {
+                        return $record->paciente->nombre.' '.$record->paciente->apellido.', '.$record->paciente->dni;
+                    }),
+                TextColumn::make('fecha')
+                    ->date(),
                 TextColumn::make('diagnostico'),
                 TextColumn::make('motivo'),
-                TextColumn::make('estudios'),
-                TextColumn::make('tratamiento'),
-                TextColumn::make('medicamentos'),
-                TextColumn::make('examen_fisico'),
-                TextColumn::make('resultados'),
             ])
             ->filters([
                 

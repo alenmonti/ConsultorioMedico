@@ -20,6 +20,7 @@ class HistoriaClinica extends Model
         'medicamentos',
         'examen_fisico',
         'resultados',
+        'fecha'
     ];
 
     public function paciente()
