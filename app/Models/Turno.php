@@ -23,7 +23,7 @@ class Turno extends Model
     protected function casts(): array
     {
         return [
-            // 'estado' => EstadosTurno::class,
+            'estado' => EstadosTurno::class,
         ];
     }
 
