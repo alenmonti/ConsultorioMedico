@@ -9,36 +9,22 @@ assignees: alenmonti
 
 ## 🚀 Feature
 
-<!--
-    What is the feature you would like to see in the project?
--->
+<!--What is the feature you would like to see in the project?-->
 
 (Write your description here)
 
 ### Implementation
 
-<!--
-    What needs to be built for the feature to be supported in the project?
-    What components of the project will be affected by this design (if any)?
-    How should this feature be implemented?
--->
+<!--How should this feature be implemented?-->
 
 (Outline your implementation here)
 
 ### Motivation
 
-<!--
-    Why should this feature be implemented in the project?
-    How would this feature be used in the project?
-    
-    Is this feature request related to a problem? If so, please describe.
-    Please link to any relevant issues or other PRs!
--->
+<!--Why should this feature be implemented in the project?-->
 
 (Outline your motivation here)
 
 ### Additional context
 
-<!--
-    Add any other context or screenshots about the feature request here.
--->
+<!--Add any other context or screenshots about the feature request here.-->
