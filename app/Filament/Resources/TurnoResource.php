@@ -6,25 +6,21 @@ use App\Enums\EstadosTurno;
 use App\Filament\Resources\TurnoResource\Pages;
 use App\Filament\Resources\TurnoResource\RelationManagers;
 use App\Models\Turno;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Livewire\Attributes\Layout;
+use HusamTariq\FilamentTimePicker\Forms\Components\TimePickerField;
 
 class TurnoResource extends Resource
 {
     protected static ?string $model = Turno::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
     protected static ?int $navigationSort = 1;
 
@@ -32,30 +28,32 @@ class TurnoResource extends Resource
     {
         return $form
             ->schema([
+            Forms\Components\DatePicker::make('fecha')
+                ->required()
+                ->native(false)
+                ->default(Carbon::now()),
+            TimePickerField::make('hora')
+                ->required()
+                ->okLabel('Aceptar')
+                ->cancelLabel('Cancelar')
+                ->default(Carbon::now()->format('H:i')),
             Forms\Components\Select::make('paciente_id')
                 ->label('Paciente')
                 ->relationship('paciente', 'nombre')
-                //options(\App\Models\Paciente::all()->pluck('nombre', 'id'))
                 ->searchable()
                 ->required(),
-            Forms\Components\DateTimePicker::make('fecha')
-                ->required()
-                ->default(now()),
             Forms\Components\Select::make('estado')
                 ->default('pendiente')
+                ->required()
                 ->options(EstadosTurno::class),
-            Forms\Components\Hidden::make('medico_id')
-                ->default(auth()->user()->id),
-            Forms\Components\TextInput::make('medico_name')
-                ->label('Médico')
-                ->default(auth()->user()->name)
-                ->readOnly(),
             Forms\Components\Textarea::make('notas')
                 ->label('Notas')
                 ->placeholder('Notas adicionales')
                 ->rows(3)
                 ->columnSpan(2)
                 ->autosize(),
+            Forms\Components\Hidden::make('medico_id')
+                ->default(auth()->user()->id),
             ]);
     }
 
@@ -65,13 +63,17 @@ class TurnoResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('paciente.nombre'),
                 Tables\Columns\TextColumn::make('fecha')
-                    ->date('d/m/Y H:i A')
+                    ->date('d/m/Y')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('hora')
+                    ->time('H:i'),
                 Tables\Columns\TextColumn::make('estado')
                     ->badge(),
                 Tables\Columns\TextColumn::make('medico.name')
                     ->label('Médico'),
-                Tables\Columns\TextColumn::make('notas'),
+                Tables\Columns\TextColumn::make('notas')
+                    ->limit(50)
+                    ->width('30%'),
             ])
             ->filters([
                 SelectFilter::make('paciente_id')
@@ -82,7 +84,8 @@ class TurnoResource extends Resource
                     ->options(EstadosTurno::class),
                 Filter::make('fecha2')
                     ->form([
-                        DatePicker::make('desde'),
+                        DatePicker::make('desde')
+                            ->native(false),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -93,7 +96,8 @@ class TurnoResource extends Resource
                     }),
                 Filter::make('fecha')
                     ->form([
-                        DatePicker::make('hasta'),
+                        DatePicker::make('hasta')
+                            ->native(false),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
