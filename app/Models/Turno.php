@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\EstadosTurno;
 use App\Models\Scopes\Own;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,7 +23,7 @@ class Turno extends Model
     protected function casts(): array
     {
         return [
-            'estado' => EstadosTurno::class,
+            // 'estado' => EstadosTurno::class,
         ];
     }
 
@@ -40,4 +41,10 @@ class Turno extends Model
     {
         static::addGlobalScope(Own::class);
     }
+
+    public function scopeToday($query)
+    {
+        return $query->whereDate('fecha', Carbon::today());
+    }
+
 }

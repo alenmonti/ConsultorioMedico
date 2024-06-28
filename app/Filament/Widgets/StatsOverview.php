@@ -20,24 +20,24 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        $pendientes = Turno::whereDate('fecha', Carbon::today())->where('estado', EstadosTurno::Pendiente)->count();
-        $confirmados = Turno::whereDate('fecha', Carbon::today())->where('estado', EstadosTurno::Confirmado)->count();
-        $cancelados = Turno::whereDate('fecha', Carbon::today())->where('estado', EstadosTurno::Cancelado)->count();
+        $pendientes = Turno::today()->where('estado', EstadosTurno::Pendiente)->count();
+        $confirmados = Turno::today()->where('estado', EstadosTurno::Confirmado)->count();
+        $cancelados = Turno::today()->where('estado', EstadosTurno::Cancelado)->count();
 
         return [
-        Stat::make('Pendientes', $pendientes)
-            ->description('32k increase')
-            ->descriptionIcon('heroicon-m-arrow-trending-up')
+        Stat::make('', $pendientes)
+            ->description('Con turno sin confirmar')
+            ->descriptionIcon('heroicon-c-user')
             ->chart([7, 2, 10, 3, 15, 4, 17])
             ->color('warning'),
-        Stat::make('Confirmados', $confirmados)
-            ->description('32k increase')
-            ->descriptionIcon('heroicon-m-arrow-trending-up')
+        Stat::make('', $confirmados)
+            ->description('Confirmaron el turno')
+            ->descriptionIcon('heroicon-c-user-plus')
             ->chart([7, 2, 10, 3, 15, 4, 17])
             ->color('success'),
-        Stat::make('Cancelados', $cancelados)
-            ->description('3% increase')
-            ->descriptionIcon('heroicon-m-arrow-trending-up')
+        Stat::make('', $cancelados)
+            ->description('Cancelaron el turno')
+            ->descriptionIcon('heroicon-c-user-minus')
             ->chart([7, 2, 10, 3, 15, 4, 17])
             ->color('danger'),
         ];

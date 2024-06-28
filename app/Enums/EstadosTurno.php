@@ -30,4 +30,14 @@ enum EstadosTurno: string implements HasLabel, HasColor
             self::Atendido => 'info',
         };
     }
+
+    public static function values(): array
+    {
+        return [
+            'pendiente',
+            'confirmado',
+            'cancelado',
+            'atendido',
+        ];
+    }
 }

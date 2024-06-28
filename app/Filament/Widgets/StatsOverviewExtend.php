@@ -20,19 +20,20 @@ class StatsOverviewExtend extends BaseWidget
 
     protected function getStats(): array
     {
-        $cancelados = Turno::whereDate('fecha', Carbon::today())->where('estado', EstadosTurno::Cancelado)->count();
-        $atendidos = Turno::whereDate('fecha', Carbon::today())->where('estado', EstadosTurno::Atendido)->count();
-        $restantes = Turno::whereDate('fecha', Carbon::today())->count() - $cancelados - $atendidos;
+        $query = Turno::today();
+        $cancelados = Turno::today()->where('estado', EstadosTurno::Cancelado)->count();
+        $atendidos = Turno::today()->where('estado', EstadosTurno::Atendido)->count();
+        $restantes = Turno::today()->count() - $cancelados - $atendidos;
 
         return [
-        Stat::make('Atendidos', $atendidos)
-            ->description('7% increase')
-            ->descriptionIcon('heroicon-m-arrow-trending-down')
+        Stat::make('', $atendidos)
+            ->description('Pacientes atendidos')
+            ->descriptionIcon('heroicon-o-check-circle')
             ->chart([7, 2, 10, 3, 15, 4, 17])
             ->color('primary'),
-        Stat::make('Restantes', $restantes)
-            ->description('3% increase')
-            ->descriptionIcon('heroicon-m-arrow-trending-up')
+        Stat::make('', $restantes)
+            ->description('Faltan atender')
+            ->descriptionIcon('heroicon-s-no-symbol')
             ->chart([7, 2, 10, 3, 15, 4, 17])
             ->color('info'),
         ];
