@@ -11,7 +11,7 @@ class TurnosDoughnutChart extends ChartWidget
 {
     protected static ?string $heading = 'Estados hoy';
     protected static ?int $sort = 5;
-    protected array|string|int $columnSpan = 6;
+    protected array|string|int $columnSpan = ['sm' => 1, 'md' => 6];
     protected static ?string $pollingInterval = null;
     protected static ?string $maxHeight = '274px';
     public ?string $filter = 'hoy';

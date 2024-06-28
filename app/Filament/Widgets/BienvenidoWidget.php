@@ -7,7 +7,7 @@ use Filament\Widgets\Widget;
 class BienvenidoWidget extends Widget
 {
     protected static ?int $sort = 1;
-    protected array|string|int $columnSpan = 12;
+    protected array|string|int $columnSpan = 'full';
     protected static bool $isLazy = false;
     protected static ?string $pollingInterval = null;
 

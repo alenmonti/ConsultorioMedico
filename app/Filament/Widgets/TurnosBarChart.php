@@ -9,7 +9,7 @@ class TurnosBarChart extends ChartWidget
 {
     protected static ?string $heading = 'Resumen anual de turnos';
     protected static ?int $sort = 4;
-    protected array|string|int $columnSpan = 6;
+    protected array|string|int $columnSpan = ['sm' => 1, 'md' => 6];
     protected static ?string $pollingInterval = null;
     public ?string $filter = 'anio';
 
