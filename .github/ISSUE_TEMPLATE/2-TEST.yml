@@ -1,64 +1,45 @@
-name: Bug Report
-description: File a bug report.
-title: "[Bug]: "
-labels: ["bug", "triage"]
-projects: ["octo-org/1", "octo-org/44"]
+name: \U0001F680 Feature
+description: Submit a new feature request.
+title: "[FEATURE]: "
+labels: Feature
+projects: Consultorio Agile Proyect
 assignees:
-  - octocat
+  - alenmonti
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Thanks for taking the time to fill out this bug report!
+  # - type: markdown
+  #   attributes:
+  #     value: |
+  #       Thanks for taking the time to fill out this bug report!
   - type: input
-    id: contact
+    id: Feature
     attributes:
-      label: Contact Details
-      description: How can we get in touch with you if we need more info?
-      placeholder: ex. email@example.com
+      label: Feature
+      description: What is the feature you would like to see in the project?
+      placeholder: Write your description here
+    validations:
+      required: true
+  - type: textarea
+    id: Implementation
+    attributes:
+      label: Implementation
+      description: How should this feature be implemented?
+      placeholder: Outline your implementation here
     validations:
       required: false
   - type: textarea
-    id: what-happened
+    id: Motivation
     attributes:
-      label: What happened?
-      description: Also tell us, what did you expect to happen?
-      placeholder: Tell us what you see!
-      value: "A bug happened!"
+      label: Motivation
+      description: Why do you think this feature is important?
+      placeholder: Explain why you think this feature is important
+      render: markdown
     validations:
-      required: true
-  - type: dropdown
-    id: version
-    attributes:
-      label: Version
-      description: What version of our software are you running?
-      options:
-        - 1.0.2 (Default)
-        - 1.0.3 (Edge)
-      default: 0
-    validations:
-      required: true
-  - type: dropdown
-    id: browsers
-    attributes:
-      label: What browsers are you seeing the problem on?
-      multiple: true
-      options:
-        - Firefox
-        - Chrome
-        - Safari
-        - Microsoft Edge
-  - type: textarea
-    id: logs
-    attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: shell
+      required: false
   - type: checkboxes
-    id: terms
+    id: checklist
     attributes:
-      label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com). 
+      label: Checklist
       options:
-        - label: I agree to follow this project's Code of Conduct
-          required: true
+        - label: High priority
+        - label: New addition
+        - label: Requires third-party integration
