@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PacienteResource\Pages;
 use App\Filament\Resources\PacienteResource\RelationManagers;
 use App\Models\Paciente;
+use Carbon\Carbon;
 use Faker\Provider\ar_EG\Text;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -29,24 +30,29 @@ class PacienteResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('nombre')
-                    ->label('Nombre')
+                    ->placeholder('Nombre del paciente')
                     ->required(),
                 Forms\Components\TextInput::make('apellido')
-                    ->label('Apellido')
+                    ->placeholder('Apellido del paciente')
                     ->required(),
-                Forms\Components\TextInput::make('email')
-                    ->label('Email')
-                    ->email(),
-                Forms\Components\TextInput::make('telefono')
-                    ->label('Teléfono'),
                 Forms\Components\TextInput::make('dni')
+                    ->placeholder('DNI sin puntos ni guiones')
                     ->label('DNI')
                     ->required(),
                 Forms\Components\TextInput::make('afiliado')
+                    ->placeholder('Nro de Afiliado')
                     ->label('Nro Afiliado')
                     ->required(),
+                Forms\Components\TextInput::make('email')
+                    ->placeholder('Correo Electrónico')
+                    ->email(),
+                Forms\Components\TextInput::make('telefono')
+                    ->placeholder('Teléfono de contacto')
+                    ->label('Teléfono'),
                 Forms\Components\Datepicker::make('fecha_nacimiento')
                     ->label('Fecha de Nacimiento')
+                    ->native(false)
+                    ->default('1990-01-01')
                     ->required(),
                 Forms\Components\Hidden::make('medico_id')
                     ->default(Auth::user()->id),
@@ -60,13 +66,13 @@ class PacienteResource extends Resource
                 TextColumn::make('apellido')->searchable(),
                 TextColumn::make('nombre')->searchable(),
                 TextColumn::make('email'),
-                TextColumn::make('telefono')->label('Teléfono'),
-                TextColumn::make('dni')->label('DNI')->copyable()->badge()->color('primary'),
-                TextColumn::make('afiliado')->copyable()->badge()->color('primary'),
-                TextColumn::make('fecha_nacimiento')->label('Nacimiento')->date('d/m/Y'),
-                TextColumn::make('fecha_nacimiento')->label('Edad')
+                TextColumn::make('telefono')->label('Teléfono')->copyable()->badge()->color('gray'),
+                TextColumn::make('dni')->label('DNI')->copyable()->badge()->color('warning'),
+                TextColumn::make('afiliado')->copyable()->badge()->color('info'),
+                TextColumn::make('fecha_nacimiento')->label('Nacimiento')
                     ->formatStateUsing(function ($record) {
-                        return \Carbon\Carbon::parse($record->fecha_nacimiento)->age . ' años';
+                        $fecha = \Carbon\Carbon::parse($record->fecha_nacimiento);
+                        return $fecha->format('d/m/Y').', '.$fecha->age.' años';
                     }),
                 TextColumn::make('medico.name')->label('Médico')
                     ->formatStateUsing(function ($record) {

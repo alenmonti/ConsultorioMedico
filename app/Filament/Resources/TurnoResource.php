@@ -61,6 +61,10 @@ class TurnoResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creado')
+                    ->sortable()
+                    ->since(),
                 Tables\Columns\TextColumn::make('paciente.nombre'),
                 Tables\Columns\TextColumn::make('fecha')
                     ->date('d/m/Y')
@@ -72,9 +76,11 @@ class TurnoResource extends Resource
                 Tables\Columns\TextColumn::make('medico.name')
                     ->label('Médico'),
                 Tables\Columns\TextColumn::make('notas')
+                    ->wrap()
                     ->limit(50)
-                    ->width('30%'),
+                    ->width('20%'),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('paciente_id')
                     ->relationship('paciente', 'nombre')
