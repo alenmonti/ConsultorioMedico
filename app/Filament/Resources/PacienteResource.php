@@ -16,6 +16,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PacienteResource extends Resource
@@ -63,30 +64,41 @@ class PacienteResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('apellido')->searchable(),
-                TextColumn::make('nombre')->searchable(),
-                TextColumn::make('email'),
-                TextColumn::make('telefono')->label('Teléfono')->copyable()->badge()->color('gray'),
-                TextColumn::make('dni')->label('DNI')->copyable()->badge()->color('warning'),
-                TextColumn::make('afiliado')->copyable()->badge()->color('info'),
+                TextColumn::make('apellido')
+                    ->searchable(),
+                TextColumn::make('nombre')
+                    ->searchable(),
+                TextColumn::make('email')
+                    ->searchable(),
+                TextColumn::make('telefono')
+                    ->label('Teléfono')
+                    ->searchable()
+                    ->copyable()
+                    ->badge()
+                    ->color('gray'),
+                TextColumn::make('dni')
+                    ->label('DNI')
+                    ->searchable()
+                    ->copyable()
+                    ->badge()
+                    ->color('warning'),
+                TextColumn::make('afiliado')
+                    ->copyable()
+                    ->searchable()
+                    ->badge()
+                    ->color('info'),
                 TextColumn::make('fecha_nacimiento')->label('Nacimiento')
                     ->formatStateUsing(function ($record) {
                         $fecha = \Carbon\Carbon::parse($record->fecha_nacimiento);
                         return $fecha->format('d/m/Y').', '.$fecha->age.' años';
-                    }),
+                    })
+                    ->searchable(),
                 TextColumn::make('medico.name')->label('Médico')
                     ->formatStateUsing(function ($record) {
                         return ucfirst($record->medico->name);
                     }),
             ])
             ->filters([
-                Filter::make('nombre')
-                    ->form([
-                        Forms\Components\TextInput::make('nombre')
-                    ])
-                    ->query(function (Builder $query, $data) {
-                        return $query->where('nombre', 'like', '%' . $data['nombre'] . '%');
-                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
