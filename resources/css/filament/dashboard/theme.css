@@ -1,0 +1,13 @@
+@import '/vendor/filament/filament/resources/css/theme.css';
+
+@config 'tailwind.config.js';
+
+/* Custom CSS */
+
+.fc-popover {
+    background: #fff !important;
+}
+
+html.dark .fc-popover {
+    background: #3d3d3d !important;
+}
