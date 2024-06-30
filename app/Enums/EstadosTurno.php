@@ -36,7 +36,7 @@ enum EstadosTurno: string implements HasLabel, HasColor
         return match ($this) {
             self::Pendiente => '#3490dc',
             self::Confirmado => '#38c172',
-            self::Cancelado => '#e3342f',
+            self::Cancelado => '#ec4d4c',
             self::Atendido => '#4a5568',
         };
     }

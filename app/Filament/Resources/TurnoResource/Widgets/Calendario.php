@@ -31,7 +31,7 @@ class Calendario extends FullCalendarWidget
                     'extendedProps' => [
                         'notas' => $turno->notas
                     ],
-
+                    'display' => 'block',
                 ])
             ->all();
     }
@@ -48,6 +48,7 @@ class Calendario extends FullCalendarWidget
             ],
             'views' => [
                 'dayGrid' => [
+
                 ],
             ]
             
