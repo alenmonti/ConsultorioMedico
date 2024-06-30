@@ -35,4 +35,22 @@ class Calendario extends FullCalendarWidget
                 ])
             ->all();
     }
+
+    public function config(): array
+    {
+        return [
+            'height' => '800px',
+            'dayMaxEventRows' => true,
+            'eventTimeFormat' => [
+                'hour' => 'numeric',
+                'minute' => '2-digit',
+                'hour12' => false,
+            ],
+            'views' => [
+                'dayGrid' => [
+                ],
+            ]
+            
+        ];
+    }
 }
