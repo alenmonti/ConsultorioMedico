@@ -31,6 +31,16 @@ enum EstadosTurno: string implements HasLabel, HasColor
         };
     }
 
+    public function getHexColor(): string
+    {
+        return match ($this) {
+            self::Pendiente => '#3490dc',
+            self::Confirmado => '#38c172',
+            self::Cancelado => '#e3342f',
+            self::Atendido => '#4a5568',
+        };
+    }
+
     public static function values(): array
     {
         return [
