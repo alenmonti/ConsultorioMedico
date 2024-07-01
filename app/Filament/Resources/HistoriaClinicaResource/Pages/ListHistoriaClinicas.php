@@ -10,6 +10,8 @@ class ListHistoriaClinicas extends ListRecords
 {
     protected static string $resource = HistoriaClinicaResource::class;
 
+    public static ?string $title = 'Historias Clínicas';
+
     protected function getHeaderActions(): array
     {
         return [

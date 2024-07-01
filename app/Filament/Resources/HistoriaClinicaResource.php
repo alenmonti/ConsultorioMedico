@@ -46,7 +46,7 @@ class HistoriaClinicaResource extends Resource
                     ->native(false)
                     ->required(),
                 Textarea::make('diagnostico')
-                    ->placeholder('Diagnostico del paciente')
+                    ->placeholder('Diagnóstico del paciente')
                     ->autosize(),
                 Textarea::make('motivo')
                     ->placeholder('Motivo de la consulta')
@@ -83,6 +83,7 @@ class HistoriaClinicaResource extends Resource
                     ->color('warning')
                     ->badge(),
                 TextColumn::make('diagnostico')
+                    ->label('Diagnóstico')
                     ->limit(50),
                 TextColumn::make('motivo')
                     ->limit(50),
@@ -100,7 +101,7 @@ class HistoriaClinicaResource extends Resource
                 })    
                 ->searchable(),
             Filter::make('diagnostico')
-                ->form([Forms\Components\TextInput::make('diagnostico')])
+                ->form([Forms\Components\TextInput::make('diagnostico')->label('Diagnostico')])
                 ->query(function (Builder $query, array $data): Builder {
                     return $query->where('diagnostico', 'like', '%'.$data['diagnostico'].'%');
                 }),
