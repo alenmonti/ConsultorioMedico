@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Filament\Infolists\Components\Fieldset;
 use Filament\Tables\Actions\{DeleteAction, EditAction, ViewAction};
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
@@ -39,6 +40,10 @@ class AppServiceProvider extends ServiceProvider
                 fn ($action) => $action->button()->label('Filtrar'),
             );
             $table->filtersLayout(FiltersLayout::Modal);
+        });
+
+        Fieldset::configureUsing(function (Fieldset $fieldset): void {
+            $fieldset->extraAttributes(['style' => 'height: 100%;'], true);
         });
     }
 }
