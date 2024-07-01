@@ -14,7 +14,7 @@ class TurnosDoughnutChart extends ChartWidget
     protected array|string|int $columnSpan = ['sm' => 1, 'md' => 6];
     protected static ?string $pollingInterval = null;
     protected static ?string $maxHeight = '274px';
-    public ?string $filter = 'hoy';
+    // public ?string $filter = 'hoy';
 
     protected function getData(): array
     {
@@ -51,10 +51,10 @@ class TurnosDoughnutChart extends ChartWidget
     protected function getFilters(): ?array
     {
         return [
-            'hoy' => 'Hoy',
-            'mes' => 'Este mes',
-            'semana' => 'Esta semana',
-            'anio' => 'Este año',
+            // 'hoy' => 'Hoy',
+            // 'mes' => 'Este mes',
+            // 'semana' => 'Esta semana',
+            // 'anio' => 'Este año',
         ];
     }
 

@@ -11,7 +11,7 @@ class TurnosBarChart extends ChartWidget
     protected static ?int $sort = 4;
     protected array|string|int $columnSpan = ['sm' => 1, 'md' => 6];
     protected static ?string $pollingInterval = null;
-    public ?string $filter = 'anio';
+    // public ?string $filter = 'anio';
 
     protected function getData(): array
     {
@@ -44,10 +44,10 @@ class TurnosBarChart extends ChartWidget
     protected function getFilters(): ?array
     {
         return [
-            'hoy' => 'Hoy',
-            'mes' => 'Este mes',
-            'semana' => 'Esta semana',
-            'anio' => 'Este año',
+            // 'hoy' => 'Hoy',
+            // 'mes' => 'Este mes',
+            // 'semana' => 'Esta semana',
+            // 'anio' => 'Este año',
         ];
     }
 
