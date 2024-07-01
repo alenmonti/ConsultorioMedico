@@ -38,12 +38,10 @@ class PacienteResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('dni')
                     ->placeholder('DNI sin puntos ni guiones')
-                    ->label('DNI')
-                    ->required(),
+                    ->label('DNI'),
                 Forms\Components\TextInput::make('afiliado')
                     ->placeholder('Nro de Afiliado')
-                    ->label('Nro Afiliado')
-                    ->required(),
+                    ->label('Nro Afiliado'),
                 Forms\Components\TextInput::make('email')
                     ->placeholder('Correo Electrónico')
                     ->email(),
@@ -53,8 +51,7 @@ class PacienteResource extends Resource
                 Forms\Components\Datepicker::make('fecha_nacimiento')
                     ->label('Fecha de Nacimiento')
                     ->native(false)
-                    ->default('1990-01-01')
-                    ->required(),
+                    ->placeholder('01/01/1990'),
                 Forms\Components\Hidden::make('medico_id')
                     ->default(Auth::user()->id),
             ]);

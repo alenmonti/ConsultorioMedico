@@ -37,9 +37,16 @@ class TurnoResource extends Resource
                 ->okLabel('Aceptar')
                 ->cancelLabel('Cancelar')
                 ->default(Carbon::now()->format('H:i')),
-            Forms\Components\Select::make('paciente_id')
+                Forms\Components\Select::make('paciente_id')
                 ->label('Paciente')
-                ->relationship('paciente', 'nombre')
+                ->options(function () {
+                    $pacientes = \App\Models\Paciente::select('id', 'nombre', 'apellido', 'dni')->get();
+                    $options = [];
+                    foreach ($pacientes as $paciente) {
+                        $options[$paciente->id] = $paciente->nombre.' '.$paciente->apellido.', '.$paciente->dni;
+                    }
+                    return $options;
+                })    
                 ->searchable()
                 ->required(),
             Forms\Components\Select::make('estado')
@@ -64,8 +71,10 @@ class TurnoResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Creado')
                     ->sortable()
-                    ->since(),
-                Tables\Columns\TextColumn::make('paciente.nombre'),
+                    ->since()
+                    ->color('gray'),
+                Tables\Columns\TextColumn::make('paciente.nombre')
+                    ->state(fn ($record) => $record->paciente->apellido.' '.$record->paciente->nombre),
                 Tables\Columns\TextColumn::make('fecha')
                     ->date('d/m/Y')
                     ->sortable(),
@@ -83,9 +92,16 @@ class TurnoResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('paciente_id')
-                    ->relationship('paciente', 'nombre')
-                    ->searchable()
-                    ->label('Paciente'),
+                ->label('Paciente')
+                ->options(function () {
+                    $pacientes = \App\Models\Paciente::select('id', 'nombre', 'apellido', 'dni')->get();
+                    $options = [];
+                    foreach ($pacientes as $paciente) {
+                        $options[$paciente->id] = $paciente->nombre.' '.$paciente->apellido.', '.$paciente->dni;
+                    }
+                    return $options;
+                })    
+                ->searchable(),
                 SelectFilter::make('estado')
                     ->options(EstadosTurno::class),
                 Filter::make('fecha2')

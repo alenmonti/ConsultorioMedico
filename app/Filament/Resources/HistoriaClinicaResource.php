@@ -18,6 +18,9 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -28,7 +31,7 @@ class HistoriaClinicaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
     protected static ?string $title = 'Historias Clinicas';
-    protected static ?string $navigationLabel = 'Historias Clinicas';
+    protected static ?string $navigationLabel = 'Historias Clínicas';
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
@@ -43,19 +46,26 @@ class HistoriaClinicaResource extends Resource
                     ->native(false)
                     ->required(),
                 Textarea::make('diagnostico')
-                    ->placeholder('Diagnostico del paciente'),
+                    ->placeholder('Diagnostico del paciente')
+                    ->autosize(),
                 Textarea::make('motivo')
-                    ->placeholder('Motivo de la consulta'),
+                    ->placeholder('Motivo de la consulta')
+                    ->autosize(),
                 Textarea::make('estudios')
-                    ->placeholder('Estudios realizados'),
+                    ->placeholder('Estudios realizados')
+                    ->autosize(),
                 Textarea::make('tratamiento')
-                    ->placeholder('Tratamiento del paciente'),
+                    ->placeholder('Tratamiento del paciente')
+                    ->autosize(),
                 Textarea::make('medicamentos')
-                    ->placeholder('Medicamentos recetados'),
+                    ->placeholder('Medicamentos recetados')
+                    ->autosize(),
                 Textarea::make('examen_fisico')
-                    ->placeholder('Resultados del examen fisico'),
+                    ->placeholder('Resultados del examen fisico')
+                    ->autosize(),
                 Textarea::make('resultados')
-                    ->placeholder('Resultados de los estudios'),
+                    ->placeholder('Resultados de los estudios')
+                    ->autosize(),
             ]);
     }
 
@@ -65,16 +75,42 @@ class HistoriaClinicaResource extends Resource
             ->columns([
                 TextColumn::make('paciente.nombre')
                     ->state(function ($record) {
-                        return $record->paciente->nombre.' '.$record->paciente->apellido.', '.$record->paciente->dni;
+                        return $record->paciente->apellido.' '.$record->paciente->nombre.', '.$record->paciente->dni;
                     }),
                 TextColumn::make('fecha')
-                    ->date(),
-                TextColumn::make('diagnostico'),
-                TextColumn::make('motivo'),
+                    ->date()
+                    ->sortable()
+                    ->color('warning')
+                    ->badge(),
+                TextColumn::make('diagnostico')
+                    ->limit(50),
+                TextColumn::make('motivo')
+                    ->limit(50),
             ])
             ->filters([
-                
-            ])
+            SelectFilter::make('paciente_id')
+                ->label('Paciente')
+                ->options(function () {
+                    $pacientes = \App\Models\Paciente::select('id', 'nombre', 'apellido', 'dni')->get();
+                    $options = [];
+                    foreach ($pacientes as $paciente) {
+                        $options[$paciente->id] = $paciente->nombre.' '.$paciente->apellido.', '.$paciente->dni;
+                    }
+                    return $options;
+                })    
+                ->searchable(),
+            Filter::make('diagnostico')
+                ->form([Forms\Components\TextInput::make('diagnostico')])
+                ->query(function (Builder $query, array $data): Builder {
+                    return $query->where('diagnostico', 'like', '%'.$data['diagnostico'].'%');
+                }),
+            Filter::make('motivo')
+                ->form([Forms\Components\TextInput::make('motivo')])
+                ->query(function (Builder $query, array $data): Builder {
+                    return $query->where('motivo', 'like', '%'.$data['motivo'].'%');
+                }),
+            ], layout: FiltersLayout::AboveContent)
+            ->filtersFormColumns(3)
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
