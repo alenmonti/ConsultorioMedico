@@ -62,7 +62,7 @@ class PacienteResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('nombre')
-                    ->searchable()
+                    ->searchable(['nombre', 'apellido'])
                     ->state(function ($record) {
                         return ucfirst($record->apellido).' '.ucfirst($record->nombre);
                     }),
@@ -97,33 +97,7 @@ class PacienteResource extends Resource
                     }),
             ])
             ->filters([
-                Filter::make('nombre')
-                    ->form([Forms\Components\TextInput::make('nombre')->label('Nombre o Apellido')])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->where('nombre', 'like', '%'.$data['nombre'].'%')
-                            ->orWhere('apellido', 'like', '%'.$data['nombre'].'%');
-                    }),
-                Filter::make('dni')
-                    ->form([Forms\Components\TextInput::make('dni')->label('DNI')])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->where('dni', 'like', '%'.$data['dni'].'%');
-                    }),
-                Filter::make('email')
-                    ->form([Forms\Components\TextInput::make('email')])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->where('email', 'like', '%'.$data['email'].'%');
-                    }),
-                Filter::make('telefono')
-                    ->form([Forms\Components\TextInput::make('telefono')])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->where('telefono', 'like', '%'.$data['telefono'].'%');
-                    }),
-                Filter::make('afiliado')
-                    ->form([Forms\Components\TextInput::make('afiliado')])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->where('afiliado', 'like', '%'.$data['afiliado'].'%');
-                    }),
-                
+                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
