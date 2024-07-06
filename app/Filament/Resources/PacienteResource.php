@@ -117,8 +117,8 @@ class PacienteResource extends Resource
     {
         return [
             'index' => Pages\ListPacientes::route('/'),
-            'create' => Pages\CreatePaciente::route('/create'),
-            'edit' => Pages\EditPaciente::route('/{record}/edit'),
+            // 'create' => Pages\CreatePaciente::route('/create'),
+            // 'edit' => Pages\EditPaciente::route('/{record}/edit'),
             // 'view' => Pages\ViewPaciente::route('/{record}'),
         ];
     }
