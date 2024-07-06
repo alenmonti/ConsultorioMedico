@@ -197,6 +197,7 @@ class HistoriaClinicaResource extends Resource
             'create' => Pages\CreateHistoriaClinica::route('/create'),
             'edit' => Pages\EditHistoriaClinica::route('/{record}/edit'),
             'view' => Pages\ViewHistoriaClinica::route('/{record}'),
+            'viewAllInOne' => Pages\ViewAllInOne::route('/{record}/viewAllInOne'),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\HistoriaClinicaResource\Pages\ViewHistoriaClinica;
 use App\Filament\Resources\PacienteResource\Pages;
 use App\Filament\Resources\PacienteResource\RelationManagers;
 use App\Models\Paciente;
@@ -100,7 +101,12 @@ class PacienteResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('historiasclinicas')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->color('info')
+                    ->iconButton()
+                    ->url(fn (Paciente $record) => HistoriaClinicaResource::getUrl('view', ['record' => $record->historiasClinicas()->first()->id]))
+                    ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->requiresConfirmation(),
