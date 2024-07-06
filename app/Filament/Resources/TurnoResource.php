@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\EstadosTurno;
 use App\Filament\Resources\TurnoResource\Pages;
 use App\Filament\Resources\TurnoResource\RelationManagers;
+use App\Models\Paciente;
 use App\Models\Turno;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -38,14 +39,7 @@ class TurnoResource extends Resource
                 ->cancelLabel('Cancelar'),
                 Forms\Components\Select::make('paciente_id')
                 ->label('Paciente')
-                ->options(function () {
-                    $pacientes = \App\Models\Paciente::select('id', 'nombre', 'apellido', 'dni')->get();
-                    $options = [];
-                    foreach ($pacientes as $paciente) {
-                        $options[$paciente->id] = $paciente->nombre.' '.$paciente->apellido.', '.$paciente->dni;
-                    }
-                    return $options;
-                })    
+                ->options(Paciente::selectOptions())    
                 ->searchable()
                 ->required(),
             Forms\Components\Select::make('estado')
@@ -92,14 +86,7 @@ class TurnoResource extends Resource
             ->filters([
                 SelectFilter::make('paciente_id')
                 ->label('Paciente')
-                ->options(function () {
-                    $pacientes = \App\Models\Paciente::select('id', 'nombre', 'apellido', 'dni')->get();
-                    $options = [];
-                    foreach ($pacientes as $paciente) {
-                        $options[$paciente->id] = $paciente->nombre.' '.$paciente->apellido.', '.$paciente->dni;
-                    }
-                    return $options;
-                })    
+                ->options(Paciente::selectOptions())    
                 ->searchable(),
                 SelectFilter::make('estado')
                     ->options(EstadosTurno::class),

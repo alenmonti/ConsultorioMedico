@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Models\HistoriaClinica;
 use App\Filament\Resources\HistoriaClinicaResource\Pages;
 use App\Filament\Resources\HistoriaClinicaResource\RelationManagers;
+use App\Models\Paciente;
 use Carbon\Carbon;
 use DateTime;
 use Faker\Provider\ar_EG\Text;
@@ -39,7 +40,8 @@ class HistoriaClinicaResource extends Resource
         return $form
             ->schema([
                 Select::make('paciente_id')
-                    ->relationship('paciente', 'nombre')
+                    ->options(Paciente::selectOptions())
+                    ->searchable()
                     ->required(),
                 DatePicker::make('fecha')
                     ->default(now())
@@ -91,14 +93,7 @@ class HistoriaClinicaResource extends Resource
             ->filters([
             SelectFilter::make('paciente_id')
                 ->label('Paciente')
-                ->options(function () {
-                    $pacientes = \App\Models\Paciente::select('id', 'nombre', 'apellido', 'dni')->get();
-                    $options = [];
-                    foreach ($pacientes as $paciente) {
-                        $options[$paciente->id] = $paciente->nombre.' '.$paciente->apellido.', '.$paciente->dni;
-                    }
-                    return $options;
-                })    
+                ->options(Paciente::selectOptions())    
                 ->searchable(),
             Filter::make('diagnostico')
                 ->form([Forms\Components\TextInput::make('diagnostico')->label('Diagnostico')])

@@ -40,4 +40,14 @@ class Paciente extends Model
     {
         static::addGlobalScope(Own::class);
     }
+
+    public static function selectOptions()
+    {
+        $pacientes = Paciente::select('id', 'nombre', 'apellido', 'dni')->get();
+        $options = [];
+        foreach ($pacientes as $paciente) {
+            $options[$paciente->id] = $paciente->nombre.' '.$paciente->apellido.', '.$paciente->dni;
+        }
+        return $options;
+    }
 }
