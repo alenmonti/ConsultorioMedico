@@ -194,8 +194,8 @@ class HistoriaClinicaResource extends Resource
     {
         return [
             'index' => Pages\ListHistoriaClinicas::route('/'),
-            // 'create' => Pages\CreateHistoriaClinica::route('/create'),
-            // 'edit' => Pages\EditHistoriaClinica::route('/{record}/edit'),
+            'create' => Pages\CreateHistoriaClinica::route('/create'),
+            'edit' => Pages\EditHistoriaClinica::route('/{record}/edit'),
             'view' => Pages\ViewHistoriaClinica::route('/{record}'),
         ];
     }

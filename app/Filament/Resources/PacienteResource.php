@@ -5,18 +5,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PacienteResource\Pages;
 use App\Filament\Resources\PacienteResource\RelationManagers;
 use App\Models\Paciente;
-use Carbon\Carbon;
-use Faker\Provider\ar_EG\Text;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PacienteResource extends Resource
@@ -100,6 +94,7 @@ class PacienteResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->requiresConfirmation(),
@@ -114,7 +109,7 @@ class PacienteResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\HistoriasclinicasRelationManager::class,
         ];
     }
 
@@ -122,8 +117,9 @@ class PacienteResource extends Resource
     {
         return [
             'index' => Pages\ListPacientes::route('/'),
-            // 'create' => Pages\CreatePaciente::route('/create'),
-            // 'edit' => Pages\EditPaciente::route('/{record}/edit'),
+            'create' => Pages\CreatePaciente::route('/create'),
+            'edit' => Pages\EditPaciente::route('/{record}/edit'),
+            // 'view' => Pages\ViewPaciente::route('/{record}'),
         ];
     }
 }
