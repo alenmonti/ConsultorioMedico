@@ -97,7 +97,7 @@ class HistoriaClinicaResource extends Resource
                     ->options(Paciente::selectOptions())    
                     ->searchable(),
                 ], layout: FiltersLayout::AboveContent)
-            ->filtersFormColumns(3)
+            ->filtersFormColumns(1)
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
