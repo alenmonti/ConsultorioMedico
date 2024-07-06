@@ -60,6 +60,7 @@ class TurnoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('hora', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Creado')
@@ -82,7 +83,6 @@ class TurnoResource extends Resource
                     ->limit(50)
                     ->width('20%'),
             ])
-            ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('paciente_id')
                 ->label('Paciente')
