@@ -2,10 +2,12 @@
 
 namespace App\Observers;
 
+use App\Models\User;
+
 class UserObserver
 {
-    public function creating($model)
+    public function creating(User $user)
     {
-        $model->rol = 'medico';
+        $user->rol = 'medico';
     }
 }

@@ -23,7 +23,7 @@ class Paciente extends Model
 
     public function historiasClinicas()
     {
-        return $this->hasMany(HistoriaClinica::class);
+        return $this->hasOne(HistoriaClinica::class);
     }
 
     public function turnos()
