@@ -30,13 +30,12 @@ class TurnoResource extends Resource
             ->schema([
             Forms\Components\DatePicker::make('fecha')
                 ->required()
-                ->native(false)
-                ->default(Carbon::now()),
+                ->placeholder('--/--/----')
+                ->native(false),
             TimePickerField::make('hora')
                 ->required()
                 ->okLabel('Aceptar')
-                ->cancelLabel('Cancelar')
-                ->default(Carbon::now()->format('H:i')),
+                ->cancelLabel('Cancelar'),
                 Forms\Components\Select::make('paciente_id')
                 ->label('Paciente')
                 ->options(function () {
@@ -152,8 +151,8 @@ class TurnoResource extends Resource
     {
         return [
             'index' => Pages\ListTurnos::route('/'),
-            'create' => Pages\CreateTurno::route('/create'),
-            'edit' => Pages\EditTurno::route('/{record}/edit'),
+            // 'create' => Pages\CreateTurno::route('/create'),
+            // 'edit' => Pages\EditTurno::route('/{record}/edit'),
         ];
     }
 }
