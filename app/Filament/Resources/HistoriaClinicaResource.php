@@ -41,6 +41,7 @@ class HistoriaClinicaResource extends Resource
             ->schema([
                 Select::make('paciente_id')
                     ->options(Paciente::selectOptions())
+                    ->label('Paciente')
                     ->searchable()
                     ->required(),
                 DatePicker::make('fecha')
@@ -91,21 +92,11 @@ class HistoriaClinicaResource extends Resource
                     ->limit(50),
             ])
             ->filters([
-            SelectFilter::make('paciente_id')
-                ->label('Paciente')
-                ->options(Paciente::selectOptions())    
-                ->searchable(),
-            Filter::make('diagnostico')
-                ->form([Forms\Components\TextInput::make('diagnostico')->label('Diagnostico')])
-                ->query(function (Builder $query, array $data): Builder {
-                    return $query->where('diagnostico', 'like', '%'.$data['diagnostico'].'%');
-                }),
-            Filter::make('motivo')
-                ->form([Forms\Components\TextInput::make('motivo')])
-                ->query(function (Builder $query, array $data): Builder {
-                    return $query->where('motivo', 'like', '%'.$data['motivo'].'%');
-                }),
-            ], layout: FiltersLayout::AboveContent)
+                SelectFilter::make('paciente_id')
+                    ->label('Paciente')
+                    ->options(Paciente::selectOptions())    
+                    ->searchable(),
+                ], layout: FiltersLayout::AboveContent)
             ->filtersFormColumns(3)
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -203,8 +194,8 @@ class HistoriaClinicaResource extends Resource
     {
         return [
             'index' => Pages\ListHistoriaClinicas::route('/'),
-            'create' => Pages\CreateHistoriaClinica::route('/create'),
-            'edit' => Pages\EditHistoriaClinica::route('/{record}/edit'),
+            // 'create' => Pages\CreateHistoriaClinica::route('/create'),
+            // 'edit' => Pages\EditHistoriaClinica::route('/{record}/edit'),
             'view' => Pages\ViewHistoriaClinica::route('/{record}'),
         ];
     }
