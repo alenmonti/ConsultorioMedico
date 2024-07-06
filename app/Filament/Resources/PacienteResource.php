@@ -30,6 +30,8 @@ class PacienteResource extends Resource
                 Forms\Components\TextInput::make('apellido')
                     ->placeholder('Apellido del paciente')
                     ->required(),
+                Forms\Components\TextInput::make('obra_social')
+                    ->placeholder('Obra Social'),
                 Forms\Components\TextInput::make('dni')
                     ->placeholder('DNI sin puntos ni guiones')
                     ->label('DNI'),
@@ -74,6 +76,10 @@ class PacienteResource extends Resource
                     ->copyable()
                     ->badge()
                     ->color('warning'),
+                TextColumn::make('obra_social')
+                    ->searchable()
+                    ->badge()
+                    ->color('primary'),
                 TextColumn::make('afiliado')
                     ->copyable()
                     ->searchable()

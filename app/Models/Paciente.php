@@ -16,6 +16,7 @@ class Paciente extends Model
         'email',
         'telefono',
         'dni',
+        'obra_social',
         'afiliado',
         'fecha_nacimiento',
         'medico_id'
