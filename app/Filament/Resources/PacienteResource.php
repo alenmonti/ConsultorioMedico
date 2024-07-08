@@ -105,7 +105,7 @@ class PacienteResource extends Resource
                     ->icon('heroicon-o-clipboard-document-list')
                     ->color('info')
                     ->iconButton()
-                    ->url(fn (Paciente $record) => HistoriaClinicaResource::getUrl('view', ['record' => $record->historiasClinicas()->first()->id]))
+                    ->url(fn (Paciente $record) => HistoriaClinicaResource::getUrl('viewFile', ['paciente_id' => $record->id]))
                     ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
