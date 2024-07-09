@@ -33,4 +33,9 @@ class ListTurnos extends ListRecords
                 ->query(fn ($query) => $query->whereBetween('fecha', [Carbon::today(), Carbon::today()->addMonth()])),
         ];
     }
+
+    public function getDefaultActiveTab(): string|int|null
+    {
+        return 'hoy';
+    }
 }
