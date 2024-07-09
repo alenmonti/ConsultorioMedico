@@ -21,7 +21,7 @@ class HorarioResource extends Resource
 {
     protected static ?string $model = Horario::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-clock';
     protected static ?string $title = 'Disponibilidad Horaria';
     protected static ?string $navigationLabel = 'Horarios';
     protected static ?int $navigationSort = 4;

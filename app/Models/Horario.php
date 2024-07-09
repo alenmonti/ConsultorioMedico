@@ -34,6 +34,24 @@ class Horario extends Model
         ];
     }
 
+    public function getHorariosArray($fecha)
+    {
+        $horarios = $this->where('dia', $fecha->format('N'))->get();
+        $horariosArray = [];
+        foreach ($horarios as $horario) {
+            $desde = $horario->desde;
+            $hasta = $horario->hasta;
+            $intervalo = $horario->intervalo;
+            $hora = $desde;
+            while ($hora <= $hasta) {
+                $horariosArray[] = $hora;
+                $hora = $hora->add($intervalo);
+            }
+        }
+        return $horariosArray;
+    
+    }
+
     public static function booted()
     {
         static::creating(function ($horario) {
