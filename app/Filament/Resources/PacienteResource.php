@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\ObrasSociales;
 use App\Filament\Resources\HistoriaClinicaResource\Pages\ViewHistoriaClinica;
 use App\Filament\Resources\PacienteResource\Pages;
 use App\Filament\Resources\PacienteResource\RelationManagers;
@@ -31,8 +32,8 @@ class PacienteResource extends Resource
                 Forms\Components\TextInput::make('apellido')
                     ->placeholder('Apellido del paciente')
                     ->required(),
-                Forms\Components\TextInput::make('obra_social')
-                    ->placeholder('Obra Social'),
+                Forms\Components\Select::make('obra_social')
+                    ->options(ObrasSociales::class),
                 Forms\Components\TextInput::make('dni')
                     ->placeholder('DNI sin puntos ni guiones')
                     ->label('DNI'),
@@ -69,24 +70,20 @@ class PacienteResource extends Resource
                     ->label('Teléfono')
                     ->searchable()
                     ->copyable()
-                    ->badge()
                     ->color('gray'),
                 TextColumn::make('dni')
                     ->label('DNI')
                     ->searchable()
                     ->copyable()
-                    ->badge()
-                    ->color('warning'),
-                TextColumn::make('obra_social')
-                    ->searchable()
-                    ->badge()
-                    ->color('primary'),
+                    ->color('info'),
                 TextColumn::make('afiliado')
                     ->copyable()
                     ->searchable()
-                    ->badge()
-                    ->color('info'),
-                TextColumn::make('fecha_nacimiento')->label('Nacimiento')
+                    ->color('warning'),
+                TextColumn::make('obra_social')
+                        ->searchable()
+                        ->badge(),
+                    TextColumn::make('fecha_nacimiento')->label('Nacimiento')
                     ->state(function ($record) {
                         $fecha = \Carbon\Carbon::parse($record->fecha_nacimiento);
                         return $fecha->format('d/m/Y').', '.$fecha->age.' años';

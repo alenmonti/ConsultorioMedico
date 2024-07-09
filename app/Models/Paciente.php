@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ObrasSociales;
 use App\Models\Scopes\Own;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +22,13 @@ class Paciente extends Model
         'fecha_nacimiento',
         'medico_id'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'obra_social' => ObrasSociales::class,
+        ];
+    }
 
     public function historiasClinicas()
     {
