@@ -35,10 +35,10 @@ enum ObrasSociales: string implements HasLabel, HasColor
     {
         return match ($this) {
             self::Particular => 'primary',
-            self::PAMI => 'success',
+            self::PAMI => 'warning',
             self::IOMA => 'info',
             self::OSDE => 'warning',
-            self::Galeno => 'danger',
+            self::Galeno => 'success',
             self::Omint => 'gray',
             self::SwissMedical => 'primary',
             self::SancorSalud => 'success',
