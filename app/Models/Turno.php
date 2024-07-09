@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\TimeCast;
 use App\Enums\EstadosTurno;
 use App\Models\Scopes\Own;
 use Carbon\Carbon;
@@ -25,6 +26,7 @@ class Turno extends Model
     {
         return [
             'estado' => EstadosTurno::class,
+            'hora' => TimeCast::class
         ];
     }
 

@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\Filter;
@@ -18,6 +19,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use HusamTariq\FilamentTimePicker\Forms\Components\TimePickerField;
+use Illuminate\Support\Facades\Auth;
 
 class TurnoResource extends Resource
 {
@@ -31,13 +33,18 @@ class TurnoResource extends Resource
             ->schema([
             Forms\Components\DatePicker::make('fecha')
                 ->required()
-                ->placeholder('--/--/----')
+                ->placeholder('Seleccione una fecha')
+                ->live()
                 ->native(false),
-            TimePickerField::make('hora')
+            Forms\Components\Select::make('hora')
                 ->required()
-                ->okLabel('Aceptar')
-                ->cancelLabel('Cancelar'),
-                Forms\Components\Select::make('paciente_id')
+                ->placeholder('Seleccione un horario')
+                ->searchable()
+                ->options( function (Get $get) {
+                    $fecha = Carbon::parse($get('fecha'))->format('Y-m-d');
+                    return Auth::user()->horariosDisponibles($fecha);
+                }),
+            Forms\Components\Select::make('paciente_id')
                 ->label('Paciente')
                 ->options(Paciente::selectOptions())    
                 ->searchable()
