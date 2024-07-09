@@ -24,7 +24,7 @@ class Paciente extends Model
 
     public function historiasClinicas()
     {
-        return $this->hasMany(HistoriaClinica::class);
+        return $this->hasMany(HistoriaClinica::class)->orderBy('fecha', 'desc');
     }
 
     public function turnos()

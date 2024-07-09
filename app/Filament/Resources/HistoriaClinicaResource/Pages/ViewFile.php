@@ -35,12 +35,10 @@ class ViewFile extends Page implements HasForms, HasInfolists
     protected static ?string $title = 'Historia Clínica';
 
     public $paciente;
-    public $historiasClinicas;
     
     public function mount()
     {
         $this->paciente = Paciente::find(request()->paciente_id);
-        $this->historiasClinicas = $this->paciente->historiasClinicas()->orderBy('fecha', 'desc')->get();
     }
 
     public function historiaForm()

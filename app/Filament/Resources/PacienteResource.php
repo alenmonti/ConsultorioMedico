@@ -101,7 +101,7 @@ class PacienteResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\Action::make('historiasclinicas')
+                Tables\Actions\Action::make('Historias Clínicas')
                     ->icon('heroicon-o-clipboard-document-list')
                     ->color('info')
                     ->iconButton()
