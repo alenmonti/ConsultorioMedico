@@ -46,7 +46,7 @@ class PacienteResource extends Resource
                 Forms\Components\TextInput::make('telefono')
                     ->placeholder('Teléfono de contacto')
                     ->label('Teléfono'),
-                Forms\Components\Datepicker::make('fecha_nacimiento')
+                Forms\Components\DatePicker::make('fecha_nacimiento')
                     ->label('Fecha de Nacimiento')
                     ->native(false)
                     ->placeholder('01/01/1990'),
