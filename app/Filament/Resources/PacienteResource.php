@@ -36,7 +36,8 @@ class PacienteResource extends Resource
                     ->options(ObrasSociales::class),
                 Forms\Components\TextInput::make('dni')
                     ->placeholder('DNI sin puntos ni guiones')
-                    ->label('DNI'),
+                    ->label('DNI')
+                    ->required(),
                 Forms\Components\TextInput::make('afiliado')
                     ->placeholder('Nro de Afiliado')
                     ->label('Nro Afiliado'),
