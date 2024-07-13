@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\ServiceProvider;
+use App\Models\{Paciente, User};
+use App\Observers\{PacienteObserver, UserObserver};
 use Filament\Infolists\Components\Fieldset;
 use Filament\Tables\Actions\{DeleteAction, EditAction, ViewAction};
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
-use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -45,5 +47,8 @@ class AppServiceProvider extends ServiceProvider
         Fieldset::configureUsing(function (Fieldset $fieldset): void {
             $fieldset->extraAttributes(['style' => 'height: 100%;'], true);
         });
+
+        User::observe(UserObserver::class);
+        Paciente::observe(PacienteObserver::class);
     }
 }

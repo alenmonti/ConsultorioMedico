@@ -9,6 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListHorarios extends ListRecords
 {
     protected static string $resource = HorarioResource::class;
+    public static ?string $title = 'Disponibilidad Horaria';
 
     protected function getHeaderActions(): array
     {
