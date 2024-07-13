@@ -45,7 +45,7 @@ class HorarioResource extends Resource
                     ])
                     ->required(),
                 TimePickerField::make('desde')
-                    ->default('08:00')
+                    ->default('09:00')
                     ->required(),
                 TimePickerField::make('hasta')
                     ->default('18:00')
@@ -64,7 +64,10 @@ class HorarioResource extends Resource
                     ->time('H:i a'),
                 Tables\Columns\TextColumn::make('hasta')
                     ->time('H:i a'),
-                Tables\Columns\TextColumn::make('intervalo'),
+                Tables\Columns\TextColumn::make('intervalo')
+                    ->time('i \m\i\n')
+                    ->badge()
+                    ->color('info'),
             ])
             ->filters([
                 //

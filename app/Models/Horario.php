@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Casts\TimeCast;
 use App\Enums\Dias;
+use App\Models\Scopes\Own;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -58,5 +59,7 @@ class Horario extends Model
             // Can be created before auth
             $horario->medico_id = $horario->medico_id ?? auth()->id();
         });
+
+        static::addGlobalScope(Own::class);
     }
 }
