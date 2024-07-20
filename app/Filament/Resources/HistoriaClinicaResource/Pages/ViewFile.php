@@ -107,22 +107,30 @@ class ViewFile extends Page implements HasForms, HasInfolists
                             ->label('Nombre'),
                         TextEntry::make('fecha_nacimiento')
                             ->date('d/m/Y')
-                            ->label('Fecha de nacimiento'),
+                            ->label('Fecha de nacimiento')
+                            ->default('N/A')
+                            ->markdown(),
                         TextEntry::make('fecha_nacimiento')
                             ->state(function () {return Carbon::parse($this->paciente->fecha_nacimiento)->age.' años';})
-                            ->label('Edad'),
+                            ->label('Edad')
+                            ->default('N/A'),
+                        TextEntry::make('obra_social')
+                            ->label('Obra social')
+                            ->default('N/A'),
                         TextEntry::make('dni')
                             ->label('DNI'),
                         TextEntry::make('telefono')
-                            ->label('Teléfono'),
+                            ->label('Teléfono')
+                            ->default('N/A'),
                         TextEntry::make('email')
-                            ->label('Email'),
-                        TextEntry::make('medico.name')
-                            ->label('Médico de cabecera'),
+                            ->label('Email')
+                            ->default('N/A'),
                         TextEntry::make('afiliado')
-                            ->label('Afiliado'),
-                        TextEntry::make('obra_social')
-                            ->label('Obra social'),
+                            ->label('Afiliado')
+                            ->default('N/A'),
+                        TextEntry::make('direccion')
+                            ->label('Dirección')
+                            ->default('N/A'),
                     ]),
                 RepeatableEntry::make('historiasClinicas')
                     ->label('')

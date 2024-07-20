@@ -20,6 +20,7 @@ class Paciente extends Model
         'obra_social',
         'afiliado',
         'fecha_nacimiento',
+        'direccion',
         'medico_id'
     ];
 

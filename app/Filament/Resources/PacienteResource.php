@@ -26,18 +26,22 @@ class PacienteResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nombre')
-                    ->placeholder('Nombre del paciente')
-                    ->required(),
-                Forms\Components\TextInput::make('apellido')
-                    ->placeholder('Apellido del paciente')
-                    ->required(),
+                Forms\Components\Split::make([
+                    Forms\Components\TextInput::make('nombre')
+                        ->placeholder('Nombre del paciente')
+                        ->required(),
+                    Forms\Components\TextInput::make('apellido')
+                        ->placeholder('Apellido del paciente')
+                        ->required(),
+                    Forms\Components\TextInput::make('dni')
+                        ->placeholder('DNI sin puntos ni guiones')
+                        ->label('DNI')
+                        ->required()
+                ])
+                ->columnSpan('full')
+                ->columns(3),
                 Forms\Components\Select::make('obra_social')
                     ->options(ObrasSociales::class),
-                Forms\Components\TextInput::make('dni')
-                    ->placeholder('DNI sin puntos ni guiones')
-                    ->label('DNI')
-                    ->required(),
                 Forms\Components\TextInput::make('afiliado')
                     ->placeholder('Nro de Afiliado')
                     ->label('Nro Afiliado'),
@@ -51,6 +55,9 @@ class PacienteResource extends Resource
                     ->label('Fecha de Nacimiento')
                     ->native(false)
                     ->placeholder('01/01/1990'),
+                Forms\Components\TextInput::make('direccion')
+                    ->placeholder('Dirección del paciente')
+                    ->label('Dirección'),
                 Forms\Components\Hidden::make('medico_id')
                     ->default(Auth::user()->id),
             ]);
