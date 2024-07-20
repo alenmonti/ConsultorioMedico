@@ -69,8 +69,8 @@ class TurnoResource extends Resource
         return $table
             ->defaultSort('hora', 'asc')
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Creado')
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Modificado')
                     ->sortable()
                     ->since()
                     ->color('gray'),
