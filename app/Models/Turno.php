@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Casts\TimeCast;
 use App\Enums\EstadosTurno;
+use App\Models\Scopes\orderByDHU;
 use App\Models\Scopes\Own;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -43,6 +44,7 @@ class Turno extends Model
     protected static function booted()
     {
         static::addGlobalScope(Own::class);
+        static::addGlobalScope(orderByDHU::class);
     }
 
     public function scopeToday($query)

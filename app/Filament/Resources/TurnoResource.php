@@ -67,7 +67,6 @@ class TurnoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('hora', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Modificado')
