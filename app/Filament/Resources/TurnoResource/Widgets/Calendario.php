@@ -90,9 +90,9 @@ class Calendario extends FullCalendarWidget
                 ->searchable()
                 ->required(),
             Select::make('estado')
-                ->default('pendiente')
                 ->required()
-                ->options(EstadosTurno::class),
+                ->options(EstadosTurno::class)
+                ->default(EstadosTurno::Pendiente),
                 ]),
             Textarea::make('notas')
                 ->label('Notas')
@@ -101,7 +101,7 @@ class Calendario extends FullCalendarWidget
                 ->columnSpan(2)
                 ->autosize(),
             Hidden::make('medico_id')
-                ->default(auth()->user()->id),
+                ->default(Auth::user()->id),
         ];
     }
 
@@ -121,6 +121,8 @@ class Calendario extends FullCalendarWidget
                     function (Form $form, array $arguments) {
                         $form->fill([
                             'fecha' => $arguments['start'] ?? null,
+                            'estado' => EstadosTurno::Pendiente,
+                            'medico_id' => Auth::user()->id
                         ]);
                     }
                 )
