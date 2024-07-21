@@ -91,8 +91,9 @@ class PacienteResource extends Resource
                 TextColumn::make('obra_social')
                         ->searchable()
                         ->badge(),
-                    TextColumn::make('fecha_nacimiento')->label('Nacimiento')
+                TextColumn::make('fecha_nacimiento')->label('Nacimiento')
                     ->state(function ($record) {
+                        if (!$record->fecha_nacimiento) return null;
                         $fecha = \Carbon\Carbon::parse($record->fecha_nacimiento);
                         return $fecha->format('d/m/Y').', '.$fecha->age.' años';
                     })

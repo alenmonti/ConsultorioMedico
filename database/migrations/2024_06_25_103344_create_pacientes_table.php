@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('telefono')->nullable();
             $table->string('dni');
-            $table->string('afiliado')->nullable();
+            $table->string('afiliado');
             $table->date('fecha_nacimiento');
             $table->foreignId('medico_id')->references('id')->on('users');
             $table->timestamps();

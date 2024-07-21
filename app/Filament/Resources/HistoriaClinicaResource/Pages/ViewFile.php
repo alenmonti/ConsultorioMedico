@@ -51,7 +51,7 @@ class ViewFile extends Page implements HasForms, HasInfolists
             Hidden::make('paciente_id'),
             DatePicker::make('fecha')
                 ->native(false)
-                ->placeholder('--/--/----')
+                ->default(now())
                 ->required(),
             Textarea::make('diagnostico')
                 ->placeholder('Diagnóstico del paciente')
@@ -106,14 +106,17 @@ class ViewFile extends Page implements HasForms, HasInfolists
                             ->state(function () {return $this->paciente->nombre.' '.$this->paciente->apellido;})
                             ->label('Nombre'),
                         TextEntry::make('fecha_nacimiento')
-                            ->date('d/m/Y')
-                            ->label('Fecha de nacimiento')
-                            ->default('N/A')
-                            ->markdown(),
+                            ->state(function () {
+                                if(!$this->paciente->fecha_nacimiento) return 'N/A';
+                                return Carbon::parse($this->paciente->fecha_nacimiento)->format('d/m/Y');
+                            })
+                            ->label('Fecha de nacimiento'),
                         TextEntry::make('fecha_nacimiento')
-                            ->state(function () {return Carbon::parse($this->paciente->fecha_nacimiento)->age.' años';})
-                            ->label('Edad')
-                            ->default('N/A'),
+                            ->state(function () {
+                                if(!$this->paciente->fecha_nacimiento) return 'N/A';
+                                return Carbon::parse($this->paciente->fecha_nacimiento)->age.' años';
+                            })
+                            ->label('Edad'),
                         TextEntry::make('obra_social')
                             ->label('Obra social')
                             ->default('N/A'),
