@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('turnos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('paciente_id')->constrained();
-            $table->foreignId('medico_id')->references('id')->on('users');
+            $table->foreignId('medico_id')->references('id')->on('users')->onDelete('cascade');
             $table->dateTime('fecha');
             $table->string('estado');
             $table->text('notas')->nullable();

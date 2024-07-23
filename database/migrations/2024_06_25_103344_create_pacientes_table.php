@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('dni');
             $table->string('afiliado');
             $table->date('fecha_nacimiento');
-            $table->foreignId('medico_id')->references('id')->on('users');
+            $table->foreignId('medico_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('horarios', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('medico_id')->references('id')->on('users');
+            $table->foreignId('medico_id')->references('id')->on('users')->onDelete('cascade');
             $table->enum('dia', ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']);
             $table->time('desde');
             $table->time('hasta');

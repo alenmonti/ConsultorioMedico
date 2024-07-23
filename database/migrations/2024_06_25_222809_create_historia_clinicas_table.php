@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('historias_clinicas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('paciente_id')->constrained();
+            $table->foreignId('paciente_id')->constrained()->onDelete('cascade');
             $table->text('motivo')->nullable();
             $table->text('diagnostico')->nullable();
             $table->text('estudios')->nullable();
