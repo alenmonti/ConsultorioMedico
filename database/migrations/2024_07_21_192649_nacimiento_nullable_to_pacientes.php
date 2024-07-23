@@ -24,9 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('pacientes', function (Blueprint $table) {
-            $table->date('fecha_nacimiento')->change();
-            $table->string('telefono')->change();
-            $table->string('afiliado')->change();
+            $table->date('fecha_nacimiento')->nullable(false)->change();
+            $table->string('telefono')->nullable(false)->change();
+            $table->string('afiliado')->nullable(false)->change();
         });
     }
 };
