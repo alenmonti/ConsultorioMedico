@@ -52,6 +52,7 @@ class TurnoResource extends Resource
             Forms\Components\Select::make('estado')
                 ->default('pendiente')
                 ->required()
+                ->searchable()
                 ->options(EstadosTurno::class),
             Forms\Components\Textarea::make('notas')
                 ->label('Notas')

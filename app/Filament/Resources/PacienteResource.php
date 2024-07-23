@@ -41,7 +41,8 @@ class PacienteResource extends Resource
                 ->columnSpan('full')
                 ->columns(3),
                 Forms\Components\Select::make('obra_social')
-                    ->options(ObrasSociales::class),
+                    ->options(ObrasSociales::class)
+                    ->searchable(),
                 Forms\Components\TextInput::make('afiliado')
                     ->placeholder('Nro de Afiliado')
                     ->label('Nro Afiliado'),

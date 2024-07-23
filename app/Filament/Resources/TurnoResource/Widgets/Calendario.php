@@ -91,6 +91,7 @@ class Calendario extends FullCalendarWidget
                 ->required(),
             Select::make('estado')
                 ->required()
+                ->searchable()
                 ->options(EstadosTurno::class)
                 ->default(EstadosTurno::Pendiente),
                 ]),

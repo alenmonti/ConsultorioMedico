@@ -32,6 +32,7 @@ class HorarioResource extends Resource
             ->schema([
                 Forms\Components\Select::make('dia')
                     ->options(Dias::class)
+                    ->searchable()
                     ->required(),
                 Forms\Components\Select::make('intervalo')
                     ->options([
@@ -43,6 +44,7 @@ class HorarioResource extends Resource
                         '00:45' => '45 minutos',
                         '01:00' => '1 hora',
                     ])
+                    ->searchable()
                     ->required(),
                 TimePickerField::make('desde')
                     ->default('09:00')
