@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Enums\ObrasSociales;
 use App\Filament\Resources\HistoriaClinicaResource\Pages\ViewHistoriaClinica;
 use App\Filament\Resources\PacienteResource\Pages;
 use App\Filament\Resources\PacienteResource\RelationManagers;
@@ -41,7 +40,22 @@ class PacienteResource extends Resource
                 ->columnSpan('full')
                 ->columns(3),
                 Forms\Components\Select::make('obra_social')
-                    ->options(ObrasSociales::class)
+                    ->options(config('paciente.obras_sociales'))
+                    // Get the search results from config, if the search is not found, return the search itself
+                    ->getSearchResultsUsing(function ($search) {
+                        $default = collect(config('paciente.obras_sociales'))
+                            ->filter(function ($obra_social, $key) use ($search) {
+                                return str_contains($key, $search) || str_contains($obra_social, $search);
+                            })
+                            ->mapWithKeys(function ($obra_social, $key) {
+                                return [$key => $obra_social];
+                            });
+                        if($default->isEmpty()) {
+                            return [$search => ucfirst($search)];
+                        } else {
+                            return $default;
+                        }
+                    })
                     ->searchable(),
                 Forms\Components\TextInput::make('afiliado')
                     ->placeholder('Nro de Afiliado')
@@ -91,7 +105,9 @@ class PacienteResource extends Resource
                     ->color('warning'),
                 TextColumn::make('obra_social')
                         ->searchable()
-                        ->badge(),
+                        ->badge()
+                        ->state(fn($record) => config('paciente.obras_sociales')[$record->obra_social] ?? ucfirst($record->obra_social))
+                        ->color(fn($record) => config('paciente.obras_sociales_colores')[$record->obra_social] ?? 'gray'),
                 TextColumn::make('fecha_nacimiento')->label('Nacimiento')
                     ->state(function ($record) {
                         if (!$record->fecha_nacimiento) return null;
@@ -101,7 +117,7 @@ class PacienteResource extends Resource
                     ->searchable(),
                 TextColumn::make('medico.name')->label('Médico')
                     ->state(function ($record) {
-                        return ucfirst($record->medico->name);
+                        return ucfirst($record->medico->name.' '.$record->medico->surname);
                     }),
             ])
             ->filters([
