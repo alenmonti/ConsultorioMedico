@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Models\{Paciente, User};
 use App\Observers\{PacienteObserver, UserObserver};
+use Filament\Actions\CreateAction;
 use Filament\Infolists\Components\Fieldset;
 use Filament\Tables\Actions\{DeleteAction, EditAction, ViewAction};
 use Filament\Tables\Enums\FiltersLayout;
@@ -35,6 +36,10 @@ class AppServiceProvider extends ServiceProvider
 
         ViewAction::configureUsing(function (ViewAction $action): void {
             $action->iconButton();
+        });
+
+        CreateAction::configureUsing(function (CreateAction $action): void {
+            $action->createAnother(false);
         });
 
         Table::configureUsing(function (Table $table): void {
