@@ -66,8 +66,11 @@ class HistoriaClinicaResource extends Resource
                 Textarea::make('tratamiento')
                     ->placeholder('Tratamiento del paciente')
                     ->autosize(),
-                Textarea::make('medicamentos')
-                    ->placeholder('Medicamentos recetados')
+                Textarea::make('evolucion')
+                    ->placeholder('Evolución del paciente')
+                    ->autosize(),
+                Textarea::make('antecedentes')
+                    ->placeholder('Antecedentes del paciente')
                     ->autosize(),
                 Textarea::make('examen_fisico')
                     ->placeholder('Resultados del examen fisico')

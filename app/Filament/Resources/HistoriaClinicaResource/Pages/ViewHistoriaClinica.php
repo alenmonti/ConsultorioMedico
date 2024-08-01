@@ -68,9 +68,12 @@ class ViewHistoriaClinica extends ViewRecord
                         Fieldset::make('Tratamiento')
                             ->columnSpan(1)
                             ->schema([TextEntry::make('tratamiento')->label('')->columnSpan(2)]),
-                        Fieldset::make('Medicamentos')
+                        Fieldset::make('Evolucion')
                             ->columnSpan(1)
-                            ->schema([TextEntry::make('medicamentos')->label('')->columnSpan(2)]),
+                            ->schema([TextEntry::make('evolucion')->label('')->columnSpan(2)]),
+                        Fieldset::make('Antecedentes')
+                            ->columnSpan(1)
+                            ->schema([TextEntry::make('antecedentes')->label('')->columnSpan(2)]),
                         Fieldset::make('Examen_fisico')
                             ->columnSpan(1)
                             ->schema([TextEntry::make('examen_fisico')->label('')->columnSpan(2)]),

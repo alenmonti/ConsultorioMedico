@@ -17,9 +17,10 @@ class HistoriaClinica extends Model
         'diagnostico',
         'estudios',
         'tratamiento',
-        'medicamentos',
         'examen_fisico',
         'resultados',
+        'evolucion',
+        'antecedentes',
         'fecha'
     ];
 

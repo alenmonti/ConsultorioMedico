@@ -65,8 +65,11 @@ class ViewFile extends Page implements HasForms, HasInfolists
             Textarea::make('tratamiento')
                 ->placeholder('Tratamiento del paciente')
                 ->autosize(),
-            Textarea::make('medicamentos')
-                ->placeholder('Medicamentos recetados')
+            Textarea::make('evolucion')
+                ->placeholder('Evolución del paciente')
+                ->autosize(),
+            Textarea::make('antecedentes')
+                ->placeholder('Antecedentes del paciente')
                 ->autosize(),
             Textarea::make('examen_fisico')
                 ->placeholder('Resultados del examen fisico')
@@ -174,10 +177,14 @@ class ViewFile extends Page implements HasForms, HasInfolists
                                 ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->tratamiento)
                                 ->schema([TextEntry::make('tratamiento')->label('')->columnSpan(2)]),
-                            Fieldset::make('Medicamentos')
+                            Fieldset::make('Evolucion')
                                 ->columnSpan(1)
-                                ->hidden(fn($record) => !$record->medicamentos)
-                                ->schema([TextEntry::make('medicamentos')->label('')->columnSpan(2)]),
+                                ->hidden(fn($record) => !$record->evolucion)
+                                ->schema([TextEntry::make('evolucion')->label('')->columnSpan(2)]),
+                            Fieldset::make('Antecedentes')
+                                ->columnSpan(1)
+                                ->hidden(fn($record) => !$record->antecedentes)
+                                ->schema([TextEntry::make('antecedentes')->label('')->columnSpan(2)]),
                             Fieldset::make('Examen_fisico')
                                 ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->examen_fisico)
