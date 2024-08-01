@@ -6,12 +6,13 @@ use App\Filament\Resources\HistoriaClinicaResource;
 use App\Models\HistoriaClinica;
 use App\Models\Paciente;
 use Carbon\Carbon;
-use Faker\Provider\ar_EG\Text;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -52,31 +53,34 @@ class ViewFile extends Page implements HasForms, HasInfolists
             DatePicker::make('fecha')
                 ->native(false)
                 ->default(now())
-                ->required(),
-            Textarea::make('diagnostico')
-                ->placeholder('Diagnóstico del paciente')
-                ->autosize(),
-            Textarea::make('motivo')
-                ->placeholder('Motivo de la consulta')
-                ->autosize(),
-            Textarea::make('estudios')
-                ->placeholder('Estudios realizados')
-                ->autosize(),
-            Textarea::make('tratamiento')
-                ->placeholder('Tratamiento del paciente')
-                ->autosize(),
-            Textarea::make('evolucion')
-                ->placeholder('Evolución del paciente')
-                ->autosize(),
-            Textarea::make('antecedentes')
-                ->placeholder('Antecedentes del paciente')
-                ->autosize(),
+                ->required()
+                ->columnSpan(2),
+            TextInput::make('antecedentes')
+                ->placeholder('Antecedentes del paciente'),
+            TextInput::make('motivo')
+                ->placeholder('Motivo de la consulta'),
             Textarea::make('examen_fisico')
                 ->placeholder('Resultados del examen fisico')
-                ->autosize(),
+                ->autosize()
+                ->columnSpan(2),
+            Textarea::make('evolucion')
+                ->placeholder('Evolución del paciente')
+                ->autosize()
+                ->columnSpan(2),
             Textarea::make('resultados')
                 ->placeholder('Resultados de los estudios')
-                ->autosize(),
+                ->autosize()
+                ->columnSpan(2),
+            Textarea::make('diagnostico')
+                ->placeholder('Diagnóstico del paciente')
+                ->autosize()
+                ->columnSpan(2),
+            RichEditor::make('estudios')
+                ->placeholder('Estudios realizados')
+                ->columnSpan(1),
+            RichEditor::make('tratamiento')
+                ->placeholder('Tratamiento del paciente')
+                ->columnSpan(1),
         ]),
     ];
     }
@@ -161,38 +165,38 @@ class ViewFile extends Page implements HasForms, HasInfolists
                         ->icon('heroicon-o-clipboard-document-list')
                         ->columns(2)
                         ->schema([
+                            Fieldset::make('Antecedentes')
+                                ->columnSpan(1)
+                                ->hidden(fn($record) => !$record->antecedentes)
+                                ->schema([TextEntry::make('antecedentes')->label('')->columnSpan(2)]),
                             Fieldset::make('Motivo')
                                 ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->motivo)
                                 ->schema([TextEntry::make('motivo')->label('')->columnSpan(2)]),
+                            Fieldset::make('Examen_fisico')
+                                ->columnSpan(2)
+                                ->hidden(fn($record) => !$record->examen_fisico)
+                                ->schema([TextEntry::make('examen_fisico')->label('')->columnSpan(2)]),
+                            Fieldset::make('Evolucion')
+                                ->columnSpan(2)
+                                ->hidden(fn($record) => !$record->evolucion)
+                                ->schema([TextEntry::make('evolucion')->label('')->columnSpan(2)]),
+                            Fieldset::make('Resultados')
+                                ->columnSpan(2)
+                                ->hidden(fn($record) => !$record->resultados)
+                                ->schema([TextEntry::make('resultados')->label('')->columnSpan(2)]),
                             Fieldset::make('Diagnostico')
-                                ->columnSpan(1)
+                                ->columnSpan(2)
                                 ->hidden(fn($record) => !$record->diagnostico)
                                 ->schema([TextEntry::make('diagnostico')->label('')->columnSpan(2)]),
                             Fieldset::make('Estudios')
                                 ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->estudios)
-                                ->schema([TextEntry::make('estudios')->label('')->columnSpan(2)]),
+                                ->schema([TextEntry::make('estudios')->label('')->columnSpan(2)->html()]),
                             Fieldset::make('Tratamiento')
                                 ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->tratamiento)
-                                ->schema([TextEntry::make('tratamiento')->label('')->columnSpan(2)]),
-                            Fieldset::make('Evolucion')
-                                ->columnSpan(1)
-                                ->hidden(fn($record) => !$record->evolucion)
-                                ->schema([TextEntry::make('evolucion')->label('')->columnSpan(2)]),
-                            Fieldset::make('Antecedentes')
-                                ->columnSpan(1)
-                                ->hidden(fn($record) => !$record->antecedentes)
-                                ->schema([TextEntry::make('antecedentes')->label('')->columnSpan(2)]),
-                            Fieldset::make('Examen_fisico')
-                                ->columnSpan(1)
-                                ->hidden(fn($record) => !$record->examen_fisico)
-                                ->schema([TextEntry::make('examen_fisico')->label('')->columnSpan(2)]),
-                            Fieldset::make('Resultados')
-                                ->columnSpan(1)
-                                ->hidden(fn($record) => !$record->resultados)
-                                ->schema([TextEntry::make('resultados')->label('')->columnSpan(2)]),
+                                ->schema([TextEntry::make('tratamiento')->label('')->columnSpan(2)->html()]),
                         ]),
                     ]),
             ]);
