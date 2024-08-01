@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\{Paciente, User};
 use App\Observers\{PacienteObserver, UserObserver};
 use Filament\Actions\CreateAction;
+use Filament\Forms\Components\RichEditor;
 use Filament\Infolists\Components\Fieldset;
 use Filament\Tables\Actions\{DeleteAction, EditAction, ViewAction};
 use Filament\Tables\Enums\FiltersLayout;
@@ -51,6 +52,10 @@ class AppServiceProvider extends ServiceProvider
 
         Fieldset::configureUsing(function (Fieldset $fieldset): void {
             $fieldset->extraAttributes(['style' => 'height: 100%;'], true);
+        });
+
+        RichEditor::configureUsing(function (RichEditor $richEditor): void {
+            $richEditor->toolbarButtons(['bulletList', 'orderedList', 'bold', 'italic', 'redo', 'undo']);
         });
 
         User::observe(UserObserver::class);
