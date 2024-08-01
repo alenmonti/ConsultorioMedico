@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Scopes\Own;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Paciente extends Model
 {
@@ -20,6 +21,7 @@ class Paciente extends Model
         'afiliado',
         'fecha_nacimiento',
         'direccion',
+        'documento',
         'medico_id'
     ];
 
@@ -51,5 +53,10 @@ class Paciente extends Model
             $options[$paciente->id] = $paciente->nombre.' '.$paciente->apellido.', '.$paciente->dni;
         }
         return $options;
+    }
+
+    public function getDocumentoLinkAttribute()
+    {
+        return $this->documento ? asset('storage/'.$this->documento) : null;
     }
 }

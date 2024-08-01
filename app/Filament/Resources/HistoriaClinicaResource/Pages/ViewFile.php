@@ -7,7 +7,9 @@ use App\Models\HistoriaClinica;
 use App\Models\Paciente;
 use Carbon\Carbon;
 use Filament\Actions\CreateAction;
+use Filament\Actions\Action as FilamentAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
@@ -97,6 +99,17 @@ class ViewFile extends Page implements HasForms, HasInfolists
                 ->label('Nueva Evolución')
                 ->createAnother(false)
                 ->form($this->historiaForm()),
+
+            FilamentAction::make('addDocument')
+                ->icon('heroicon-o-document-plus')
+                ->label('')
+                ->button()
+                ->color('info')
+                ->form([FileUpload::make('documento')->label('Documento')->required()->directory('documents')->maxSize(10024)->acceptedFileTypes(['application/pdf'])])
+                ->action(function ($data) {
+                    $this->paciente->documento = $data['documento'];
+                    $this->paciente->save();
+                }),
         ];
     }
 
@@ -198,7 +211,7 @@ class ViewFile extends Page implements HasForms, HasInfolists
                                 ->hidden(fn($record) => !$record->tratamiento)
                                 ->schema([TextEntry::make('tratamiento')->label('')->columnSpan(2)->html()]),
                         ]),
-                    ]),
+                    ])
             ]);
     }
 
