@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Roles;
 use App\Filament\Resources\HistoriaClinicaResource\Pages\ViewHistoriaClinica;
 use App\Filament\Resources\PacienteResource\Pages;
 use App\Filament\Resources\PacienteResource\RelationManagers;
@@ -74,7 +75,7 @@ class PacienteResource extends Resource
                     ->placeholder('Dirección del paciente')
                     ->label('Dirección'),
                 Forms\Components\Hidden::make('medico_id')
-                    ->default(Auth::user()->id),
+                    ->default(Auth::user()->medico_id),
             ]);
     }
 
@@ -128,15 +129,14 @@ class PacienteResource extends Resource
                     ->icon('heroicon-o-clipboard-document-list')
                     ->color('info')
                     ->iconButton()
-                    ->url(fn (Paciente $record) => HistoriaClinicaResource::getUrl('viewFile', ['paciente_id' => $record->id])),
+                    ->url(fn (Paciente $record) => HistoriaClinicaResource::getUrl('viewFile', ['paciente_id' => $record->id]))
+                    ->hidden(fn () => role(Roles::Secretario)),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                    ->requiresConfirmation(),
+                    ->requiresConfirmation()
+                    ->hidden(fn () => role(Roles::Secretario)),
             ])
             ->bulkActions([
-                // Tables\Actions\BulkActionGroup::make([
-                //     Tables\Actions\DeleteBulkAction::make(),
-                // ]),
             ]);
     }
 

@@ -3,10 +3,9 @@
 namespace App\Policies;
 
 use App\Enums\Roles;
-use App\Models\HistoriaClinica;
 use App\Models\User;
 
-class HistoriaClinicaPolicy
+class TurnoPolicy
 {
     /**
      * Create a new policy instance.
@@ -14,9 +13,6 @@ class HistoriaClinicaPolicy
 
     function viewAny(User $user)
     {
-        // return $user->rol === Roles::Admin;
-        return true;
+        return $user->rol === Roles::Admin;
     }
-
-    
 }

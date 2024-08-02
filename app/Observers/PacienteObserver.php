@@ -8,6 +8,6 @@ class PacienteObserver
 {
     public function creating(Paciente $paciente)
     {
-        $paciente->medico_id = auth()->id();
+        $paciente->medico_id = auth()->user()->medico_id;
     }
 }

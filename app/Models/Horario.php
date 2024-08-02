@@ -56,8 +56,7 @@ class Horario extends Model
     public static function booted()
     {
         static::creating(function ($horario) {
-            // Can be created before auth
-            $horario->medico_id = $horario->medico_id ?? auth()->id();
+            $horario->medico_id = $horario->medico_id ?? auth()->user()->medico_id;
         });
 
         static::addGlobalScope(Own::class);

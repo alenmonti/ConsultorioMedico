@@ -23,7 +23,7 @@ class Calendario extends FullCalendarWidget
      */
     public function fetchEvents(array $fetchInfo): array
     {
-        return Turno::query()
+        $turnos = Turno::query()
             ->where('fecha', '>=', $fetchInfo['start'])
             ->where('fecha', '<=', $fetchInfo['end'])
             ->get()
@@ -40,6 +40,15 @@ class Calendario extends FullCalendarWidget
                     'display' => 'block',
                 ])
             ->all();
+        $diasNoDisponibles = user()->diasNoDisponibles($fetchInfo['start'], $fetchInfo['end']);
+        $disableDays = [];
+        foreach ($diasNoDisponibles as $dia) {
+        $disableDays[] = ['start' => $dia, 'end' => $dia, 'display' => 'background', 'backgroundColor' => '#ff5858', 'allDay' => true, 'disableClick' => true];
+        }
+        
+        // $daysOfWeek = user()->diasDeSemanaDisponibles();
+        // $disableDays = [['daysOfWeek' => $daysOfWeek, 'display' => 'inverse-background', 'backgroundColor' => '#ff5858']];
+        return array_merge($turnos, $disableDays);
     }
 
     public function config(): array
@@ -54,10 +63,9 @@ class Calendario extends FullCalendarWidget
             ],
             'views' => [
                 'dayGrid' => [
-
                 ],
-            ]
-            
+            ],
+            'dayClick' => fn (array $info) => false,
         ];
     }
 
@@ -102,7 +110,7 @@ class Calendario extends FullCalendarWidget
                 ->columnSpan(2)
                 ->autosize(),
             Hidden::make('medico_id')
-                ->default(Auth::user()->id),
+                ->default(Auth::user()->medico_id),
         ];
     }
 
@@ -123,10 +131,17 @@ class Calendario extends FullCalendarWidget
                         $form->fill([
                             'fecha' => $arguments['start'] ?? null,
                             'estado' => EstadosTurno::Pendiente,
-                            'medico_id' => Auth::user()->id
+                            'medico_id' => Auth::user()->medico_id
                         ]);
                     }
                 )
         ];
     }
+
+    // public function onDateSelect(string $start, ?string $end, bool $allDay, ?array $view, ?array $resource): void
+    // {
+    //     if(user()->horariosDisponibles($start)){
+    //         parent::onDateSelect($start, $end, $allDay, $view, $resource);
+    //     }
+    // }
 }

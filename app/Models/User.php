@@ -36,6 +36,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         'surname',
         'email',
         'rol',
+        'medico_id',
         'password',
     ];
 
@@ -83,7 +84,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         $enDay = Carbon::parse($fecha)->dayOfWeek;
         $diaSemana = match ($enDay) { 0 => 'domingo', 1 => 'lunes', 2 => 'martes', 3 => 'miercoles', 4 => 'jueves', 5 => 'viernes', 6 => 'sabado',};
         $horarios = [];
-        $configHorarios = $this->horarios()->where('dia', $diaSemana)->get();
+        $configHorarios = Horario::where('dia', $diaSemana)->get();
         if(!$configHorarios->isEmpty()){
             $horariosArray = [];
             foreach ($configHorarios as $horario) {
@@ -100,9 +101,32 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
             $horarios = [];
         }
 
-        $horariosOcupados = $this->turnos()->where('fecha', $fecha)->pluck('hora')->toArray();
+        $horariosOcupados = Turno::where('fecha', $fecha)->pluck('hora')->toArray();
         $horariosDisponibles = array_diff($horarios, $horariosOcupados);
 
         return array_combine($horariosDisponibles, $horariosDisponibles);
+    }
+
+    public function diasDeSemanaDisponibles()
+    {
+        $horarios = Horario::get();
+        $dias = $horarios->map(function ($horario) {
+            return match($horario->dia->getLabel()) { 'Domingo' => 0, 'Lunes' => 1, 'Martes' => 2, 'Miercoles' => 3, 'Jueves' => 4, 'Viernes' => 5, 'Sabado' => 6,};
+        });
+        return $dias->toArray();
+    }
+
+    public function diasNoDisponibles($desde, $hasta)
+    {
+        $fechaDesde = Carbon::parse($desde);
+        $fechaHasta = Carbon::parse($hasta);
+        $dias = [];
+        while ($fechaDesde <= $fechaHasta) {
+            if(!$this->horariosDisponibles($fechaDesde)){
+                $dias[] = $fechaDesde->format('Y-m-d');
+            }
+            $fechaDesde = $fechaDesde->addDay();
+        }
+        return $dias;
     }
 }

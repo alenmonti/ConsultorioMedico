@@ -61,7 +61,7 @@ class TurnoResource extends Resource
                 ->columnSpan(2)
                 ->autosize(),
             Forms\Components\Hidden::make('medico_id')
-                ->default(auth()->user()->id),
+                ->default(auth()->user()->medico_id),
             ]);
     }
 

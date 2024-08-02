@@ -2,6 +2,7 @@
  
 namespace App\Filament\Pages;
 
+use App\Enums\Roles;
 use Illuminate\Contracts\Support\Htmlable;
 
 class Dashboard extends \Filament\Pages\Dashboard
@@ -17,5 +18,10 @@ class Dashboard extends \Filament\Pages\Dashboard
     public function getTitle(): string|Htmlable
     {
         return 'Turnos del día';
+    }
+
+    public static function canAccess(): bool
+    {
+        return !role(Roles::Secretario);
     }
 }
