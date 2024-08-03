@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TurnoResource\Widgets;
 
 use App\Enums\EstadosTurno;
+use App\Forms\Components\TextInfo;
 use App\Models\Paciente;
 use App\Models\Turno;
 use Carbon\Carbon;
@@ -17,6 +18,7 @@ use Saade\FilamentFullCalendar\Actions\{EditAction, DeleteAction, CreateAction};
 class Calendario extends FullCalendarWidget
 {
     public Model | string | null $model = Turno::class;
+
     /**
      * FullCalendar will call this function whenever it needs new event data.
      * This is triggered when the user clicks prev/next or switches views on the calendar.
@@ -72,6 +74,20 @@ class Calendario extends FullCalendarWidget
     public function getFormSchema(): array
     {
         return [
+            Select::make('tipo')
+                ->required()
+                ->searchable()
+                ->label('Tipo de turno')
+                ->options([
+                    'turno' => 'Turno',
+                    'contra_turno' => 'Contra turno',
+                ])
+                ->default('turno')
+                ->selectablePlaceholder(false)
+                ->live(),
+            TextInfo::make('info')
+                ->hidden(fn(Get $get) => $get('tipo') == 'turno')
+                ->columnSpan(2),
             Grid::make('')
                 ->columns(2)
                 ->schema([
@@ -86,7 +102,8 @@ class Calendario extends FullCalendarWidget
                 ->searchable()
                 ->options( function (Get $get) {
                     $fecha = Carbon::parse($get('fecha'))->format('Y-m-d');
-                    return Auth::user()->horariosDisponibles($fecha);
+                    $tipo = $get('tipo') ?? 'turno';
+                    return Auth::user()->horariosDisponibles($fecha, $tipo);
                 })
             ]),
             Grid::make('')
@@ -131,7 +148,8 @@ class Calendario extends FullCalendarWidget
                         $form->fill([
                             'fecha' => $arguments['start'] ?? null,
                             'estado' => EstadosTurno::Pendiente,
-                            'medico_id' => Auth::user()->medico_id
+                            'medico_id' => Auth::user()->medico_id,
+                            'tipo' => 'turno',
                         ]);
                     }
                 )

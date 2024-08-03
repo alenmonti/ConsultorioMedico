@@ -85,7 +85,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         return $this->belongsTo(User::class, 'medico_id', 'id');
     }
 
-    public function horariosDisponibles($fecha)
+    public function horariosDisponibles($fecha, $turnoTipo = 'turno')
     {
         $enDay = Carbon::parse($fecha)->dayOfWeek;
         $diaSemana = match ($enDay) { 0 => 'domingo', 1 => 'lunes', 2 => 'martes', 3 => 'miercoles', 4 => 'jueves', 5 => 'viernes', 6 => 'sabado',};
@@ -108,7 +108,12 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         }
 
         $horariosOcupados = Turno::where('fecha', $fecha)->pluck('hora')->toArray();
-        $horariosDisponibles = array_diff($horarios, $horariosOcupados);
+
+        if($turnoTipo != 'turno'){
+            $horariosDisponibles = array_intersect($horarios, $horariosOcupados);
+        } else {
+            $horariosDisponibles = array_diff($horarios, $horariosOcupados);
+        }
 
         return array_combine($horariosDisponibles, $horariosDisponibles);
     }
