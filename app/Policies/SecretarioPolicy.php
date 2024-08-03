@@ -5,7 +5,7 @@ namespace App\Policies;
 use App\Enums\Roles;
 use App\Models\User;
 
-class UserPolicy
+class SecretarioPolicy
 {
     /**
      * Create a new policy instance.

@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Roles;
+use App\Models\Scopes\Own;
 use Carbon\Carbon;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
@@ -77,6 +78,11 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
     public function horarios()
     {
         return $this->hasMany(Horario::class, 'medico_id', 'id');
+    }
+
+    public function medico()
+    {
+        return $this->belongsTo(User::class, 'medico_id', 'id');
     }
 
     public function horariosDisponibles($fecha)

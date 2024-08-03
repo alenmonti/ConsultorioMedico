@@ -24,6 +24,7 @@ class HorarioResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-clock';
     protected static ?string $title = 'Disponibilidad Horaria';
     protected static ?string $navigationLabel = 'Horarios';
+    protected static ?string $navigationGroup = 'Configuaración';
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
