@@ -20,6 +20,7 @@ class Turno extends Model
         'fecha',
         'hora',
         'estado',
+        'tipo',
         'notas'
     ];
 

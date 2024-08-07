@@ -67,7 +67,6 @@ class Calendario extends FullCalendarWidget
                 'dayGrid' => [
                 ],
             ],
-            'dayClick' => fn (array $info) => false,
         ];
     }
 
@@ -80,10 +79,9 @@ class Calendario extends FullCalendarWidget
                 ->label('Tipo de turno')
                 ->options([
                     'turno' => 'Turno',
-                    'contra_turno' => 'Contra turno',
+                    'sobre_turno' => 'Sobre Turno',
                 ])
                 ->default('turno')
-                ->selectablePlaceholder(false)
                 ->live(),
             TextInfo::make('info')
                 ->hidden(fn(Get $get) => $get('tipo') == 'turno')
@@ -148,8 +146,8 @@ class Calendario extends FullCalendarWidget
                         $form->fill([
                             'fecha' => $arguments['start'] ?? null,
                             'estado' => EstadosTurno::Pendiente,
-                            'medico_id' => Auth::user()->medico_id,
                             'tipo' => 'turno',
+                            'medico_id' => Auth::user()->medico_id,
                         ]);
                     }
                 )
