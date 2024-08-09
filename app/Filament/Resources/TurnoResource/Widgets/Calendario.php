@@ -8,8 +8,7 @@ use App\Models\Paciente;
 use App\Models\Turno;
 use Carbon\Carbon;
 use Filament\Forms\Components\{DatePicker, Grid, Hidden, Select, Textarea};
-use Filament\Forms\Form;
-use Filament\Forms\Get;
+use Filament\Forms\{Form, Get, Set};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
@@ -82,10 +81,10 @@ class Calendario extends FullCalendarWidget
                     'sobre_turno' => 'Sobre Turno',
                 ])
                 ->default('turno')
-                ->live(),
+                ->live()
+                ->afterStateUpdated(fn (Set $set) => $set('hora', null)),
             TextInfo::make('info')
-                ->hidden(fn(Get $get) => $get('tipo') == 'turno')
-                ->columnSpan(2),
+                ->hidden(fn(Get $get) => $get('tipo') == 'turno'),
             Grid::make('')
                 ->columns(2)
                 ->schema([
@@ -93,7 +92,8 @@ class Calendario extends FullCalendarWidget
                 ->required()
                 ->placeholder('Seleccione una fecha')
                 ->live()
-                ->native(false),
+                ->native(false)
+                ->afterStateUpdated(fn (Set $set) => $set('hora', null)),
             Select::make('hora')
                 ->required()
                 ->placeholder('Seleccione un horario')
@@ -122,7 +122,6 @@ class Calendario extends FullCalendarWidget
                 ->label('Notas')
                 ->placeholder('Notas adicionales')
                 ->rows(3)
-                ->columnSpan(2)
                 ->autosize(),
             Hidden::make('medico_id')
                 ->default(Auth::user()->medico_id),

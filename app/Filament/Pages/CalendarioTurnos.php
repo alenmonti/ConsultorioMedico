@@ -8,7 +8,7 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class CalendarioTurnos extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-calendar';
+    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
     protected static ?string $navigationLabel = 'Calendario';
 
     public function getTitle(): string | Htmlable

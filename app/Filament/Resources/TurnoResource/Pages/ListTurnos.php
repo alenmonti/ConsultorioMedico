@@ -36,6 +36,6 @@ class ListTurnos extends ListRecords
 
     public function getDefaultActiveTab(): string|int|null
     {
-        return 'hoy';
+        return 'todos';
     }
 }
