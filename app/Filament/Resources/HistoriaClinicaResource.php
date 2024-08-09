@@ -36,6 +36,11 @@ class HistoriaClinicaResource extends Resource
     protected static ?string $navigationLabel = 'Historias Clínicas';
     protected static ?int $navigationSort = 3;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return user()->rol === Roles::Admin;
+    }
+
     public static function form(Form $form): Form
     {
         return $form

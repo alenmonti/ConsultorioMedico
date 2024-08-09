@@ -13,6 +13,6 @@ class HistoriaClinicaPolicy
 
     function viewAny(User $user)
     {
-        return $user->rol === Roles::Admin;
+        return in_array($user->rol, [Roles::Admin, Roles::Medico]);
     }
 }
