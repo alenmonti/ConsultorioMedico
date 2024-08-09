@@ -1,7 +1,7 @@
 <div class="col-span-2">
     <x-filament-widgets::widget>
         <x-filament::section>
-            <div class="flex justify-evenly">
+            <div class="flex justify-evenly flex-col gap-2 md:flex-row">
                 <div class="flex">
                     <div class="color-box" style="background-color: #3490dc;"></div>
                     <p>Pendiente</p>

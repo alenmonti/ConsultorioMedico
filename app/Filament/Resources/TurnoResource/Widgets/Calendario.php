@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TurnoResource\Widgets;
 
 use App\Enums\EstadosTurno;
+use App\Enums\Roles;
 use App\Filament\Resources\HistoriaClinicaResource;
 use App\Forms\Components\TextInfo;
 use App\Models\Paciente;
@@ -140,7 +141,13 @@ class Calendario extends FullCalendarWidget
                     return redirect(HistoriaClinicaResource::getUrl('viewFile', ['paciente_id' => $turno->paciente_id]));
                 })
                 ->icon('heroicon-o-clipboard-document-list')
-                ->hidden(fn (Turno $turno) => !in_array($turno->estado, [EstadosTurno::Pendiente, EstadosTurno::Confirmado])),
+                ->hidden(function(Turno $turno) {
+                    if (user()->rol == Roles::Secretario) {
+                        return true;
+                    } else {
+                        return !in_array($turno->estado, [EstadosTurno::Pendiente, EstadosTurno::Confirmado]);
+                    }
+                }),
             EditAction::make()
                 ->extraAttributes(['class' => 'attend-button'])
                 ->color('info'),
