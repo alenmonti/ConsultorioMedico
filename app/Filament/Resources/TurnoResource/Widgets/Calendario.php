@@ -139,7 +139,8 @@ class Calendario extends FullCalendarWidget
                     $turno->update(['estado' => EstadosTurno::Atendido]);
                     return redirect(HistoriaClinicaResource::getUrl('viewFile', ['paciente_id' => $turno->paciente_id]));
                 })
-                ->icon('heroicon-o-clipboard-document-list'),
+                ->icon('heroicon-o-clipboard-document-list')
+                ->hidden(fn (Turno $turno) => !in_array($turno->estado, [EstadosTurno::Pendiente, EstadosTurno::Confirmado])),
             EditAction::make()
                 ->extraAttributes(['class' => 'attend-button'])
                 ->color('info'),
