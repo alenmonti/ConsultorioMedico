@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\TurnoResource\Widgets;
 
 use App\Enums\EstadosTurno;
+use App\Filament\Resources\HistoriaClinicaResource;
 use App\Forms\Components\TextInfo;
 use App\Models\Paciente;
 use App\Models\Turno;
 use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Forms\Components\{DatePicker, Grid, Hidden, Select, Textarea};
 use Filament\Forms\{Form, Get, Set};
 use Illuminate\Database\Eloquent\Model;
@@ -131,7 +133,16 @@ class Calendario extends FullCalendarWidget
     protected function modalActions(): array
     {
         return [
-            EditAction::make(),
+            Action::make('Atender')
+                ->label('Atender')
+                ->action(function (Turno $turno) {
+                    $turno->update(['estado' => EstadosTurno::Atendido]);
+                    return redirect(HistoriaClinicaResource::getUrl('viewFile', ['paciente_id' => $turno->paciente_id]));
+                })
+                ->icon('heroicon-o-clipboard-document-list'),
+            EditAction::make()
+                ->extraAttributes(['class' => 'attend-button'])
+                ->color('info'),
             DeleteAction::make(),
         ];
     }
