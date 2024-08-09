@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Resources\TurnoResource\Widgets\Calendario;
+use App\Filament\Resources\TurnoResource\Widgets\ColorGuide;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 
@@ -21,7 +22,8 @@ class CalendarioTurnos extends Page
     public function getHeaderWidgets(): array
     {
         return [
-            Calendario::make()
+            ColorGuide::class,
+            Calendario::make(),
         ];
     }
 }

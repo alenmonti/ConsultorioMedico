@@ -15,3 +15,10 @@ html.dark .fc-popover {
 .attend-button {
     margin-right: auto;
 }
+
+.color-box {
+    width: 25px;
+    height: 25px;
+    border-radius: 20%;
+    margin-right: 5px;
+}
