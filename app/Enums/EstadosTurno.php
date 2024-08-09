@@ -40,8 +40,8 @@ enum EstadosTurno: string implements HasLabel, HasColor
             self::Pendiente => '#3490dc',
             self::Confirmado => '#38c172',
             self::Cancelado => '#ec4d4c',
-            self::Ausente => '#f6993f',
-            self::Atendido => '#4a5568',
+            self::Ausente => '#4a5568',
+            self::Atendido => '#f6993f',
         };
     }
 
