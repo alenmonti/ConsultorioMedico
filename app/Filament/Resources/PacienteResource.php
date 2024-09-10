@@ -116,10 +116,10 @@ class PacienteResource extends Resource
                         return $fecha->format('d/m/Y').', '.$fecha->age.' años';
                     })
                     ->searchable(),
-                TextColumn::make('medico.name')->label('Médico')
-                    ->state(function ($record) {
-                        return ucfirst($record->medico->name.' '.$record->medico->surname);
-                    }),
+                // TextColumn::make('medico.name')->label('Médico')
+                //     ->state(function ($record) {
+                //         return ucfirst($record->medico->name.' '.$record->medico->surname);
+                //     }),
             ])
             ->filters([
                 //
