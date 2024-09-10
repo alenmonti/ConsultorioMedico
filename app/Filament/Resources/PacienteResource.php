@@ -27,11 +27,11 @@ class PacienteResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Split::make([
-                    Forms\Components\TextInput::make('nombre')
-                        ->placeholder('Nombre del paciente')
-                        ->required(),
                     Forms\Components\TextInput::make('apellido')
                         ->placeholder('Apellido del paciente')
+                        ->required(),
+                    Forms\Components\TextInput::make('nombre')
+                        ->placeholder('Nombre del paciente')
                         ->required(),
                     Forms\Components\TextInput::make('dni')
                         ->placeholder('DNI sin puntos ni guiones')
