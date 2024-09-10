@@ -22,61 +22,70 @@ class PacienteResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?int $navigationSort = 2;
 
+    public static function getForm() {
+        return [
+            Forms\Components\Split::make([
+                Forms\Components\TextInput::make('apellido')
+                    ->placeholder('Apellido del paciente')
+                    ->required(),
+                Forms\Components\TextInput::make('nombre')
+                    ->placeholder('Nombre del paciente')
+                    ->required(),
+                Forms\Components\TextInput::make('dni')
+                    ->placeholder('DNI sin puntos ni guiones')
+                    ->label('DNI')
+                    ->required()
+            ])
+            ->columnSpan('full')
+            ->columns(3),
+            Forms\Components\Grid::make()
+                ->columns(2)
+                ->columnSpan('full')
+                ->schema([
+                    Forms\Components\Select::make('obra_social')
+                        ->options(config('paciente.obras_sociales'))
+                        // Get the search results from config, if the search is not found, return the search itself
+                        ->getSearchResultsUsing(function ($search) {
+                            $default = collect(config('paciente.obras_sociales'))
+                                ->filter(function ($obra_social, $key) use ($search) {
+                                    return str_contains($key, $search) || str_contains($obra_social, $search);
+                                })
+                                ->mapWithKeys(function ($obra_social, $key) {
+                                    return [$key => $obra_social];
+                                });
+                            if($default->isEmpty()) {
+                                return [$search => ucfirst($search)];
+                            } else {
+                                return $default;
+                            }
+                        })
+                        ->searchable(),
+                    Forms\Components\TextInput::make('afiliado')
+                        ->placeholder('Nro de Afiliado')
+                        ->label('Nro Afiliado'),
+                    Forms\Components\TextInput::make('email')
+                        ->placeholder('Correo Electrónico')
+                        ->email(),
+                    Forms\Components\TextInput::make('telefono')
+                        ->placeholder('Teléfono de contacto')
+                        ->label('Teléfono'),
+                    Forms\Components\DatePicker::make('fecha_nacimiento')
+                        ->label('Fecha de Nacimiento')
+                        ->native(false)
+                        ->placeholder('01/01/1990'),
+                    Forms\Components\TextInput::make('direccion')
+                        ->placeholder('Dirección del paciente')
+                        ->label('Dirección'),
+                    Forms\Components\Hidden::make('medico_id')
+                        ->default(Auth::user()->medico_id),
+                ])
+            ];
+    }
+
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\Split::make([
-                    Forms\Components\TextInput::make('apellido')
-                        ->placeholder('Apellido del paciente')
-                        ->required(),
-                    Forms\Components\TextInput::make('nombre')
-                        ->placeholder('Nombre del paciente')
-                        ->required(),
-                    Forms\Components\TextInput::make('dni')
-                        ->placeholder('DNI sin puntos ni guiones')
-                        ->label('DNI')
-                        ->required()
-                ])
-                ->columnSpan('full')
-                ->columns(3),
-                Forms\Components\Select::make('obra_social')
-                    ->options(config('paciente.obras_sociales'))
-                    // Get the search results from config, if the search is not found, return the search itself
-                    ->getSearchResultsUsing(function ($search) {
-                        $default = collect(config('paciente.obras_sociales'))
-                            ->filter(function ($obra_social, $key) use ($search) {
-                                return str_contains($key, $search) || str_contains($obra_social, $search);
-                            })
-                            ->mapWithKeys(function ($obra_social, $key) {
-                                return [$key => $obra_social];
-                            });
-                        if($default->isEmpty()) {
-                            return [$search => ucfirst($search)];
-                        } else {
-                            return $default;
-                        }
-                    })
-                    ->searchable(),
-                Forms\Components\TextInput::make('afiliado')
-                    ->placeholder('Nro de Afiliado')
-                    ->label('Nro Afiliado'),
-                Forms\Components\TextInput::make('email')
-                    ->placeholder('Correo Electrónico')
-                    ->email(),
-                Forms\Components\TextInput::make('telefono')
-                    ->placeholder('Teléfono de contacto')
-                    ->label('Teléfono'),
-                Forms\Components\DatePicker::make('fecha_nacimiento')
-                    ->label('Fecha de Nacimiento')
-                    ->native(false)
-                    ->placeholder('01/01/1990'),
-                Forms\Components\TextInput::make('direccion')
-                    ->placeholder('Dirección del paciente')
-                    ->label('Dirección'),
-                Forms\Components\Hidden::make('medico_id')
-                    ->default(Auth::user()->medico_id),
-            ]);
+            ->schema(static::getForm());
     }
 
     public static function table(Table $table): Table

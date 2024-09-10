@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\HistoriaClinicaResource\Pages;
 
 use App\Filament\Resources\HistoriaClinicaResource;
+use App\Filament\Resources\PacienteResource;
 use App\Models\HistoriaClinica;
 use App\Models\Paciente;
 use Carbon\Carbon;
 use Filament\Actions\CreateAction;
 use Filament\Actions\Action as FilamentAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
@@ -20,6 +22,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\Actions\Action;
 use Filament\Infolists\Components\Fieldset;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -44,7 +47,7 @@ class ViewFile extends Page implements HasForms, HasInfolists
         $this->paciente = Paciente::find(request()->paciente_id);
     }
 
-    public function historiaForm()
+    public function evolucionForm()
     {
         return [
         Grid::make('')
@@ -57,20 +60,17 @@ class ViewFile extends Page implements HasForms, HasInfolists
                 ->default(now())
                 ->required()
                 ->columnSpan(2),
-            TextInput::make('antecedentes')
-                ->placeholder('Antecedentes del paciente'),
             TextInput::make('motivo')
-                ->placeholder('Motivo de la consulta'),
+                ->placeholder('Motivo de la consulta')
+                ->columnSpan(2),
             Textarea::make('examen_fisico')
+                ->label('Examen Físico')
                 ->placeholder('Resultados del examen fisico')
                 ->autosize()
                 ->columnSpan(2),
             Textarea::make('evolucion')
+                ->label('Evolución')
                 ->placeholder('Evolución del paciente')
-                ->autosize()
-                ->columnSpan(2),
-            Textarea::make('resultados')
-                ->placeholder('Resultados de los estudios')
                 ->autosize()
                 ->columnSpan(2),
             Textarea::make('diagnostico')
@@ -83,14 +83,128 @@ class ViewFile extends Page implements HasForms, HasInfolists
             RichEditor::make('tratamiento')
                 ->placeholder('Tratamiento del paciente')
                 ->columnSpan(1),
+            FileUpload::make('imagenes')
+                ->label('Imagenes de estudios')
+                ->directory('imagenes')
+                ->image()
+                ->multiple()
+                ->panelLayout('grid')
+                ->imageEditor()
+                ->columnSpan(2),
         ]),
     ];
+    }
+
+    public function PrimeraConsultaForm()
+    {
+        return [
+            Grid::make('')
+            ->label('')
+            ->columns(2)
+            ->schema([
+                Hidden::make('paciente_id'),
+                DatePicker::make('fecha')
+                    ->native(false)
+                    ->default(now())
+                    ->required()
+                    ->columnSpan(2),
+                Textarea::make('antecedentes')
+                    ->placeholder('Antecedentes Personales')
+                    ->autosize()
+                    ->columnSpan(2),
+                Textarea::make('toxicos')
+                    ->label('Tóxicos')
+                    ->placeholder('Ingrese tóxicos del paciente')
+                    ->autosize()
+                    ->columnSpan(2),
+                Textarea::make('quirurgicos')
+                    ->label('Quirúrgicos')
+                    ->placeholder('Ingrese quirurgicos del paciente')
+                    ->autosize()
+                    ->columnSpan(2),
+                Textarea::make('alergias')
+                    ->placeholder('Ingrese alergias del paciente')
+                    ->autosize()
+                    ->columnSpan(2),
+                RichEditor::make('vacunacion')
+                    ->label('Vacunación')
+                    ->placeholder('Ingrese vacunación del paciente'),
+                RichEditor::make('medicacion')
+                    ->label('Medicación')
+                    ->placeholder('Ingrese medicación del paciente'),
+            ]),
+        ];
+    }
+
+    public function allForm()
+    {
+        return [
+            Grid::make('')
+            ->label('')
+            ->columns(2)
+            ->schema([
+                Hidden::make('paciente_id'),
+                DatePicker::make('fecha')
+                    ->native(false)
+                    ->default(now())
+                    ->required()
+                    ->columnSpan(2),
+                Textarea::make('antecedentes')
+                    ->placeholder('Antecedentes Personales')
+                    ->autosize(),
+                Textarea::make('toxicos')
+                    ->label('Tóxicos')
+                    ->placeholder('Ingrese tóxicos del paciente')
+                    ->autosize(),
+                Textarea::make('quirurgicos')
+                    ->label('Quirúrgicos')
+                    ->placeholder('Ingrese quirurgicos del paciente')
+                    ->autosize(),
+                Textarea::make('alergias')
+                    ->placeholder('Ingrese alergias del paciente')
+                    ->autosize(),
+                Textarea::make('motivo')
+                    ->placeholder('Motivo de la consulta')
+                    ->autosize(),
+                Textarea::make('examen_fisico')
+                    ->label('Examen Físico')
+                    ->placeholder('Resultados del examen fisico')
+                    ->autosize(),
+                Textarea::make('evolucion')
+                    ->label('Evolución')
+                    ->placeholder('Evolución del paciente')
+                    ->autosize(),
+                Textarea::make('diagnostico')
+                    ->placeholder('Diagnóstico del paciente')
+                    ->autosize(),
+                RichEditor::make('vacunacion')
+                    ->label('Vacunación')
+                    ->placeholder('Ingrese vacunación del paciente'),
+                RichEditor::make('medicacion')
+                    ->label('Medicación')
+                    ->placeholder('Ingrese medicación del paciente'),
+                RichEditor::make('estudios')
+                    ->placeholder('Estudios realizados')
+                    ->columnSpan(1),
+                RichEditor::make('tratamiento')
+                    ->placeholder('Tratamiento del paciente')
+                    ->columnSpan(1),
+                FileUpload::make('imagenes')
+                    ->label('Imagenes de estudios')
+                    ->directory('imagenes')
+                    ->image()
+                    ->multiple()
+                    ->panelLayout('grid')
+                    ->imageEditor()
+                    ->columnSpan(2),
+            ]),
+        ];
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
+            CreateAction::make('evolucion')
                 ->model(HistoriaClinica::class)
                 ->mutateFormDataUsing(function (array $data): array {
                     $data['paciente_id'] = $this->paciente->id;
@@ -98,12 +212,31 @@ class ViewFile extends Page implements HasForms, HasInfolists
                 })
                 ->label('Nueva Evolución')
                 ->createAnother(false)
-                ->form($this->historiaForm()),
+                ->form($this->evolucionForm()),
+                
+            CreateAction::make('primeraConsulta')
+                ->model(HistoriaClinica::class)
+                ->mutateFormDataUsing(function (array $data): array {
+                    $data['paciente_id'] = $this->paciente->id;
+                    return $data;
+                })
+                ->label('Primera Consulta')
+                ->color('info')
+                ->createAnother(false)
+                ->form($this->PrimeraConsultaForm()),
+
+            EditAction::make('edit')
+                ->icon('heroicon-o-user')
+                ->iconButton()
+                ->tooltip('Editar Paciente')
+                ->color('info')
+                ->form(PacienteResource::getForm())
+                ->record($this->paciente),
 
             FilamentAction::make('addDocument')
                 ->icon('heroicon-o-document-plus')
-                ->label('')
-                ->button()
+                ->iconButton()
+                ->tooltip('Subir Historia Clínica antigua')
                 ->color('info')
                 ->form([FileUpload::make('documento')->label('Documento')->required()->directory('documents')->maxSize(10024)->acceptedFileTypes(['application/pdf'])])
                 ->action(function ($data) {
@@ -164,7 +297,7 @@ class ViewFile extends Page implements HasForms, HasInfolists
                             Action::make('edit')
                                 ->icon('heroicon-o-pencil')
                                 ->iconButton()
-                                ->form($this->historiaForm())
+                                ->form($this->allForm())
                                 ->fillForm(fn($record) => $record->toArray())
                                 ->action(fn($record, $data) => $record->update($data)),
                             Action::make('delete')
@@ -182,15 +315,39 @@ class ViewFile extends Page implements HasForms, HasInfolists
                                 ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->antecedentes)
                                 ->schema([TextEntry::make('antecedentes')->label('')->columnSpan(2)]),
+                            Fieldset::make('Tóxicos')
+                                ->columnSpan(1)
+                                ->hidden(fn($record) => !$record->toxicos)
+                                ->schema([TextEntry::make('toxicos')->label('')->columnSpan(2)]),
+                            Fieldset::make('Quirúrgicos')
+                                ->columnSpan(1)
+                                ->hidden(fn($record) => !$record->quirurgicos)
+                                ->schema([TextEntry::make('quirurgicos')->label('')->columnSpan(2)]),
+                            Fieldset::make('Alergias')
+                                ->columnSpan(1)
+                                ->hidden(fn($record) => !$record->alergias)
+                                ->schema([TextEntry::make('alergias')->label('')->columnSpan(2)]),
+                            Fieldset::make('Vacunación')
+                                ->columnSpan(1)
+                                ->hidden(fn($record) => !$record->vacunacion)
+                                ->schema([TextEntry::make('vacunacion')->label('')->columnSpan(2)->html()]),
+                            Fieldset::make('Medicación')
+                                ->columnSpan(1)
+                                ->hidden(fn($record) => !$record->medicacion)
+                                ->schema([TextEntry::make('medicacion')->label('')->columnSpan(2)->html()]),
+                            Fieldset::make('Diagnóstico')
+                                ->columnSpan(1)
+                                ->hidden(fn($record) => !$record->diagnostico)
+                                ->schema([TextEntry::make('diagnostico')->label('')->columnSpan(2)]),
                             Fieldset::make('Motivo')
                                 ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->motivo)
                                 ->schema([TextEntry::make('motivo')->label('')->columnSpan(2)]),
-                            Fieldset::make('Examen_fisico')
+                            Fieldset::make('Examen Físico')
                                 ->columnSpan(2)
                                 ->hidden(fn($record) => !$record->examen_fisico)
                                 ->schema([TextEntry::make('examen_fisico')->label('')->columnSpan(2)]),
-                            Fieldset::make('Evolucion')
+                            Fieldset::make('Evolución')
                                 ->columnSpan(2)
                                 ->hidden(fn($record) => !$record->evolucion)
                                 ->schema([TextEntry::make('evolucion')->label('')->columnSpan(2)]),
@@ -198,10 +355,6 @@ class ViewFile extends Page implements HasForms, HasInfolists
                                 ->columnSpan(2)
                                 ->hidden(fn($record) => !$record->resultados)
                                 ->schema([TextEntry::make('resultados')->label('')->columnSpan(2)]),
-                            Fieldset::make('Diagnostico')
-                                ->columnSpan(2)
-                                ->hidden(fn($record) => !$record->diagnostico)
-                                ->schema([TextEntry::make('diagnostico')->label('')->columnSpan(2)]),
                             Fieldset::make('Estudios')
                                 ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->estudios)
@@ -210,6 +363,11 @@ class ViewFile extends Page implements HasForms, HasInfolists
                                 ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->tratamiento)
                                 ->schema([TextEntry::make('tratamiento')->label('')->columnSpan(2)->html()]),
+                            Fieldset::make('Imagenes')
+                                ->label('Estudios')
+                                ->columnSpan(2)
+                                ->hidden(fn($record) => !$record->imagenes)
+                                ->schema([ImageEntry::make('imagenes')->label('')->columnSpan(2)->height(200)]),
                         ]),
                     ])
             ]);

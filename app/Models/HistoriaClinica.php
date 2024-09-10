@@ -13,20 +13,32 @@ class HistoriaClinica extends Model
 
     protected $fillable = [
         'paciente_id',
+        'fecha',
+
+        'antecedentes',
+        'toxicos',//
+        'quirurgicos',//
+        'alergias',//
+        'vacunacion',//
+        'medicacion',//
+
         'motivo',
+        'examen_fisico',
+        'evolucion',
         'diagnostico',
         'estudios',
         'tratamiento',
-        'examen_fisico',
+        'imagenes', //
+        
         'resultados',
-        'evolucion',
-        'antecedentes',
-        'fecha'
+    ];
+
+    protected $casts = [
+        'imagenes' => 'array',
     ];
 
     public function paciente()
     {
         return $this->belongsTo(Paciente::class);
     }
-
 }
