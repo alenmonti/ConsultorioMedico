@@ -50,7 +50,7 @@ class Paciente extends Model
         $pacientes = Paciente::select('id', 'nombre', 'apellido', 'dni')->get();
         $options = [];
         foreach ($pacientes as $paciente) {
-            $options[$paciente->id] = $paciente->nombre.' '.$paciente->apellido.', '.$paciente->dni;
+            $options[$paciente->id] = $paciente->apellido.' '.$paciente->nombre.', '.$paciente->dni;
         }
         return $options;
     }
