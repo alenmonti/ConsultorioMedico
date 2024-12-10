@@ -30,6 +30,8 @@ use Filament\Infolists\Concerns\InteractsWithInfolists;
 use Filament\Infolists\Contracts\HasInfolists;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\Page;
+use Illuminate\Support\Facades\Storage;
+use Njxqlus\Filament\Components\Infolists\LightboxImageEntry;
 
 class ViewFile extends Page implements HasForms, HasInfolists
 {
@@ -366,8 +368,22 @@ class ViewFile extends Page implements HasForms, HasInfolists
                             Fieldset::make('Imagenes')
                                 ->label('Estudios')
                                 ->columnSpan(2)
+                                ->columns(8)
                                 ->hidden(fn($record) => !$record->imagenes)
-                                ->schema([ImageEntry::make('imagenes')->label('')->columnSpan(2)->height(200)]),
+                                ->schema(
+                                    fn($record) => collect($record->imagenes)->map(function($imagen) use ($record){
+                                        return LightboxImageEntry::make('')
+                                            ->label('')
+                                            ->columnSpan(1)
+                                            ->height(100)
+                                            ->square()
+                                            ->href(fn($record) => Storage::url($imagen))
+                                            ->image(fn($record) => Storage::url($imagen))
+                                            ->slideGallery('gallery'.$record->id)
+                                            ->slideWidth('100%')
+                                            ->slideHeight('100%');
+                                    })->toArray()
+                                ),
                         ]),
                     ])
             ]);

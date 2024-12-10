@@ -11,6 +11,7 @@
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
+        "njxqlus/filament-lightbox": "^3.2",
         "saade/filament-fullcalendar": "^3.2"
     },
     "require-dev": {
