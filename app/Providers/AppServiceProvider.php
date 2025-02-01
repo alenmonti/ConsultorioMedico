@@ -11,6 +11,8 @@ use Filament\Infolists\Components\Fieldset;
 use Filament\Tables\Actions\{DeleteAction, EditAction, ViewAction};
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
+use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentColor;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +29,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        FilamentColor::register([
+            'green-pastel' => Color::hex('#BDECB6'),
+            'red-pastel' => Color::hex('#FFC7C7'),
+        ]);
+
         EditAction::configureUsing(function (EditAction $action): void {
             $action->iconButton();
         });

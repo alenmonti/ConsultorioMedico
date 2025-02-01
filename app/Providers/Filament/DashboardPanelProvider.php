@@ -33,7 +33,8 @@ class DashboardPanelProvider extends PanelProvider
             ->registration(RegisterUser::class)
             ->profile()
             ->colors([
-                'primary' => Color::Green,
+                'primary' => Color::hex('#BDECB6'),
+                'danger' => Color::hex('#FFC7C7'),
             ])
             ->plugin(FilamentFullCalendarPlugin::make()->config([])->locale('es')->selectable(true))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
