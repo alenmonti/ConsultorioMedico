@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Turno;
+use App\Models\Scopes\orderByDHU;
 use Filament\Widgets\ChartWidget;
 
 class TurnosBarChart extends ChartWidget
@@ -16,10 +17,10 @@ class TurnosBarChart extends ChartWidget
     protected function getData(): array
     {
         $turnos = Turno::query()
+            ->withoutGlobalScope(orderByDHU::class)
             ->whereYear('fecha', now()->year)
             ->selectRaw('MONTH(fecha) as mes, COUNT(*) as cantidad')
             ->groupBy('mes')
-            ->reorder('mes')
             ->get()
             ->keyBy('mes')
             ->toArray();

@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Enums\EstadosTurno;
 use App\Models\Turno;
+use App\Models\Scopes\orderByDHU;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
 
@@ -19,10 +20,10 @@ class TurnosDoughnutChart extends ChartWidget
     protected function getData(): array
     {
         $turnos = Turno::query()
+            ->withoutGlobalScope(orderByDHU::class)
             ->whereDate('fecha', Carbon::today())
             ->selectRaw('COUNT(*) cantidad, estado')
             ->groupByRaw('estado')
-            ->reorder('estado')
             ->get()
             ->toArray();
 
