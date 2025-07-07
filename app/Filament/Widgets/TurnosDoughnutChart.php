@@ -22,6 +22,7 @@ class TurnosDoughnutChart extends ChartWidget
             ->whereDate('fecha', Carbon::today())
             ->selectRaw('COUNT(*) cantidad, estado')
             ->groupByRaw('estado')
+            ->orderBy('estado')
             ->get()
             ->toArray();
 
