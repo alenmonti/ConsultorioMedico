@@ -19,6 +19,7 @@ class TurnosBarChart extends ChartWidget
             ->whereYear('fecha', now()->year)
             ->selectRaw('MONTH(fecha) as mes, COUNT(*) as cantidad')
             ->groupBy('mes')
+            ->orderBy('mes')
             ->get()
             ->keyBy('mes')
             ->toArray();
