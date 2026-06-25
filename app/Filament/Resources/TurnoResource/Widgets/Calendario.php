@@ -5,13 +5,11 @@ namespace App\Filament\Resources\TurnoResource\Widgets;
 use App\Enums\EstadosTurno;
 use App\Enums\Roles;
 use App\Filament\Resources\HistoriaClinicaResource;
-use App\Forms\Components\TextInfo;
-use App\Models\Paciente;
+use App\Filament\Resources\TurnoResource;
 use App\Models\Turno;
 use Carbon\Carbon;
 use Filament\Actions\Action;
-use Filament\Forms\Components\{DatePicker, Grid, Hidden, Select, Textarea};
-use Filament\Forms\{Form, Get, Set};
+use Filament\Forms\Form;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
@@ -74,61 +72,7 @@ class Calendario extends FullCalendarWidget
 
     public function getFormSchema(): array
     {
-        return [
-            Select::make('tipo')
-                ->required()
-                ->searchable()
-                ->label('Tipo de turno')
-                ->options([
-                    'turno' => 'Turno',
-                    'sobre_turno' => 'Sobre Turno',
-                ])
-                ->default('turno')
-                ->live()
-                ->afterStateUpdated(fn (Set $set) => $set('hora', null)),
-            TextInfo::make('info')
-                ->hidden(fn(Get $get) => $get('tipo') == 'turno'),
-            Grid::make('')
-                ->columns(2)
-                ->schema([
-            DatePicker::make('fecha')
-                ->required()
-                ->placeholder('Seleccione una fecha')
-                ->live()
-                ->native(false)
-                ->afterStateUpdated(fn (Set $set) => $set('hora', null)),
-            Select::make('hora')
-                ->required()
-                ->placeholder('Seleccione un horario')
-                ->searchable()
-                ->options( function (Get $get) {
-                    $fecha = Carbon::parse($get('fecha'))->format('Y-m-d');
-                    $tipo = $get('tipo') ?? 'turno';
-                    return Auth::user()->horariosDisponibles($fecha, $tipo);
-                })
-            ]),
-            Grid::make('')
-                ->columns(2)
-                ->schema([
-            Select::make('paciente_id')
-                ->label('Paciente')
-                ->options(Paciente::selectOptions())    
-                ->searchable()
-                ->required(),
-            Select::make('estado')
-                ->required()
-                ->searchable()
-                ->options(EstadosTurno::class)
-                ->default(EstadosTurno::Pendiente),
-                ]),
-            Textarea::make('notas')
-                ->label('Notas')
-                ->placeholder('Notas adicionales')
-                ->rows(3)
-                ->autosize(),
-            Hidden::make('medico_id')
-                ->default(Auth::user()->medico_id),
-        ];
+        return TurnoResource::getFormSchema();
     }
 
     protected function modalActions(): array

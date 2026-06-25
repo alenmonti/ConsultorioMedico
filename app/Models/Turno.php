@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Casts\TimeCast;
 use App\Enums\EstadosTurno;
+use App\Enums\TipoTurno;
 use App\Models\Scopes\orderByDHU;
 use App\Models\Scopes\Own;
 use Carbon\Carbon;
@@ -28,6 +29,7 @@ class Turno extends Model
     {
         return [
             'estado' => EstadosTurno::class,
+            'tipo' => TipoTurno::class,
             'hora' => TimeCast::class
         ];
     }

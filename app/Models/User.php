@@ -5,7 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Roles;
 use App\Models\Scopes\Own;
-use Carbon\Carbon;
+use App\Services\ScheduleService;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
@@ -87,57 +87,11 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
 
     public function horariosDisponibles($fecha, $turnoTipo = 'turno')
     {
-        $enDay = Carbon::parse($fecha)->dayOfWeek;
-        $diaSemana = match ($enDay) { 0 => 'domingo', 1 => 'lunes', 2 => 'martes', 3 => 'miercoles', 4 => 'jueves', 5 => 'viernes', 6 => 'sabado',};
-        $horarios = [];
-        $configHorarios = Horario::where('dia', $diaSemana)->get();
-        if(!$configHorarios->isEmpty()){
-            $horariosArray = [];
-            foreach ($configHorarios as $horario) {
-                $desde = Carbon::parse($horario->desde);
-                $hasta = Carbon::parse($horario->hasta);
-                $intervalo = (int) Carbon::parse($horario->intervalo)->format('i');
-                while ($desde <= $hasta) {
-                    $horariosArray[] = $desde->format('H:i');
-                    $desde = $desde->addMinutes($intervalo);
-                }
-            }
-            $horarios = $horariosArray;
-        }else{
-            $horarios = [];
-        }
-
-        $horariosOcupados = Turno::where('fecha', $fecha)->pluck('hora')->toArray();
-
-        if($turnoTipo != 'turno'){
-            $horariosDisponibles = array_intersect($horarios, $horariosOcupados);
-        } else {
-            $horariosDisponibles = array_diff($horarios, $horariosOcupados);
-        }
-
-        return array_combine($horariosDisponibles, $horariosDisponibles);
-    }
-
-    public function diasDeSemanaDisponibles()
-    {
-        $horarios = Horario::get();
-        $dias = $horarios->map(function ($horario) {
-            return match($horario->dia->getLabel()) { 'Domingo' => 0, 'Lunes' => 1, 'Martes' => 2, 'Miercoles' => 3, 'Jueves' => 4, 'Viernes' => 5, 'Sabado' => 6,};
-        });
-        return $dias->toArray();
+        return app(ScheduleService::class)->horariosDisponibles($this, $fecha, $turnoTipo);
     }
 
     public function diasNoDisponibles($desde, $hasta)
     {
-        $fechaDesde = Carbon::parse($desde);
-        $fechaHasta = Carbon::parse($hasta);
-        $dias = [];
-        while ($fechaDesde <= $fechaHasta) {
-            if(!$this->horariosDisponibles($fechaDesde)){
-                $dias[] = $fechaDesde->format('Y-m-d');
-            }
-            $fechaDesde = $fechaDesde->addDay();
-        }
-        return $dias;
+        return app(ScheduleService::class)->diasNoDisponibles($this, $desde, $hasta);
     }
 }

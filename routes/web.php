@@ -11,3 +11,6 @@ Route::get('migrate', function () {
     Artisan::call('migrate');
     return 'Database migrated successfully.';
 });
+Route::get('healt', function () {
+    return response()->json(['status' => 'ok'], 200);
+});

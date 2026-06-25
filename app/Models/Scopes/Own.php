@@ -14,8 +14,9 @@ class Own implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        if (!role(Roles::Admin)) {
-            $builder->where('medico_id', auth()->user()->medico_id);
+        $user = auth()->user();
+        if ($user && $user->rol !== Roles::Admin) {
+            $builder->where('medico_id', $user->medico_id);
         }
     }
 }

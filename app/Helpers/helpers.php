@@ -20,9 +20,9 @@ if (! function_exists('user')) {
  * @return string
  */
 if (! function_exists('role')) {
-    function role($role)
+    function role($role): bool
     {
-        return user()->rol == $role;
+        return user()?->rol == $role ?? false;
     }
 }
   

@@ -37,15 +37,11 @@ class HorarioResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('intervalo')
                     ->options([
-                        '00:05' => '5 minutos',
-                        '00:10' => '10 minutos',
-                        '00:15' => '15 minutos',
                         '00:20' => '20 minutos',
-                        '00:30' => '30 minutos',
-                        '00:45' => '45 minutos',
-                        '01:00' => '1 hora',
+                        // '00:40' => '40 minutos',
+                        // '01:00' => '1 hora',
                     ])
-                    ->searchable()
+                    ->default('00:20')
                     ->required(),
                 TimePickerField::make('desde')
                     ->default('09:00')
