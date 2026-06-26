@@ -8,6 +8,7 @@ use App\Filament\Resources\TurnoResource\Pages;
 use App\Filament\Resources\TurnoResource\RelationManagers;
 use App\Forms\Components\TextInfo;
 use App\Models\Paciente;
+use App\Models\Practica;
 use App\Models\Turno;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -76,6 +77,12 @@ class TurnoResource extends Resource
                         ->options(EstadosTurno::class)
                         ->default(EstadosTurno::Pendiente),
                 ]),
+            Select::make('practica_id')
+                ->label('Práctica')
+                ->options(Practica::selectOptions())
+                ->searchable()
+                ->default(fn () => (string) Practica::whereRaw('lower(nombre) = ?', ['consulta'])->value('id'))
+                ->columnSpan(2),
             Textarea::make('notas')
                 ->label('Notas')
                 ->placeholder('Notas adicionales')
@@ -94,7 +101,7 @@ class TurnoResource extends Resource
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        return parent::getEloquentQuery()->with(['paciente', 'medico']);
+        return parent::getEloquentQuery()->with(['paciente', 'medico', 'practica']);
     }
 
     public static function table(Table $table): Table

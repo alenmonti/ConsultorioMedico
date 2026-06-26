@@ -80,6 +80,11 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         return $this->hasMany(Horario::class, 'medico_id', 'id');
     }
 
+    public function practicas()
+    {
+        return $this->hasMany(Practica::class, 'medico_id', 'id');
+    }
+
     public function medico()
     {
         return $this->belongsTo(User::class, 'medico_id', 'id');

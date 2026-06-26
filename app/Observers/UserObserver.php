@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Enums\Roles;
 use App\Models\Horario;
+use App\Models\Practica;
 use App\Models\User;
 
 class UserObserver
@@ -19,6 +20,9 @@ class UserObserver
             // Set medico_id to himself
             $user->medico_id = $user->id;
             $user->save();
+
+            // Create default practica
+            $user->practicas()->create(['nombre' => 'Consulta']);
 
             // Create default schedule
             $user->horarios()->createMany([

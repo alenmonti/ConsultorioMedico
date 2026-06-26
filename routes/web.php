@@ -11,6 +11,10 @@ Route::get('migrate', function () {
     Artisan::call('migrate');
     return 'Database migrated successfully.';
 });
-Route::get('healt', function () {
+Route::get('seed', function () {
+    Artisan::call('db:seed');
+    return 'Database seeded successfully.';
+});
+Route::get('health', function () {
     return response()->json(['status' => 'ok'], 200);
 });
