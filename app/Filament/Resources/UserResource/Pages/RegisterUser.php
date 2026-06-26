@@ -15,10 +15,20 @@ class RegisterUser extends Register
                 $this->getNameFormComponent(),
                 TextInput::make('surname')
                     ->required()
-                    ->label('Apellido'), 
+                    ->label('Apellido'),
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
+                TextInput::make('registration_code')
+                    ->label('Código de registro')
+                    ->required()
+                    ->password()
+                    ->dehydrated(false)
+                    ->rule(fn () => function (string $attribute, mixed $value, \Closure $fail) {
+                        if ($value !== config('app.registration_code')) {
+                            $fail('El código de registro es incorrecto.');
+                        }
+                    }),
             ]);
     }
 }
