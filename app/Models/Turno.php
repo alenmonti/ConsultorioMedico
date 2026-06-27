@@ -23,7 +23,8 @@ class Turno extends Model
         'hora',
         'estado',
         'tipo',
-        'notas'
+        'notas',
+        'origen',
     ];
 
     protected function casts(): array

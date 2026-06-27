@@ -39,6 +39,10 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         'rol',
         'medico_id',
         'password',
+        'especialidad',
+        'descripcion',
+        'foto_portal',
+        'whatsapp',
     ];
 
     /**

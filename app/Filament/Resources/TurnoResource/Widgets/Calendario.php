@@ -40,11 +40,13 @@ class Calendario extends FullCalendarWidget
         $turnos = Turno::query()
             ->where('fecha', '>=', $fetchInfo['start'])
             ->where('fecha', '<=', $fetchInfo['end'])
-            ->with(['practica'])
+            ->with(['practica', 'paciente'])
             ->get()
             ->map(fn (Turno $turno) => [
                     'id' => $turno->id,
-                    'title' => $turno->paciente->nombre . ' ' . $turno->paciente->apellido,
+                    'title' => $turno->paciente
+                        ? $turno->paciente->nombre . ' ' . $turno->paciente->apellido
+                        : '(Web) ' . str($turno->notas)->after('Nombre: ')->before(' |')->value(),
                     'start' => Carbon::parse($turno->fecha . ' ' . $turno->hora),
                     'end' => Carbon::parse($turno->fecha . ' ' . $turno->hora)->addMinutes($turno->practica?->duracion_min ?? 20),
                     'backgroundColor' => $turno->estado->getHexColor(),
@@ -228,11 +230,10 @@ class Calendario extends FullCalendarWidget
                 })
                 ->icon('heroicon-o-clipboard-document-list')
                 ->hidden(function(Turno $turno) {
-                    if (user()->rol == Roles::Secretario) {
+                    if (user()->rol == Roles::Secretario || ! $turno->paciente_id) {
                         return true;
-                    } else {
-                        return !in_array($turno->estado, [EstadosTurno::Pendiente, EstadosTurno::Confirmado]);
                     }
+                    return !in_array($turno->estado, [EstadosTurno::Pendiente, EstadosTurno::Confirmado]);
                 }),
             EditAction::make()
                 ->extraAttributes(['class' => 'attend-button'])

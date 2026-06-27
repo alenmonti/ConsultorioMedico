@@ -2,9 +2,11 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\PerfilPortalPage;
 use App\Filament\Resources\UserResource\Pages\RegisterUser;
 use App\Models\User;
 use Filament\Http\Middleware\Authenticate;
+use Filament\Navigation\MenuItem;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
@@ -32,6 +34,12 @@ class DashboardPanelProvider extends PanelProvider
             ->login()
             ->registration(RegisterUser::class)
             ->profile()
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('Configuración')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->url(fn () => PerfilPortalPage::getUrl()),
+            ])
             ->colors([
                 'primary' => Color::hex('#BDECB6'),
                 'danger' => Color::hex('#FFC7C7'),
