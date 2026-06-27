@@ -5,50 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Portal Pacientes — Reservar turno</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --verde: #1b3d2f;
-            --verde-hover: #234d3b;
-            --crema: #f5f0eb;
-            --crema-border: #e5dfd6;
-            --texto: #1a1a1a;
+            --verde: #085C68;
+            --verde-hover: #064e58;
+            --verde-light: #e0f2f4;
+            --crema: #f8f9f7;
+            --crema-border: #e5e5e5;
+            --texto: #1c1c1c;
             --texto-muted: #6b7280;
             --wsp: #25D366;
             --wsp-hover: #1da851;
             --danger: #c0392b;
-            --slot-taken: #d1cec9;
+            --slot-taken: #d1d5db;
             --card-bg: #ffffff;
-            --radius: 12px;
-            --radius-sm: 8px;
-            --shadow: 0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.05);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--crema);
             color: var(--texto);
             min-height: 100vh;
+        }
+
+        /* header ~64px + footer ~55px */
+        @media (min-width: 900px) {
+            .page { min-height: calc(100vh - 119px); }
         }
 
         /* ── Header ── */
         .header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 18px 24px;
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--crema-border);
+            justify-content: space-between;
+            padding: 14px 24px;
+            background: #405b6a;
+            width: 100%;
         }
-        .header svg { width: 36px; height: 36px; flex-shrink: 0; }
-        .header-title {
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: .12em;
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header img { height: 36px; object-fit: contain; flex-shrink: 0; }
+        .header-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 500;
+            color: #fff;
+            letter-spacing: .01em;
+            font-style: italic;
+        }
+        .header-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-label-line { width: 20px; height: 1px; background: rgba(255,255,255,0.35); }
+        .header-label-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: .2em;
             text-transform: uppercase;
-            color: var(--texto);
+            color: rgba(255,255,255,0.6);
         }
 
         /* ── Layout ── */
@@ -71,21 +99,39 @@
         .pc-left {
             flex: 1;
             padding-top: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+        .pc-left-tag {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--verde);
+            margin-bottom: 10px;
         }
         .pc-left-title {
+            font-family: 'Playfair Display', serif;
             font-size: 42px;
-            font-weight: 700;
+            font-weight: 500;
             line-height: 1.15;
-            color: var(--verde);
+            color: #1c1c1c;
             margin-bottom: 16px;
         }
+        .pc-left-title .brand { color: var(--verde); }
+        .pc-left-accent {
+            width: 48px;
+            height: 2px;
+            background: #E8A598;
+            margin-bottom: 20px;
+        }
         .pc-left-sub {
-            font-size: 15px;
+            font-size: 14px;
             color: var(--texto-muted);
             line-height: 1.6;
             max-width: 320px;
         }
-        .pc-right { flex: 1; }
+        .pc-right { flex: 0 0 440px; width: 440px; }
 
         @media (max-width: 899px) {
             .pc-left { display: none; }
@@ -98,6 +144,7 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             padding: 24px;
+            min-height: 320px;
         }
 
         /* ── Steps ── */
@@ -122,6 +169,7 @@
             background: var(--verde);
             border-color: var(--verde);
             color: #fff;
+            box-shadow: 0 4px 12px rgba(8,92,104,0.25);
         }
         .step-circle.done {
             background: var(--verde);
@@ -146,14 +194,15 @@
         .section-tag {
             font-size: 10px;
             font-weight: 700;
-            letter-spacing: .12em;
+            letter-spacing: .2em;
             text-transform: uppercase;
-            color: var(--texto-muted);
+            color: var(--verde);
             margin-bottom: 6px;
         }
         .section-title {
+            font-family: 'Playfair Display', serif;
             font-size: 22px;
-            font-weight: 700;
+            font-weight: 500;
             color: var(--texto);
             margin-bottom: 20px;
         }
@@ -165,14 +214,14 @@
             align-items: center;
             gap: 14px;
             padding: 14px 16px;
-            border: 2px solid var(--crema-border);
+            border: 1.5px solid var(--crema-border);
             border-radius: var(--radius);
             cursor: pointer;
             transition: border-color .15s, background .15s;
             background: var(--card-bg);
         }
-        .medico-card:hover { border-color: #aac4b8; }
-        .medico-card.selected { border-color: var(--verde); background: #f0f5f2; }
+        .medico-card:hover { border-color: #7ab8c0; }
+        .medico-card.selected { border-color: var(--verde); background: var(--verde-light); }
         .medico-avatar {
             width: 52px; height: 52px;
             border-radius: 50%;
@@ -191,11 +240,11 @@
         .medico-info { flex: 1; min-width: 0; }
         .medico-nombre { font-size: 15px; font-weight: 600; }
         .medico-esp {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
-            letter-spacing: .08em;
+            letter-spacing: .12em;
             text-transform: uppercase;
-            color: #7a9e8e;
+            color: var(--verde);
             margin-bottom: 2px;
         }
         .medico-desc { font-size: 13px; color: var(--texto-muted); }
@@ -267,7 +316,7 @@
             transition: border-color .15s, background .15s;
             background: var(--card-bg);
         }
-        .day-card:hover:not(.day-unavailable):not(.day-pasado) { border-color: #aac4b8; }
+        .day-card:hover:not(.day-unavailable):not(.day-pasado) { border-color: #7ab8c0; }
         .day-card.day-selected { border-color: var(--verde); background: var(--verde); }
         .day-card.day-unavailable, .day-card.day-pasado { opacity: .45; cursor: default; pointer-events: none; }
         .day-name { font-size: 10px; font-weight: 700; color: var(--texto-muted); letter-spacing: .06em; }
@@ -280,7 +329,7 @@
         }
         .day-card.day-selected .day-status { color: rgba(255,255,255,.8); }
         .day-status.status-pocos { color: #b45309; }
-        .day-status.status-libre { color: #2d7a56; }
+        .day-status.status-libre { color: var(--verde); }
 
         /* ── Time slots ── */
         .slots-label {
@@ -309,11 +358,12 @@
             transition: border-color .15s, background .15s, color .15s;
             text-align: center;
         }
-        .slot-btn:hover { border-color: #aac4b8; }
+        .slot-btn:hover { border-color: #7ab8c0; }
         .slot-btn.selected {
             background: var(--verde);
             border-color: var(--verde);
             color: #fff;
+            box-shadow: 0 4px 12px rgba(8,92,104,0.2);
         }
 
         /* ── Inputs ── */
@@ -336,61 +386,99 @@
         /* ── Info box ── */
         .info-box {
             display: flex;
-            gap: 10px;
+            gap: 14px;
             align-items: flex-start;
-            background: #fff8f0;
-            border: 1px solid #f0d9b5;
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
+            background: var(--verde-light);
+            border: 1px solid rgba(8,92,104,0.15);
+            border-radius: var(--radius);
+            padding: 16px;
             font-size: 13px;
-            color: #7c5a2a;
+            color: #374151;
             margin-bottom: 20px;
+            line-height: 1.55;
         }
-        .info-box .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+        .info-box-icon {
+            width: 36px; height: 36px;
+            background: var(--verde);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff;
+            flex-shrink: 0;
+        }
 
         /* ── Summary card ── */
         .summary-card {
-            border: 1px solid var(--crema-border);
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            margin-bottom: 20px;
+            background: var(--crema);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 24px;
         }
         .summary-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--crema-border);
-            gap: 8px;
+            gap: 20px;
         }
-        .summary-row:last-child { border-bottom: none; }
-        .summary-key { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--texto-muted); }
-        .summary-val { font-size: 14px; font-weight: 600; }
-        .summary-val.verde { color: #2d7a56; }
+        .summary-row + .summary-row {
+            margin-top: 4px;
+            padding-top: 16px;
+            border-top: 1px solid var(--crema-border);
+        }
+        .summary-item { display: flex; flex-direction: column; gap: 3px; }
+        .summary-key {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .15em;
+            color: var(--verde);
+        }
+        .summary-val {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            font-weight: 500;
+            color: #1c1c1c;
+            line-height: 1.2;
+        }
+        .summary-val.verde { color: var(--verde); }
 
         /* ── Buttons ── */
         .btn {
             display: block;
             width: 100%;
-            padding: 15px;
-            border-radius: var(--radius-sm);
+            padding: 15px 32px;
+            border-radius: 9999px;
             border: none;
-            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
             font-weight: 700;
+            letter-spacing: .18em;
+            text-transform: uppercase;
             cursor: pointer;
             text-align: center;
-            transition: background .15s, opacity .15s;
+            transition: background .15s, opacity .15s, box-shadow .15s;
         }
-        .btn:disabled { opacity: .5; cursor: default; }
-        .btn-primary { background: var(--verde); color: #fff; }
-        .btn-primary:hover:not(:disabled) { background: var(--verde-hover); }
-        .btn-wsp { background: var(--wsp); color: #fff; margin-bottom: 10px; }
+        .btn:disabled { opacity: .45; cursor: default; }
+        .btn-primary {
+            background: var(--verde);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(8,92,104,0.2);
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: var(--verde-hover);
+            box-shadow: 0 8px 28px rgba(8,92,104,0.3);
+        }
+        .btn-wsp {
+            background: var(--wsp);
+            color: #fff;
+            margin-bottom: 10px;
+            box-shadow: 0 8px 24px rgba(37,211,102,0.2);
+        }
         .btn-wsp:hover { background: var(--wsp-hover); }
         .btn-secondary {
             background: transparent;
             color: var(--texto-muted);
             border: 1.5px solid var(--crema-border);
         }
-        .btn-secondary:hover { border-color: #aac4b8; color: var(--texto); }
+        .btn-secondary:hover { border-color: #7ab8c0; color: var(--texto); }
 
         /* ── Bottom bar ── */
         .bottom-bar {
@@ -416,10 +504,14 @@
             margin-bottom: 2px;
         }
         .wsp-link:hover { text-decoration: underline; }
+        .wsp-link-pc {
+            justify-content: flex-start;
+            font-size: 12px;
+        }
 
         @media (min-width: 900px) {
             .bottom-bar { display: none; }
-            .card { padding: 28px 28px 24px; }
+            .card { padding: 32px 32px 28px; }
         }
 
         /* ── Success / Error screens ── */
@@ -442,7 +534,7 @@
 
         /* ── Skeleton loader ── */
         .skeleton {
-            background: linear-gradient(90deg, #ece7e0 25%, #f5f0eb 50%, #ece7e0 75%);
+            background: linear-gradient(90deg, #e8ecea 25%, #f8f9f7 50%, #e8ecea 75%);
             background-size: 200% 100%;
             animation: shimmer 1.2s infinite;
             border-radius: 6px;
@@ -451,11 +543,23 @@
 
         /* ── Misc ── */
         .hidden { display: none !important; }
-        .pc-actions { display: none; gap: 12px; align-items: center; justify-content: space-between; margin-top: 20px; }
+        .pc-actions {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 36px;
+        }
         @media (min-width: 900px) { .pc-actions { display: flex; } }
-        .pc-back-link { font-size: 13px; color: var(--texto-muted); cursor: pointer; }
+        .pc-back-link {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .08em;
+            color: var(--texto-muted);
+            cursor: pointer;
+            align-self: flex-start;
+        }
         .pc-back-link:hover { color: var(--texto); }
-        .pc-btn { width: auto; padding: 13px 28px; }
+        .pc-btn { width: auto; align-self: flex-start; padding: 14px 32px; }
 
         .fecha-label-str {
             font-size: 12px;
@@ -467,31 +571,51 @@
         }
 
         .error-msg { color: var(--danger); font-size: 13px; margin-top: 6px; }
+
+        /* ── Footer (solo PC) ── */
+        .site-footer {
+            display: none;
+            width: 100%;
+            border-top: 1px solid var(--crema-border);
+            padding: 18px 32px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--texto-muted);
+        }
+        .site-footer a { color: var(--texto-muted); text-decoration: none; }
+        .site-footer a:hover { color: var(--verde); }
+        @media (min-width: 900px) { .site-footer { display: block; } }
+
+        /* ── Card min-height mobile ── */
+        @media (max-width: 899px) {
+            .card { min-height: calc(100dvh - 64px - 110px - 48px); }
+        }
     </style>
 </head>
 <body>
 
 <header class="header">
-    <svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Simplified lotus SVG — replace with actual logo if desired -->
-        <path d="M100 130 C80 110 50 95 40 70 C55 75 75 85 100 130Z" fill="#6b8fa3" opacity=".85"/>
-        <path d="M100 130 C120 110 150 95 160 70 C145 75 125 85 100 130Z" fill="#6b8fa3" opacity=".85"/>
-        <path d="M100 130 C70 100 55 60 60 30 C75 50 90 80 100 130Z" fill="#6b8fa3"/>
-        <path d="M100 130 C130 100 145 60 140 30 C125 50 110 80 100 130Z" fill="#6b8fa3"/>
-        <path d="M100 130 C100 85 85 45 100 20 C115 45 100 85 100 130Z" fill="#6b8fa3"/>
-        <path d="M100 130 C85 118 65 108 35 100 C50 105 78 112 100 130Z" fill="#6b8fa3" opacity=".7"/>
-        <path d="M100 130 C115 118 135 108 165 100 C150 105 122 112 100 130Z" fill="#6b8fa3" opacity=".7"/>
-        <circle cx="100" cy="136" r="4" fill="#6b8fa3"/>
-        <circle cx="92" cy="148" r="3" fill="#6b8fa3" opacity=".7"/>
-        <circle cx="108" cy="148" r="3" fill="#6b8fa3" opacity=".7"/>
-    </svg>
-    <span class="header-title">Portal Pacientes</span>
+    <div class="header-brand">
+        <img src="/logo-transparent.png" alt="Portal Pacientes">
+        <span class="header-name">Portal Pacientes</span>
+    </div>
 </header>
 
 <div class="page">
     <div class="pc-layout">
-        <div class="pc-left" id="pc-left-content">
-            <!-- updated dynamically per step -->
+        <div class="pc-left">
+            <div id="pc-left-content">
+                <!-- updated dynamically per step -->
+            </div>
+            <!-- PC actions: WA + Continuar en panel izquierdo (solo desktop) -->
+            <div class="pc-actions" id="pc-actions" style="display:none;">
+                <a class="wsp-link wsp-link-pc" id="pc-wsp-link" href="#" target="_blank" rel="noopener">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    ¿Dudas? Consultanos por WhatsApp
+                </a>
+                <button class="btn btn-primary pc-btn" id="pc-main-btn" disabled>Continuar →</button>
+                <span class="pc-back-link" id="pc-back-link"></span>
+            </div>
         </div>
         <div class="pc-right">
             <div class="card" id="main-card">
@@ -582,8 +706,10 @@
                     </div>
 
                     <div class="info-box">
-                        <span class="icon">📱</span>
-                        <span>Después de reservar te escribimos por <strong>WhatsApp en 24–48 hs hábiles</strong> para confirmar el turno y coordinar la seña.</span>
+                        <div class="info-box-icon">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        </div>
+                        <span>Te escribimos por <strong>WhatsApp en 24–48 hs hábiles</strong> para confirmar el turno y coordinar la seña.</span>
                     </div>
                 </div>
 
@@ -597,12 +723,15 @@
                         <div class="summary-card" id="success-summary" style="text-align:left;margin-bottom:20px;"></div>
 
                         <div class="info-box" style="margin-bottom:24px;">
-                            <span class="icon">⏳</span>
+                            <div class="info-box-icon">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            </div>
                             <span>Te contactamos por <strong>WhatsApp en 24–48 hs hábiles</strong> para confirmar y coordinar la seña.</span>
                         </div>
 
                         <a class="btn btn-wsp" id="success-wsp-btn" href="#" target="_blank" rel="noopener">
-                            📲 Escribir por WhatsApp ahora
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-2px;margin-right:6px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                            Escribir por WhatsApp ahora
                         </a>
                         <button class="btn btn-secondary" id="btn-nuevo-turno">Reservar otro turno</button>
                     </div>
@@ -616,27 +745,28 @@
                         <div class="result-sub">Tuvimos un problema al procesar la reserva y no quedó confirmada. No te preocupes: <strong>escribinos por WhatsApp y te atendemos para coordinar el turno enseguida.</strong></div>
 
                         <div class="info-box" style="margin-bottom:24px;">
-                            <span class="icon">📱</span>
+                            <div class="info-box-icon">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            </div>
                             <span>Contanos qué especialista y horario querías y te respondemos en nuestro horario de atención.</span>
                         </div>
 
                         <a class="btn btn-wsp" id="error-wsp-btn" href="#" target="_blank" rel="noopener">
-                            📲 Escribir por WhatsApp
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline;vertical-align:-2px;margin-right:6px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                            Escribir por WhatsApp
                         </a>
                         <button class="btn btn-secondary" id="btn-reintentar">Reintentar reserva</button>
                     </div>
-                </div>
-
-                <!-- PC actions (shown only on desktop, inside card) -->
-                <div class="pc-actions" id="pc-actions" style="display:none;">
-                    <span class="pc-back-link" id="pc-back-link"></span>
-                    <button class="btn btn-primary pc-btn" id="pc-main-btn" disabled>Continuar →</button>
                 </div>
 
             </div><!-- /.card -->
         </div><!-- /.pc-right -->
     </div><!-- /.pc-layout -->
 </div><!-- /.page -->
+
+<footer class="site-footer">
+    © 2026 Portal Pacientes. Todos los derechos reservados — <a href="https://bewit.com.ar" target="_blank" rel="noopener">bewit.com.ar</a>
+</footer>
 
 <!-- Mobile bottom bar -->
 <div class="bottom-bar" id="bottom-bar">
@@ -693,6 +823,8 @@
     function setWspLinks(numero, texto = '') {
         const url = wspUrl(numero, texto);
         $id('mobile-wsp-link').href = url;
+        const pcWsp = $id('pc-wsp-link');
+        if (pcWsp) pcWsp.href = url;
     }
 
     // ── Render step indicator & PC left panel ──
@@ -700,13 +832,13 @@
         // Update PC left text
         const pcLeft = $id('pc-left-content');
         const titles = [
-            { tag: 'Portal Pacientes', title: 'Reservá tu turno<br>en un minuto.', sub: 'Elegí especialista, día y horario. Después te contactamos por WhatsApp en 24–48 hs hábiles para confirmar y coordinar la seña.' },
-            { tag: 'Portal Pacientes', title: 'Elegí día<br>y horario.', sub: 'Seleccioná el día y el horario que más te convenga.' },
-            { tag: 'Casi listo.', title: 'Tus datos.', sub: 'Dejanos tu nombre y WhatsApp. La reserva queda registrada y te confirmamos a la brevedad.' },
+            { tag: 'Portal Pacientes', title: 'Reservá<br>tu turno.', sub: 'Elegí especialista, día y horario. Después te contactamos por WhatsApp en 24–48 hs hábiles para confirmar y coordinar la seña.' },
+            { tag: 'Portal Pacientes', title: 'Elegí día<br><span class="brand">y horario.</span>', sub: 'Seleccioná el día y el horario que más te convenga.' },
+            { tag: 'Casi listo.', title: 'Tus<br><span class="brand">datos.</span>', sub: 'Dejanos tu nombre y WhatsApp. La reserva queda registrada y te confirmamos a la brevedad.' },
         ];
         const t = titles[Math.min(S.step - 1, 2)];
         if (t) {
-            pcLeft.innerHTML = `<div class="section-tag">${t.tag}</div><div class="pc-left-title">${t.title}</div><p class="pc-left-sub">${t.sub}</p>`;
+            pcLeft.innerHTML = `<div class="pc-left-tag">${t.tag}</div><div class="pc-left-title">${t.title}</div><div class="pc-left-accent"></div><p class="pc-left-sub">${t.sub}</p>`;
         }
 
         // Show/hide steps
@@ -714,9 +846,9 @@
         const stepId = S.step <= 3 ? `step-${S.step}` : (S.step === 4 ? 'step-success' : 'step-error');
         show(stepId);
 
-        // Bottom bar
+        // Bottom bar (solo mobile — en desktop el CSS lo oculta vía media query)
         const bottomBar = $id('bottom-bar');
-        if (S.step >= 4) {
+        if (S.step >= 4 || isDesktop()) {
             bottomBar.style.display = 'none';
         } else {
             bottomBar.style.display = 'flex';
@@ -735,10 +867,10 @@
             btn.disabled = !enabled;
         });
 
-        // PC actions
+        // PC actions: visible en desktop para pasos 1–3
         const pcActions = $id('pc-actions');
-        if (isDesktop() && S.step <= 3) {
-            pcActions.style.display = 'flex';
+        if (S.step <= 3) {
+            pcActions.style.display = '';  // respeta el CSS (flex en ≥900px, none en mobile)
         } else {
             pcActions.style.display = 'none';
         }
@@ -807,6 +939,10 @@
                 updateMainBtn();
             });
         });
+
+        // Seleccionar el primero por defecto
+        const primero = list.querySelector('.medico-card');
+        if (primero) primero.click();
     }
 
     // ── Step 2: week & slots ──
@@ -830,7 +966,7 @@
         return d.toISOString().slice(0, 10);
     }
 
-    async function loadSemana(desde) {
+    async function loadSemana(desde, autoSelect = false, _attempts = 0) {
         $id('days-grid').innerHTML = Array(7).fill('<div class="skeleton" style="height:72px;border-radius:8px;"></div>').join('');
         hide('slots-section');
         S.fechaSeleccionada = null;
@@ -846,6 +982,16 @@
             // prev button: disable if week starts today or earlier
             const hoy = new Date(); hoy.setHours(0,0,0,0);
             $id('btn-prev-week').disabled = currentWeekDesde <= hoy;
+
+            if (autoSelect) {
+                const primer = $id('days-grid').querySelector('.day-card:not(.day-unavailable):not(.day-pasado)');
+                if (primer) {
+                    primer.click();
+                } else if (_attempts < 8) {
+                    // semana sin disponibilidad: avanzar automáticamente
+                    loadSemana(addDays(currentWeekDesde, 7), true, _attempts + 1);
+                }
+            }
         } catch (e) {
             $id('days-grid').innerHTML = `<p style="grid-column:span 7;color:var(--danger);font-size:13px;">Error al cargar disponibilidad.</p>`;
         }
@@ -930,12 +1076,12 @@
 
         $id('step3-summary').innerHTML = `
             <div class="summary-row">
-                <div><div class="summary-key">Profesional</div><div class="summary-val">${S.medicoNombre}</div></div>
-                <div><div class="summary-key">Especialidad</div><div class="summary-val verde">${S.medicoEsp}</div></div>
+                <div class="summary-item"><div class="summary-key">Profesional</div><div class="summary-val">${S.medicoNombre}</div></div>
+                <div class="summary-item"><div class="summary-key">Especialidad</div><div class="summary-val verde">${S.medicoEsp}</div></div>
             </div>
             <div class="summary-row">
-                <div><div class="summary-key">Fecha</div><div class="summary-val">${cap(fechaStr)}</div></div>
-                <div><div class="summary-key">Horario</div><div class="summary-val">${S.horaSeleccionada} hs</div></div>
+                <div class="summary-item"><div class="summary-key">Fecha</div><div class="summary-val">${cap(fechaStr)}</div></div>
+                <div class="summary-item"><div class="summary-key">Horario</div><div class="summary-val">${S.horaSeleccionada} hs</div></div>
             </div>`;
     }
 
@@ -952,7 +1098,7 @@
             setWspLinks(S.medicoWsp);
             goToStep(2);
             const hoy = startOfWeek(new Date());
-            loadSemana(hoy);
+            loadSemana(hoy, true);
         } else if (S.step === 2 && S.fechaSeleccionada && S.horaSeleccionada) {
             renderStep3Summary();
             goToStep(3);
@@ -999,12 +1145,12 @@
             const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
             $id('success-summary').innerHTML = `
                 <div class="summary-row">
-                    <div><div class="summary-key">Profesional</div><div class="summary-val">${S.medicoNombre}</div></div>
-                    <div><div class="summary-key">Especialidad</div><div class="summary-val verde">${S.medicoEsp}</div></div>
+                    <div class="summary-item"><div class="summary-key">Profesional</div><div class="summary-val">${S.medicoNombre}</div></div>
+                    <div class="summary-item"><div class="summary-key">Especialidad</div><div class="summary-val verde">${S.medicoEsp}</div></div>
                 </div>
                 <div class="summary-row">
-                    <div><div class="summary-key">Fecha</div><div class="summary-val">${cap(fechaStr)}</div></div>
-                    <div><div class="summary-key">Horario</div><div class="summary-val">${S.horaSeleccionada} hs</div></div>
+                    <div class="summary-item"><div class="summary-key">Fecha</div><div class="summary-val">${cap(fechaStr)}</div></div>
+                    <div class="summary-item"><div class="summary-key">Horario</div><div class="summary-val">${S.horaSeleccionada} hs</div></div>
                 </div>`;
 
             const wspMensaje = `Hola! Acabo de reservar un turno con ${S.medicoNombre} para el ${cap(fechaStr)} a las ${S.horaSeleccionada} hs. Mi nombre es ${nombre}.`;
