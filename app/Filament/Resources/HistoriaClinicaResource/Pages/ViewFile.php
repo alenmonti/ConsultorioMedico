@@ -87,7 +87,7 @@ class ViewFile extends Page implements HasForms, HasInfolists
                 ->columnSpan(1),
             FileUpload::make('imagenes')
                 ->label('Imagenes de estudios')
-                ->directory('imagenes')
+                ->directory(fn () => 'usuarios/' . auth()->id() . '/imagenes')
                 ->image()
                 ->multiple()
                 ->panelLayout('grid')
@@ -193,7 +193,7 @@ class ViewFile extends Page implements HasForms, HasInfolists
                     ->columnSpan(1),
                 FileUpload::make('imagenes')
                     ->label('Imagenes de estudios')
-                    ->directory('imagenes')
+                    ->directory(fn () => 'usuarios/' . auth()->id() . '/imagenes')
                     ->image()
                     ->multiple()
                     ->panelLayout('grid')
@@ -240,7 +240,7 @@ class ViewFile extends Page implements HasForms, HasInfolists
                 ->iconButton()
                 ->tooltip('Subir Historia Clínica antigua')
                 ->color('info')
-                ->form([FileUpload::make('documento')->label('Documento')->required()->directory('documents')->maxSize(10024)->acceptedFileTypes(['application/pdf'])])
+                ->form([FileUpload::make('documento')->label('Documento')->required()->directory(fn () => 'usuarios/' . auth()->id() . '/documents')->maxSize(10024)->acceptedFileTypes(['application/pdf'])])
                 ->action(function ($data) {
                     $this->paciente->documento = $data['documento'];
                     $this->paciente->save();

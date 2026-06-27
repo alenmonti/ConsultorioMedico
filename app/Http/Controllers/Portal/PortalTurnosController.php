@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Portal;
 use App\Enums\EstadosTurno;
 use App\Enums\TipoTurno;
 use App\Http\Controllers\Controller;
+use App\Models\Practica;
 use App\Models\Turno;
 use App\Models\User;
 use App\Services\ScheduleService;
@@ -141,15 +142,21 @@ class PortalTurnosController extends Controller
 
         $notas = "Reserva web — Nombre: {$data['nombre']} | WhatsApp: {$data['whatsapp']}";
 
+        $consulta = Practica::withoutGlobalScopes()
+            ->where('medico_id', $medico->id)
+            ->whereRaw('LOWER(nombre) = ?', ['consulta'])
+            ->first();
+
         Turno::withoutGlobalScopes()->create([
-            'medico_id' => $medico->id,
+            'medico_id'   => $medico->id,
             'paciente_id' => null,
-            'fecha'     => $data['fecha'],
-            'hora'      => $data['hora'],
-            'estado'    => EstadosTurno::Pendiente,
-            'tipo'      => TipoTurno::Turno,
-            'notas'     => $notas,
-            'origen'    => 'web',
+            'practica_id' => $consulta?->id,
+            'fecha'       => $data['fecha'],
+            'hora'        => $data['hora'],
+            'estado'      => EstadosTurno::Pendiente,
+            'tipo'        => TipoTurno::Turno,
+            'notas'       => $notas,
+            'origen'      => 'web',
         ]);
 
         return response()->json(['ok' => true]);

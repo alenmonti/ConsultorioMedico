@@ -76,7 +76,7 @@ class PerfilPortalPage extends Page implements HasForms
                             ->label('Foto de perfil')
                             ->image()
                             ->imageEditor()
-                            ->directory('portal/fotos')
+                            ->directory(fn () => 'usuarios/' . auth()->id() . '/configuracion')
                             ->maxSize(2048)
                             ->helperText('Imagen cuadrada recomendada. Máximo 2 MB.'),
                     ]),
