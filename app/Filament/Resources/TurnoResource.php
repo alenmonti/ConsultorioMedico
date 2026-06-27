@@ -44,6 +44,14 @@ class TurnoResource extends Resource
             TextInfo::make('info')
                 ->hidden(fn(Get $get) => $get('tipo') == 'turno')
                 ->columnSpan(2),
+            Select::make('practica_id')
+                ->label('Práctica')
+                ->options(Practica::selectOptions())
+                ->searchable()
+                ->default(fn () => (string) Practica::whereRaw('lower(nombre) = ?', ['consulta'])->value('id'))
+                ->columnSpan(2)
+                ->live()
+                ->afterStateUpdated(fn (Set $set) => $set('hora', null)),
             Grid::make('')
                 ->columns(2)
                 ->schema([
@@ -60,7 +68,11 @@ class TurnoResource extends Resource
                         ->options(function (Get $get) {
                             $fecha = Carbon::parse($get('fecha'))->format('Y-m-d');
                             $tipo = $get('tipo') ?? 'turno';
-                            return Auth::user()->horariosDisponibles($fecha, $tipo);
+                            $practicaId = $get('practica_id');
+                            $duracion = $practicaId
+                                ? (Practica::find($practicaId)?->duracion_min ?? 20)
+                                : 20;
+                            return Auth::user()->horariosDisponibles($fecha, $tipo, $duracion);
                         }),
                 ]),
             Grid::make('')
@@ -77,12 +89,6 @@ class TurnoResource extends Resource
                         ->options(EstadosTurno::class)
                         ->default(EstadosTurno::Pendiente),
                 ]),
-            Select::make('practica_id')
-                ->label('Práctica')
-                ->options(Practica::selectOptions())
-                ->searchable()
-                ->default(fn () => (string) Practica::whereRaw('lower(nombre) = ?', ['consulta'])->value('id'))
-                ->columnSpan(2),
             Textarea::make('notas')
                 ->label('Notas')
                 ->placeholder('Notas adicionales')

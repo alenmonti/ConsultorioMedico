@@ -6,6 +6,7 @@ use App\Enums\EstadosTurno;
 use App\Enums\Roles;
 use App\Filament\Resources\HistoriaClinicaResource;
 use App\Filament\Resources\TurnoResource;
+use App\Models\Practica;
 use App\Models\Horario;
 use App\Models\Turno;
 use Carbon\Carbon;
@@ -39,12 +40,13 @@ class Calendario extends FullCalendarWidget
         $turnos = Turno::query()
             ->where('fecha', '>=', $fetchInfo['start'])
             ->where('fecha', '<=', $fetchInfo['end'])
+            ->with(['practica'])
             ->get()
             ->map(fn (Turno $turno) => [
                     'id' => $turno->id,
                     'title' => $turno->paciente->nombre . ' ' . $turno->paciente->apellido,
                     'start' => Carbon::parse($turno->fecha . ' ' . $turno->hora),
-                    'end' => Carbon::parse($turno->fecha . ' ' . $turno->hora)->addMinutes(20),
+                    'end' => Carbon::parse($turno->fecha . ' ' . $turno->hora)->addMinutes($turno->practica?->duracion_min ?? 20),
                     'backgroundColor' => $turno->estado->getHexColor(),
                     'shouldOpenInNewTab' => true,
                     'extendedProps' => [
@@ -77,6 +79,7 @@ class Calendario extends FullCalendarWidget
 
         $turnosPorFecha = Turno::where('medico_id', $medico->medico_id)
             ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
+            ->with('practica')
             ->get()
             ->groupBy('fecha');
 
@@ -91,9 +94,18 @@ class Calendario extends FullCalendarWidget
             $configHorarios = $horariosPorDia->get($diaSemana, collect());
 
             if ($configHorarios->isNotEmpty()) {
-                $horasOcupadas = $turnosPorFecha->get($fechaStr, collect())
-                    ->pluck('hora')
-                    ->toArray();
+                $intervalo = (int) Carbon::parse($configHorarios->first()->intervalo)->format('i');
+                $turnosDelDia = $turnosPorFecha->get($fechaStr, collect());
+                $horasOcupadas = [];
+                foreach ($turnosDelDia as $turno) {
+                    $duracionTurno = $turno->practica?->duracion_min ?? $intervalo;
+                    $bloques = max(1, (int) ceil($duracionTurno / $intervalo));
+                    $inicio = Carbon::parse($turno->hora);
+                    for ($i = 0; $i < $bloques; $i++) {
+                        $horasOcupadas[] = $inicio->copy()->addMinutes($i * $intervalo)->format('H:i');
+                    }
+                }
+                $horasOcupadas = array_unique($horasOcupadas);
 
                 foreach ($configHorarios as $horario) {
                     $time = Carbon::parse($horario->desde);
@@ -241,6 +253,7 @@ class Calendario extends FullCalendarWidget
                             'estado' => EstadosTurno::Pendiente,
                             'tipo' => 'turno',
                             'medico_id' => Auth::user()->medico_id,
+                            'practica_id' => Practica::whereRaw('lower(nombre) = ?', ['consulta'])->value('id'),
                         ]);
                     }
                 )

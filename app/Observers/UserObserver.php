@@ -22,7 +22,7 @@ class UserObserver
             $user->save();
 
             // Create default practica
-            $user->practicas()->create(['nombre' => 'Consulta']);
+            $user->practicas()->create(['nombre' => 'Consulta', 'costo' => 35000, 'duracion_min' => 20]);
 
             // Create default schedule
             $user->horarios()->createMany([

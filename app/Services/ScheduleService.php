@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class ScheduleService
 {
-    public function horariosDisponibles(User $medico, string $fecha, string $tipo = 'turno'): array
+    public function horariosDisponibles(User $medico, string $fecha, string $tipo = 'turno', int $duracion = 20): array
     {
         $diaSemana = $this->dayOfWeekToString(Carbon::parse($fecha)->dayOfWeek);
 
@@ -21,6 +21,7 @@ class ScheduleService
             return [];
         }
 
+        $intervalo = 20;
         $slots = [];
         foreach ($configHorarios as $horario) {
             $desde = Carbon::parse($horario->desde);
@@ -32,16 +33,39 @@ class ScheduleService
             }
         }
 
-        $horariosOcupados = Turno::where('medico_id', $medico->medico_id)
+        $turnosDelDia = Turno::where('medico_id', $medico->medico_id)
             ->where('fecha', $fecha)
-            ->pluck('hora')
-            ->toArray();
+            ->with('practica')
+            ->get();
 
-        $result = $tipo !== 'turno'
-            ? array_intersect($slots, $horariosOcupados)
-            : array_diff($slots, $horariosOcupados);
+        $slotsOcupados = $this->expandirSlotsOcupados($turnosDelDia, $intervalo);
 
-        return array_combine($result, $result);
+        if ($tipo !== 'turno') {
+            $horasConTurno = $turnosDelDia->pluck('hora')->toArray();
+            $result = array_intersect($slots, $horasConTurno);
+            return array_combine($result, $result);
+        }
+
+        $bloquesSolicitados = max(1, (int) ceil($duracion / $intervalo));
+        $slotsSet = array_flip($slots);
+
+        $result = [];
+        foreach ($slots as $slot) {
+            $libre = true;
+            $inicio = Carbon::parse($slot);
+            for ($i = 0; $i < $bloquesSolicitados; $i++) {
+                $check = $inicio->copy()->addMinutes($i * $intervalo)->format('H:i');
+                if (in_array($check, $slotsOcupados) || ! isset($slotsSet[$check])) {
+                    $libre = false;
+                    break;
+                }
+            }
+            if ($libre) {
+                $result[$slot] = $slot;
+            }
+        }
+
+        return $result;
     }
 
     public function diasNoDisponibles(User $medico, string $desde, string $hasta): array
@@ -51,10 +75,11 @@ class ScheduleService
 
         $horariosPorDia = Horario::where('medico_id', $medico->medico_id)
             ->get()
-            ->groupBy(fn($h) => $h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia);
+            ->groupBy(fn ($h) => $h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia);
 
         $turnosPorFecha = Turno::where('medico_id', $medico->medico_id)
             ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
+            ->with('practica')
             ->get()
             ->groupBy('fecha');
 
@@ -73,22 +98,24 @@ class ScheduleService
                 continue;
             }
 
+            $intervalo = (int) Carbon::parse($configHorarios->first()->intervalo)->format('i');
             $slots = [];
             foreach ($configHorarios as $horario) {
                 $time = Carbon::parse($horario->desde);
                 $fin = Carbon::parse($horario->hasta);
-                $intervalo = (int) Carbon::parse($horario->intervalo)->format('i');
+                $iv = (int) Carbon::parse($horario->intervalo)->format('i');
                 while ($time <= $fin) {
                     $slots[] = $time->format('H:i');
-                    $time->addMinutes($intervalo);
+                    $time->addMinutes($iv);
                 }
             }
 
-            $horasOcupadas = $turnosPorFecha->get($fechaStr, collect())
-                ->pluck('hora')
-                ->toArray();
+            $slotsOcupados = $this->expandirSlotsOcupados(
+                $turnosPorFecha->get($fechaStr, collect()),
+                $intervalo
+            );
 
-            if (empty(array_diff($slots, $horasOcupadas))) {
+            if (empty(array_diff($slots, $slotsOcupados))) {
                 $diasNoDisponibles[] = $fechaStr;
             }
 
@@ -96,6 +123,21 @@ class ScheduleService
         }
 
         return $diasNoDisponibles;
+    }
+
+    private function expandirSlotsOcupados($turnos, int $intervalo): array
+    {
+        $ocupados = [];
+        foreach ($turnos as $turno) {
+            $duracionTurno = $turno->practica?->duracion_min ?? $intervalo;
+            $bloques = max(1, (int) ceil($duracionTurno / $intervalo));
+            $inicio = Carbon::parse($turno->hora);
+            for ($i = 0; $i < $bloques; $i++) {
+                $ocupados[] = $inicio->copy()->addMinutes($i * $intervalo)->format('H:i');
+            }
+        }
+
+        return array_unique($ocupados);
     }
 
     private function dayOfWeekToString(int $dayOfWeek): string

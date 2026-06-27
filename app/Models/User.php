@@ -90,9 +90,9 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         return $this->belongsTo(User::class, 'medico_id', 'id');
     }
 
-    public function horariosDisponibles($fecha, $turnoTipo = 'turno')
+    public function horariosDisponibles($fecha, $turnoTipo = 'turno', $duracion = 20)
     {
-        return app(ScheduleService::class)->horariosDisponibles($this, $fecha, $turnoTipo);
+        return app(ScheduleService::class)->horariosDisponibles($this, $fecha, $turnoTipo, $duracion);
     }
 
     public function diasNoDisponibles($desde, $hasta)

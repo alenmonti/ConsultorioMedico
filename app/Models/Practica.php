@@ -34,9 +34,11 @@ class Practica extends Model
                     ? "[{$this->tipo}] {$this->nombre}"
                     : $this->nombre;
 
-                return $this->costo !== null
+                $conCosto = $this->costo !== null
                     ? "{$base} - $" . number_format($this->costo, 2, ',', '.')
                     : $base;
+
+                return "{$conCosto} ({$this->duracion_min} min)";
             }
         );
     }
