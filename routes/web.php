@@ -20,6 +20,22 @@ Route::get('health', function () {
     return response()->json(['status' => 'ok'], 200);
 });
 
+Route::get('migrate-storage', function () {
+    $dryRun   = request()->boolean('dry_run', true);
+    $moveFiles = request()->boolean('move_files', false);
+
+    $limit = (int) request()->input('limit', 0);
+
+    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    Artisan::call('storage:migrate-paths', [
+        '--dry-run'    => $dryRun,
+        '--move-files' => $moveFiles,
+        '--limit'      => $limit,
+    ], $output);
+
+    return response('<pre>' . $output->fetch() . '</pre>');
+});
+
 Route::prefix('portal-turnos')->group(function () {
     Route::get('/', [PortalTurnosController::class, 'index'])->name('portal.turnos');
     Route::get('/medicos', [PortalTurnosController::class, 'medicos'])->name('portal.medicos');
