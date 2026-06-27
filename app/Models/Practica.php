@@ -29,9 +29,15 @@ class Practica extends Model
     protected function displayName(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->tipo
-                ? "[{$this->tipo}] {$this->nombre}"
-                : $this->nombre
+            get: function () {
+                $base = $this->tipo
+                    ? "[{$this->tipo}] {$this->nombre}"
+                    : $this->nombre;
+
+                return $this->costo !== null
+                    ? "{$base} - $" . number_format($this->costo, 2, ',', '.')
+                    : $base;
+            }
         );
     }
 

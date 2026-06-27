@@ -22,3 +22,50 @@ html.dark .fc-popover {
     border-radius: 20%;
     margin-right: 5px;
 }
+
+.fc .fc-timegrid-slot {
+    height: 3em;
+}
+
+.fc .fc-timegrid-slot:hover {
+    background-color: rgba(99, 102, 241, 0.08);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.fc .fc-event-main-frame {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0.4em;
+    overflow: hidden;
+
+}
+
+.fc .fc-event:hover {
+    filter: brightness(0.88);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+@media (max-width: 640px) {
+    .fc .fc-toolbar {
+        flex-wrap: wrap;
+        gap: 0.4em;
+    }
+
+    .fc .fc-toolbar-chunk {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1rem;
+    }
+
+    .fc .fc-button {
+        padding: 0.25em 0.5em;
+        font-size: 0.8em;
+    }
+}

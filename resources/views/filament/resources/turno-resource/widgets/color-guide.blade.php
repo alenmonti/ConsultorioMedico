@@ -3,7 +3,12 @@
         <x-filament::section>
             <div class="flex justify-evenly flex-col gap-2 md:flex-row">
                 <div class="flex">
-                    <div class="color-box" style="background-color: #3490dc;"></div>
+                    <div class="color-box" style="background-color: #7dd3fc;"></div>
+                    <p>Disponible</p>
+                </div>
+
+                <div class="flex">
+                    <div class="color-box" style="background-color: #9ca3af;"></div>
                     <p>Pendiente</p>
                 </div>
                 
