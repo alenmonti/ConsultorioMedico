@@ -62,7 +62,6 @@
             font-weight: 500;
             color: #fff;
             letter-spacing: .01em;
-            font-style: italic;
         }
         .header-label {
             display: flex;
@@ -208,7 +207,7 @@
         }
 
         /* ── Medico cards ── */
-        .medico-list { display: flex; flex-direction: column; gap: 10px; }
+        .medico-list { display: flex; flex-direction: column; gap: 10px; margin-top: 50px; }
         .medico-card {
             display: flex;
             align-items: center;
@@ -219,6 +218,11 @@
             cursor: pointer;
             transition: border-color .15s, background .15s;
             background: var(--card-bg);
+        }
+        @media (max-width: 899px) {
+            .medico-card { padding: 18px 16px; gap: 16px; }
+            .medico-avatar, .medico-avatar-placeholder { width: 60px; height: 60px; }
+            .medico-nombre { font-size: 16px; }
         }
         .medico-card:hover { border-color: #7ab8c0; }
         .medico-card.selected { border-color: var(--verde); background: var(--verde-light); }
