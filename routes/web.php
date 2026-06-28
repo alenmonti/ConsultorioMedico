@@ -23,6 +23,21 @@ Route::get('health', function () {
     return response()->json(['status' => 'ok'], 200);
 });
 
+Route::get('optimize', function () {
+    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    Artisan::call('optimize', [], $output);
+    Artisan::call('view:cache', [], $output);
+
+    return response('<pre>' . $output->fetch() . '</pre>');
+});
+
+Route::get('optimize-clear', function () {
+    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    Artisan::call('optimize:clear', [], $output);
+
+    return response('<pre>' . $output->fetch() . '</pre>');
+});
+
 // Route::get('migrate-storage', function () {
 //     $dryRun   = request()->boolean('dry_run', true);
 //     $moveFiles = request()->boolean('move_files', false);
