@@ -135,11 +135,16 @@ class ListRecordatorios extends ListRecords
                     ->modalHeading('Confirmar pago de seña')
                     ->modalDescription(fn (Turno $record) => "¿Confirmar que {$record->paciente->nombre} {$record->paciente->apellido} abonó la seña?")
                     ->action(function (Turno $record) {
-                        $record->update(['senia_pagada_at' => now()]);
+                        $record->update([
+                            'senia_informada_at' => $record->senia_informada_at ?? now(),
+                            'senia_pagada_at' => now(),
+                            'estado' => EstadosTurno::Confirmado,
+                        ]);
 
                         Notification::make()
                             ->success()
                             ->title('Seña registrada como pagada')
+                            ->body('El turno quedó confirmado.')
                             ->send();
                     }),
 
@@ -204,16 +209,23 @@ class ListRecordatorios extends ListRecords
                         ]);
 
                         $paciente = $record->paciente;
-                        $fecha = Carbon::parse($record->fecha)->format('d/m/Y');
+                        $medico = $record->medico;
+                        $fecha = Carbon::parse($record->fecha)
+                            ->locale('es')
+                            ->isoFormat('dddd D [de] MMMM');
+                        $fecha = ucfirst($fecha);
                         $appUrl = config('app.url');
 
                         $confirmUrl = "{$appUrl}/turno/confirmar/{$record->id}?token={$token}";
                         $cancelUrl = "{$appUrl}/turno/cancelar/{$record->id}?token={$token}";
 
+                        $medicoNombre = $medico ? $medico->name : '';
+
                         $mensaje = urlencode(
-                            "Hola {$paciente->nombre}! Le recordamos que tiene turno el *{$fecha}* a las *{$record->hora}*.\n\n" .
-                            "✅ Confirmar turno: {$confirmUrl}\n" .
-                            "❌ Cancelar turno: {$cancelUrl}\n\n" .
+                            "Hola {$paciente->nombre}, te recordamos que el día *{$fecha}* a las *{$record->hora} hs* tenés turno" .
+                            ($medicoNombre ? " con {$medicoNombre}" : '') . ".\n\n" .
+                            "Confirmar turno:\n{$confirmUrl}\n\n" .
+                            "Cancelar turno:\n{$cancelUrl}\n\n" .
                             "¡Muchas gracias!"
                         );
 
@@ -308,21 +320,6 @@ class ListRecordatorios extends ListRecords
                             $q->orWhereDate('fecha', $date);
                         }
                     })
-                ),
-
-            'sin_paciente' => Tab::make('Sin paciente asignado')
-                ->icon('heroicon-o-user-minus')
-                ->badge(
-                    Turno::query()
-                        ->whereNull('paciente_id')
-                        ->whereIn('estado', $estadosActivos)
-                        ->whereDate('fecha', '>=', today())
-                        ->count()
-                )
-                ->modifyQueryUsing(fn ($query) => $query
-                    ->whereNull('paciente_id')
-                    ->whereIn('estado', $estadosActivos)
-                    ->whereDate('fecha', '>=', today())
                 ),
         ];
     }

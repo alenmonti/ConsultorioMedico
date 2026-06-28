@@ -16,27 +16,20 @@ class TurnoPublicController extends Controller
             return view('turno.respuesta', [
                 'exito'   => false,
                 'titulo'  => 'Link inválido',
-                'mensaje' => 'Este link de confirmación no es válido o ya fue utilizado.',
+                'mensaje' => 'Este link de confirmación no es válido.',
             ]);
         }
 
-        if ($turno->estado === EstadosTurno::Cancelado) {
-            return view('turno.respuesta', [
-                'exito'   => false,
-                'titulo'  => 'Turno cancelado',
-                'mensaje' => 'Este turno ya fue cancelado.',
-            ]);
+        if ($turno->estado !== EstadosTurno::Cancelado) {
+            $turno->update(['estado' => EstadosTurno::Confirmado]);
         }
-
-        $turno->update([
-            'estado'      => EstadosTurno::Confirmado,
-            'turno_token' => null,
-        ]);
 
         return view('turno.respuesta', [
-            'exito'   => true,
-            'titulo'  => 'Turno confirmado',
-            'mensaje' => 'Su turno ha sido confirmado exitosamente. ¡Muchas gracias!',
+            'exito'   => $turno->estado !== EstadosTurno::Cancelado,
+            'titulo'  => $turno->estado === EstadosTurno::Cancelado ? 'Turno cancelado' : 'Turno confirmado',
+            'mensaje' => $turno->estado === EstadosTurno::Cancelado
+                ? 'Este turno ya fue cancelado y no puede confirmarse.'
+                : 'Su turno ha sido confirmado exitosamente. ¡Muchas gracias!',
             'turno'   => $turno,
         ]);
     }
@@ -49,22 +42,11 @@ class TurnoPublicController extends Controller
             return view('turno.respuesta', [
                 'exito'   => false,
                 'titulo'  => 'Link inválido',
-                'mensaje' => 'Este link de cancelación no es válido o ya fue utilizado.',
+                'mensaje' => 'Este link de cancelación no es válido.',
             ]);
         }
 
-        if ($turno->estado === EstadosTurno::Cancelado) {
-            return view('turno.respuesta', [
-                'exito'   => false,
-                'titulo'  => 'Turno ya cancelado',
-                'mensaje' => 'Este turno ya fue cancelado previamente.',
-            ]);
-        }
-
-        $turno->update([
-            'estado'      => EstadosTurno::Cancelado,
-            'turno_token' => null,
-        ]);
+        $turno->update(['estado' => EstadosTurno::Cancelado]);
 
         return view('turno.respuesta', [
             'exito'   => true,
