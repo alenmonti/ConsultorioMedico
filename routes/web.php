@@ -9,16 +9,16 @@ use Illuminate\Support\Facades\Artisan;
 //     Artisan::call('storage:link');
 //     return 'Storage linked successfully.';
 // });
-Route::get('migrate', function () {
-    $output = new \Symfony\Component\Console\Output\BufferedOutput();
-    Artisan::call('migrate', ['--force' => true], $output);
-    return response('<pre>' . $output->fetch() . '</pre>');
-});
-Route::get('seed', function () {
-    $output = new \Symfony\Component\Console\Output\BufferedOutput();
-    Artisan::call('db:seed', ['--force' => true], $output);
-    return response('<pre>' . $output->fetch() . '</pre>');
-});
+// Route::get('migrate', function () {
+//     $output = new \Symfony\Component\Console\Output\BufferedOutput();
+//     Artisan::call('migrate', ['--force' => true], $output);
+//     return response('<pre>' . $output->fetch() . '</pre>');
+// });
+// Route::get('seed', function () {
+//     $output = new \Symfony\Component\Console\Output\BufferedOutput();
+//     Artisan::call('db:seed', ['--force' => true], $output);
+//     return response('<pre>' . $output->fetch() . '</pre>');
+// });
 Route::get('health', function () {
     return response()->json(['status' => 'ok'], 200);
 });

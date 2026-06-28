@@ -7,7 +7,6 @@ use App\Filament\Resources\PacienteResource;
 use App\Filament\Resources\RecordatoriosResource;
 use App\Models\Turno;
 use Carbon\Carbon;
-use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
@@ -77,56 +76,36 @@ class ListRecordatorios extends ListRecords
                     ->placeholder('Sin teléfono'),
             ])
             ->actions([
-                // Tab 1: informar seña
+                // Tab 1: informar seña (link directo a WhatsApp, sin modal)
                 TableAction::make('informar_senia')
                     ->tooltip('Informar seña')
                     ->icon('heroicon-o-chat-bubble-left-ellipsis')
                     ->iconButton()
                     ->color('success')
                     ->visible(fn () => $this->activeTab === 'sin_informar' || $this->activeTab === null)
-                    ->form([
-                        TextInput::make('monto')
-                            ->label('Monto de la seña')
-                            ->prefix('$')
-                            ->numeric()
-                            ->required()
-                            ->default(fn () => auth()->user()->monto_senia),
-                    ])
-                    ->modalHeading('Informar seña al paciente')
-                    ->modalDescription(fn (Turno $record) => "Se marcará el turno de {$record->paciente->nombre} {$record->paciente->apellido} como informado y se abrirá WhatsApp.")
-                    ->modalSubmitActionLabel('Confirmar y abrir WhatsApp')
-                    ->action(function (Turno $record, array $data) {
+                    ->action(function (Turno $record) {
                         $record->update(['senia_informada_at' => now()]);
 
                         $paciente = $record->paciente;
                         $fecha = Carbon::parse($record->fecha)->format('d/m/Y');
-                        $monto = $data['monto'];
+                        $monto = auth()->user()->monto_senia;
                         $alias = auth()->user()->alias_pago;
 
                         $textoAlias = $alias
                             ? "enviando el monto al alias *{$alias}*"
                             : 'coordinando el pago con nosotros';
 
+                        $montoTexto = $monto ? " de *\${$monto}*" : '';
+
                         $mensaje = urlencode(
-                            "Hola {$paciente->nombre}! Le informamos que para confirmar su turno del {$fecha} a las {$record->hora} deberá abonar una seña de *\${$monto}* {$textoAlias}.\n\n" .
+                            "Hola {$paciente->nombre}! Le informamos que para confirmar su turno del {$fecha} a las {$record->hora} deberá abonar una seña{$montoTexto} {$textoAlias}.\n\n" .
                             "Por favor compartí el comprobante por este chat dentro de las *48 hs hábiles* para mantener el turno.\n\n" .
                             "¡Muchas gracias!"
                         );
 
                         $url = "https://wa.me/{$paciente->telefono}?text={$mensaje}";
 
-                        Notification::make()
-                            ->success()
-                            ->title('Turno marcado como informado')
-                            ->body("{$paciente->nombre} {$paciente->apellido}")
-                            ->actions([
-                                NotificationAction::make('wsp')
-                                    ->label('Abrir WhatsApp')
-                                    ->url($url)
-                                    ->openUrlInNewTab(),
-                            ])
-                            ->persistent()
-                            ->send();
+                        $this->js("window.open(" . json_encode($url) . ", '_blank')");
                     }),
 
                 // Tab 2: ir a WhatsApp
@@ -242,18 +221,7 @@ class ListRecordatorios extends ListRecords
 
                         $url = "https://wa.me/{$paciente->telefono}?text={$mensaje}";
 
-                        Notification::make()
-                            ->success()
-                            ->title('Recordatorio marcado como enviado')
-                            ->body("{$paciente->nombre} {$paciente->apellido}")
-                            ->actions([
-                                NotificationAction::make('wsp')
-                                    ->label('Abrir WhatsApp')
-                                    ->url($url)
-                                    ->openUrlInNewTab(),
-                            ])
-                            ->persistent()
-                            ->send();
+                        $this->js("window.open(" . json_encode($url) . ", '_blank')");
                     }),
 
                 // Todos los tabs: editar turno

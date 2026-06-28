@@ -10,7 +10,7 @@ class TurnoPublicController extends Controller
 {
     public function confirmar(Request $request, int $turnoId)
     {
-        $turno = Turno::withoutGlobalScopes()->find($turnoId);
+        $turno = Turno::withoutGlobalScopes()->with('medico')->find($turnoId);
 
         if (! $turno || ! $turno->turno_token || $turno->turno_token !== $request->query('token')) {
             return view('turno.respuesta', [
@@ -35,7 +35,7 @@ class TurnoPublicController extends Controller
 
         return view('turno.respuesta', [
             'exito'   => true,
-            'titulo'  => '¡Turno confirmado!',
+            'titulo'  => 'Turno confirmado',
             'mensaje' => 'Su turno ha sido confirmado exitosamente. ¡Muchas gracias!',
             'turno'   => $turno,
         ]);
@@ -43,7 +43,7 @@ class TurnoPublicController extends Controller
 
     public function cancelar(Request $request, int $turnoId)
     {
-        $turno = Turno::withoutGlobalScopes()->find($turnoId);
+        $turno = Turno::withoutGlobalScopes()->with('medico')->find($turnoId);
 
         if (! $turno || ! $turno->turno_token || $turno->turno_token !== $request->query('token')) {
             return view('turno.respuesta', [
