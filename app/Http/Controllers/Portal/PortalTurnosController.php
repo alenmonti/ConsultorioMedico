@@ -51,7 +51,7 @@ class PortalTurnosController extends Controller
         $limitePortal     = Carbon::today()->addDays($diasAnticipacion);
         $diasExcluidos    = $medico->portal_dias_excluidos ?? [];
 
-        $diasNoDisponibles = $schedule->diasNoDisponibles($medico, $desde->format('Y-m-d'), $hasta->format('Y-m-d'));
+        $diasNoDisponibles = $schedule->diasNoDisponibles($medico, $desde->format('Y-m-d'), $hasta->format('Y-m-d'), ignorarCancelados: true);
 
         $dias = [];
         $cursor = $desde->copy();
@@ -77,7 +77,7 @@ class PortalTurnosController extends Controller
                 $estado = $horarioDelDia ? 'lleno' : 'cerrado';
                 $slots = 0;
             } else {
-                $disponibles = $schedule->horariosDisponibles($medico, $fechaStr);
+                $disponibles = $schedule->horariosDisponibles($medico, $fechaStr, ignorarCancelados: true);
                 $slots = count($disponibles);
                 $estado = $slots <= 3 ? 'pocos' : 'libre';
             }
@@ -110,7 +110,7 @@ class PortalTurnosController extends Controller
         ]);
 
         $medico = User::findOrFail($request->medico_id);
-        $slots  = $schedule->horariosDisponibles($medico, $request->fecha);
+        $slots  = $schedule->horariosDisponibles($medico, $request->fecha, ignorarCancelados: true);
 
         $manana = [];
         $tarde  = [];
@@ -145,11 +145,19 @@ class PortalTurnosController extends Controller
 
         $medico = User::findOrFail($data['medico_id']);
 
-        // Verify slot is still available
-        $disponibles = app(ScheduleService::class)->horariosDisponibles($medico, $data['fecha']);
+        // Verify slot is still available (ignoring cancelled turnos)
+        $disponibles = app(ScheduleService::class)->horariosDisponibles($medico, $data['fecha'], ignorarCancelados: true);
         if (!isset($disponibles[$data['hora']])) {
             return response()->json(['message' => 'El horario ya no está disponible.'], 422);
         }
+
+        // Remove any cancelled turno that occupies this slot
+        Turno::withoutGlobalScopes()
+            ->where('medico_id', $medico->id)
+            ->where('fecha', $data['fecha'])
+            ->where('hora', $data['hora'])
+            ->where('estado', EstadosTurno::Cancelado)
+            ->delete();
 
         $notas = "Reserva web — Nombre: {$data['nombre']} | WhatsApp: {$data['whatsapp']}";
 

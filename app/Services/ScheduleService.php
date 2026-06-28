@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EstadosTurno;
 use App\Models\Horario;
 use App\Models\Turno;
 use App\Models\User;
@@ -9,7 +10,7 @@ use Carbon\Carbon;
 
 class ScheduleService
 {
-    public function horariosDisponibles(User $medico, string $fecha, string $tipo = 'turno', int $duracion = 20): array
+    public function horariosDisponibles(User $medico, string $fecha, string $tipo = 'turno', int $duracion = 20, bool $ignorarCancelados = false): array
     {
         $diaSemana = $this->dayOfWeekToString(Carbon::parse($fecha)->dayOfWeek);
 
@@ -35,6 +36,7 @@ class ScheduleService
 
         $turnosDelDia = Turno::where('medico_id', $medico->medico_id)
             ->where('fecha', $fecha)
+            ->when($ignorarCancelados, fn ($q) => $q->where('estado', '!=', EstadosTurno::Cancelado))
             ->with('practica')
             ->get();
 
@@ -68,7 +70,7 @@ class ScheduleService
         return $result;
     }
 
-    public function diasNoDisponibles(User $medico, string $desde, string $hasta): array
+    public function diasNoDisponibles(User $medico, string $desde, string $hasta, bool $ignorarCancelados = false): array
     {
         $fechaDesde = Carbon::parse($desde);
         $fechaHasta = Carbon::parse($hasta);
@@ -79,6 +81,7 @@ class ScheduleService
 
         $turnosPorFecha = Turno::where('medico_id', $medico->medico_id)
             ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
+            ->when($ignorarCancelados, fn ($q) => $q->where('estado', '!=', EstadosTurno::Cancelado))
             ->with('practica')
             ->get()
             ->groupBy('fecha');

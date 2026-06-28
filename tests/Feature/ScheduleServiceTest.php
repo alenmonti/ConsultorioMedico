@@ -237,6 +237,99 @@ class ScheduleServiceTest extends TestCase
         $this->assertNotContains('2024-01-01', $result);
     }
 
+    // ignorarCancelados en horariosDisponibles
+
+    public function test_turno_cancelado_bloquea_slot_por_defecto(): void
+    {
+        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        Turno::create([
+            'paciente_id' => $this->paciente->id,
+            'medico_id'   => $this->medico->id,
+            'fecha'       => '2024-01-01',
+            'hora'        => '09:00',
+            'estado'      => EstadosTurno::Cancelado,
+            'tipo'        => TipoTurno::Turno,
+        ]);
+
+        $result = $this->service->horariosDisponibles($this->medico, '2024-01-01');
+
+        $this->assertArrayNotHasKey('09:00', $result);
+    }
+
+    public function test_turno_cancelado_no_bloquea_slot_con_ignorar_cancelados(): void
+    {
+        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        Turno::create([
+            'paciente_id' => $this->paciente->id,
+            'medico_id'   => $this->medico->id,
+            'fecha'       => '2024-01-01',
+            'hora'        => '09:00',
+            'estado'      => EstadosTurno::Cancelado,
+            'tipo'        => TipoTurno::Turno,
+        ]);
+
+        $result = $this->service->horariosDisponibles($this->medico, '2024-01-01', ignorarCancelados: true);
+
+        $this->assertArrayHasKey('09:00', $result);
+    }
+
+    public function test_turno_pendiente_sigue_bloqueando_con_ignorar_cancelados(): void
+    {
+        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        $this->createTurno('2024-01-01', '09:00');
+
+        $result = $this->service->horariosDisponibles($this->medico, '2024-01-01', ignorarCancelados: true);
+
+        $this->assertArrayNotHasKey('09:00', $result);
+        $this->assertArrayHasKey('09:20', $result);
+    }
+
+    // ignorarCancelados en diasNoDisponibles
+
+    public function test_dia_con_todos_slots_cancelados_es_no_disponible_por_defecto(): void
+    {
+        $this->createHorario('lunes', '09:00', '09:00', '00:20');
+        Turno::create([
+            'paciente_id' => $this->paciente->id,
+            'medico_id'   => $this->medico->id,
+            'fecha'       => '2024-01-01',
+            'hora'        => '09:00',
+            'estado'      => EstadosTurno::Cancelado,
+            'tipo'        => TipoTurno::Turno,
+        ]);
+
+        $result = $this->service->diasNoDisponibles($this->medico, '2024-01-01', '2024-01-01');
+
+        $this->assertContains('2024-01-01', $result);
+    }
+
+    public function test_dia_con_todos_slots_cancelados_es_disponible_con_ignorar_cancelados(): void
+    {
+        $this->createHorario('lunes', '09:00', '09:00', '00:20');
+        Turno::create([
+            'paciente_id' => $this->paciente->id,
+            'medico_id'   => $this->medico->id,
+            'fecha'       => '2024-01-01',
+            'hora'        => '09:00',
+            'estado'      => EstadosTurno::Cancelado,
+            'tipo'        => TipoTurno::Turno,
+        ]);
+
+        $result = $this->service->diasNoDisponibles($this->medico, '2024-01-01', '2024-01-01', ignorarCancelados: true);
+
+        $this->assertNotContains('2024-01-01', $result);
+    }
+
+    public function test_dia_con_slot_pendiente_sigue_siendo_no_disponible_con_ignorar_cancelados(): void
+    {
+        $this->createHorario('lunes', '09:00', '09:00', '00:20');
+        $this->createTurno('2024-01-01', '09:00');
+
+        $result = $this->service->diasNoDisponibles($this->medico, '2024-01-01', '2024-01-01', ignorarCancelados: true);
+
+        $this->assertContains('2024-01-01', $result);
+    }
+
     private function createMedicoSilently(): User
     {
         $user = User::factory()->make(['rol' => Roles::Medico]);
