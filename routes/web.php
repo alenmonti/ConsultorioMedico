@@ -14,8 +14,9 @@ Route::get('migrate', function () {
     return response('<pre>' . $output->fetch() . '</pre>');
 });
 Route::get('seed', function () {
-    Artisan::call('db:seed');
-    return 'Database seeded successfully.';
+    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    Artisan::call('db:seed', ['--force' => true], $output);
+    return response('<pre>' . $output->fetch() . '</pre>');
 });
 Route::get('health', function () {
     return response()->json(['status' => 'ok'], 200);
