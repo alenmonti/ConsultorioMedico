@@ -7,7 +7,6 @@ use App\Filament\Resources\PacienteResource;
 use App\Filament\Resources\RecordatoriosResource;
 use App\Models\Turno;
 use Carbon\Carbon;
-use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -144,19 +143,19 @@ class ListRecordatorios extends ListRecords
                             ->send();
                     }),
 
-                // Tab 2: cancelar por falta de pago (visible solo después de 48hs hábiles)
+                // Tab 2: cancelar por falta de pago
                 TableAction::make('cancelar_falta_pago')
-                    ->tooltip('Cancelar por falta de pago')
+                    ->tooltip('Cancelar por falta de pago de seña')
                     ->icon('heroicon-o-x-circle')
                     ->iconButton()
                     ->color('danger')
                     ->visible(fn (Turno $record) => $this->activeTab === 'informados'
                         && $record->senia_informada_at
-                        && static::businessDaysSince($record->senia_informada_at) >= 2
+                        && $record->senia_informada_at->diffInDays(now()) >= 2
                     )
                     ->requiresConfirmation()
                     ->modalHeading('Cancelar turno por falta de pago de seña')
-                    ->modalDescription(fn (Turno $record) => "Se cancelará el turno de {$record->paciente->nombre} {$record->paciente->apellido} y se le enviará un aviso por WhatsApp.")
+                    ->modalDescription(fn (Turno $record) => "Se cancelará el turno de {$record->paciente->nombre} {$record->paciente->apellido} y se abrirá WhatsApp para avisarle.")
                     ->modalSubmitActionLabel('Cancelar turno y abrir WhatsApp')
                     ->action(function (Turno $record) {
                         $record->update(['estado' => EstadosTurno::Cancelado]);
@@ -167,8 +166,7 @@ class ListRecordatorios extends ListRecords
 
                         $mensaje = urlencode(
                             "Hola {$paciente->nombre}! Le informamos que su turno del {$fecha} a las {$record->hora} fue *cancelado* debido a que no recibimos el pago de la seña dentro del plazo establecido.\n\n" .
-                            "Si desea reservar un nuevo turno puede hacerlo desde nuestro portal: {$portalUrl}\n\n" .
-                            "Disculpe los inconvenientes."
+                            "Si desea reservar un nuevo turno puede hacerlo desde nuestro portal: {$portalUrl}\n\n"
                         );
 
                         $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
@@ -177,14 +175,9 @@ class ListRecordatorios extends ListRecords
                             ->warning()
                             ->title('Turno cancelado')
                             ->body("{$paciente->nombre} {$paciente->apellido}")
-                            ->actions([
-                                NotificationAction::make('wsp')
-                                    ->label('Abrir WhatsApp')
-                                    ->url($url)
-                                    ->openUrlInNewTab(),
-                            ])
-                            ->persistent()
                             ->send();
+
+                        $this->js("window.open(" . json_encode($url) . ", '_blank')");
                     }),
 
                 // Tab 3: enviar recordatorio con links de confirmación/cancelación
