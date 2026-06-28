@@ -45,6 +45,8 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         'whatsapp',
         'monto_senia',
         'alias_pago',
+        'portal_dias_anticipacion',
+        'portal_dias_excluidos',
     ];
 
     /**
@@ -68,6 +70,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'rol' => Roles::class,
+            'portal_dias_excluidos' => 'array',
         ];
     }
 

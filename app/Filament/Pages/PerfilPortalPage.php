@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
@@ -40,9 +41,11 @@ class PerfilPortalPage extends Page implements HasForms
             'descripcion'         => $user->descripcion,
             'foto_portal'         => $user->foto_portal,
             'whatsapp'            => $user->whatsapp,
-            'portal_turnos_activo' => (bool) $user->portal_turnos_activo,
-            'monto_senia'         => $user->monto_senia,
-            'alias_pago'          => $user->alias_pago,
+            'portal_turnos_activo'     => (bool) $user->portal_turnos_activo,
+            'monto_senia'             => $user->monto_senia,
+            'alias_pago'              => $user->alias_pago,
+            'portal_dias_anticipacion' => $user->portal_dias_anticipacion ?? 30,
+            'portal_dias_excluidos'   => $user->portal_dias_excluidos ?? [],
         ]);
     }
 
@@ -95,6 +98,33 @@ class PerfilPortalPage extends Page implements HasForms
                             ->maxSize(2048)
                             ->helperText('Imagen cuadrada recomendada. Máximo 2 MB.'),
                     ]),
+
+                Section::make('Configuración del portal')
+                    ->description('Controlá cómo los pacientes pueden reservar turnos desde el portal web.')
+                    ->schema([
+                        TextInput::make('portal_dias_anticipacion')
+                            ->label('Días de anticipación')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(365)
+                            ->default(30)
+                            ->suffix('días')
+                            ->helperText('Con cuántos días de anticipación puede un paciente pedir turno desde el portal.'),
+
+                        CheckboxList::make('portal_dias_excluidos')
+                            ->label('Días excluidos del portal')
+                            ->options([
+                                'lunes'     => 'Lunes',
+                                'martes'    => 'Martes',
+                                'miercoles' => 'Miércoles',
+                                'jueves'    => 'Jueves',
+                                'viernes'   => 'Viernes',
+                                'sabado'    => 'Sábado',
+                                'domingo'   => 'Domingo',
+                            ])
+                            ->columns(4)
+                            ->helperText('Los días marcados aparecerán como sin disponibilidad en el portal, aunque el sistema tenga horarios configurados.'),
+                    ]),
             ])
             ->statePath('data');
     }
@@ -106,12 +136,14 @@ class PerfilPortalPage extends Page implements HasForms
         $user = auth()->user();
 
         $user->fill([
-            'especialidad' => $state['especialidad'],
-            'descripcion'  => $state['descripcion'],
-            'foto_portal'  => $state['foto_portal'],
-            'whatsapp'     => $state['whatsapp'],
-            'monto_senia'  => $state['monto_senia'] ?: null,
-            'alias_pago'   => $state['alias_pago'] ?: null,
+            'especialidad'             => $state['especialidad'],
+            'descripcion'              => $state['descripcion'],
+            'foto_portal'              => $state['foto_portal'],
+            'whatsapp'                 => $state['whatsapp'],
+            'monto_senia'              => $state['monto_senia'] ?: null,
+            'alias_pago'               => $state['alias_pago'] ?: null,
+            'portal_dias_anticipacion' => $state['portal_dias_anticipacion'] ?? 30,
+            'portal_dias_excluidos'    => $state['portal_dias_excluidos'] ?? [],
         ]);
         $user->save();
 

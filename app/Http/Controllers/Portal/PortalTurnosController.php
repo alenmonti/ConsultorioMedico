@@ -47,6 +47,10 @@ class PortalTurnosController extends Controller
         $desde  = Carbon::parse($request->desde)->startOfWeek(Carbon::MONDAY);
         $hasta  = $desde->copy()->endOfWeek(Carbon::SUNDAY);
 
+        $diasAnticipacion = (int) ($medico->portal_dias_anticipacion ?? 30);
+        $limitePortal     = Carbon::today()->addDays($diasAnticipacion);
+        $diasExcluidos    = $medico->portal_dias_excluidos ?? [];
+
         $diasNoDisponibles = $schedule->diasNoDisponibles($medico, $desde->format('Y-m-d'), $hasta->format('Y-m-d'));
 
         $dias = [];
@@ -54,15 +58,21 @@ class PortalTurnosController extends Controller
         $hoy = Carbon::today();
 
         while ($cursor <= $hasta) {
-            $fechaStr = $cursor->format('Y-m-d');
-            $pasado = $cursor->lt($hoy);
+            $fechaStr   = $cursor->format('Y-m-d');
+            $diaNombre  = $this->diaSemana($cursor->dayOfWeek);
+            $pasado     = $cursor->lt($hoy);
+            $fueraLimite = $cursor->gt($limitePortal);
+            $excluido   = in_array($diaNombre, $diasExcluidos);
 
             if ($pasado) {
                 $estado = 'pasado';
                 $slots = 0;
+            } elseif ($fueraLimite || $excluido) {
+                $estado = 'cerrado';
+                $slots = 0;
             } elseif (in_array($fechaStr, $diasNoDisponibles)) {
                 $horarioDelDia = $medico->horarios()
-                    ->where('dia', $this->diaSemana($cursor->dayOfWeek))
+                    ->where('dia', $diaNombre)
                     ->exists();
                 $estado = $horarioDelDia ? 'lleno' : 'cerrado';
                 $slots = 0;
@@ -84,10 +94,11 @@ class PortalTurnosController extends Controller
         }
 
         return response()->json([
-            'semana_label' => $desde->isoFormat('D MMM') . '–' . $hasta->isoFormat('D MMM'),
-            'desde'        => $desde->format('Y-m-d'),
-            'hasta'        => $hasta->format('Y-m-d'),
-            'dias'         => $dias,
+            'semana_label'  => $desde->isoFormat('D MMM') . '–' . $hasta->isoFormat('D MMM'),
+            'desde'         => $desde->format('Y-m-d'),
+            'hasta'         => $hasta->format('Y-m-d'),
+            'limite_portal' => $limitePortal->format('Y-m-d'),
+            'dias'          => $dias,
         ]);
     }
 
