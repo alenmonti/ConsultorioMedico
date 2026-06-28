@@ -1154,9 +1154,6 @@
                     <div class="summary-item"><div class="summary-key">Horario</div><div class="summary-val">${S.horaSeleccionada} hs</div></div>
                 </div>`;
 
-            const wspMensaje = `Hola! Acabo de reservar un turno con ${S.medicoNombre} para el ${cap(fechaStr)} a las ${S.horaSeleccionada} hs. Mi nombre es ${nombre}.`;
-            const wspUrl2 = wspUrl(S.medicoWsp, wspMensaje);
-            $id('success-wsp-btn').href = wspUrl2;
             $id('error-wsp-btn').href = wspUrl(S.medicoWsp);
 
             S.step = 4;
