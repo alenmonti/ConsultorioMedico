@@ -9,8 +9,9 @@ Route::get('linkstorage', function () {
     return 'Storage linked successfully.';
 });
 Route::get('migrate', function () {
-    Artisan::call('migrate');
-    return 'Database migrated successfully.';
+    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    Artisan::call('migrate', ['--force' => true], $output);
+    return response('<pre>' . $output->fetch() . '</pre>');
 });
 Route::get('seed', function () {
     Artisan::call('db:seed');
