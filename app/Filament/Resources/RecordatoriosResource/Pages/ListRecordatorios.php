@@ -103,7 +103,7 @@ class ListRecordatorios extends ListRecords
                             "¡Muchas gracias!"
                         );
 
-                        $url = "https://wa.me/{$paciente->telefono}?text={$mensaje}";
+                        $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
 
                         $this->js("window.open(" . json_encode($url) . ", '_blank')");
                     }),
@@ -115,7 +115,7 @@ class ListRecordatorios extends ListRecords
                     ->iconButton()
                     ->color('success')
                     ->visible(fn () => $this->activeTab === 'informados')
-                    ->url(fn (Turno $record) => "https://wa.me/{$record->paciente->telefono}")
+                    ->url(fn (Turno $record) => "https://wa.me/549{$record->paciente->telefono}")
                     ->openUrlInNewTab(),
 
                 // Tab 2: marcar seña como pagada
@@ -166,7 +166,7 @@ class ListRecordatorios extends ListRecords
                             "Disculpe los inconvenientes."
                         );
 
-                        $url = "https://wa.me/{$paciente->telefono}?text={$mensaje}";
+                        $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
 
                         Notification::make()
                             ->warning()
@@ -219,7 +219,7 @@ class ListRecordatorios extends ListRecords
                             "¡Muchas gracias!"
                         );
 
-                        $url = "https://wa.me/{$paciente->telefono}?text={$mensaje}";
+                        $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
 
                         $this->js("window.open(" . json_encode($url) . ", '_blank')");
                     }),

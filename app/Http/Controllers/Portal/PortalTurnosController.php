@@ -129,7 +129,7 @@ class PortalTurnosController extends Controller
             'fecha'     => 'required|date|after_or_equal:today',
             'hora'      => 'required|date_format:H:i',
             'nombre'    => 'required|string|max:120',
-            'whatsapp'  => 'required|string|max:30',
+            'whatsapp'  => ['required', 'regex:/^\d{10,11}$/'],
         ]);
 
         $medico = User::findOrFail($data['medico_id']);

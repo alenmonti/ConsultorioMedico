@@ -67,8 +67,15 @@ class PacienteResource extends Resource
                         ->placeholder('Correo Electrónico')
                         ->email(),
                     Forms\Components\TextInput::make('telefono')
-                        ->placeholder('Teléfono de contacto')
-                        ->label('Teléfono'),
+                        ->placeholder('Ej: 1112345678')
+                        ->label('Teléfono')
+                        ->required()
+                        ->tel()
+                        ->regex('/^\d{10,11}$/')
+                        ->hint('Sin código de país (54) ni el 9. Solo código de área + número.')
+                        ->validationMessages([
+                            'regex' => 'Ingresá solo dígitos, con código de área y sin el 9. Ej: 1112345678',
+                        ]),
                     Forms\Components\DatePicker::make('fecha_nacimiento')
                         ->label('Fecha de Nacimiento')
                         ->native(false)

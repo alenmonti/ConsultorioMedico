@@ -7,6 +7,7 @@ use App\Enums\TipoTurno;
 use App\Filament\Resources\TurnoResource\Pages;
 use App\Filament\Resources\TurnoResource\RelationManagers;
 use App\Forms\Components\TextInfo;
+use App\Filament\Resources\PacienteResource;
 use App\Models\Paciente;
 use App\Models\Practica;
 use App\Models\Turno;
@@ -82,7 +83,16 @@ class TurnoResource extends Resource
                         ->label('Paciente')
                         ->options(Paciente::selectOptions())
                         ->searchable()
-                        ->required(),
+                        ->required()
+                        ->createOptionForm(PacienteResource::getForm())
+                        ->createOptionUsing(function (array $data): int {
+                            $paciente = Paciente::create([
+                                ...$data,
+                                'medico_id' => Auth::user()->medico_id,
+                            ]);
+                            return $paciente->id;
+                        })
+                        ->createOptionAction(fn ($action) => $action->label('Crear paciente')),
                     Select::make('estado')
                         ->required()
                         ->searchable()
