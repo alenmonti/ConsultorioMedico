@@ -10,6 +10,7 @@ enum EstadosTurno: string implements HasLabel, HasColor
     case Confirmado = 'confirmado';
     case Cancelado = 'cancelado';
     case Ausente = 'ausente';
+    case Presente = 'presente';
     case Atendido = 'atendido';
 
     public function getLabel(): string
@@ -19,6 +20,7 @@ enum EstadosTurno: string implements HasLabel, HasColor
             self::Confirmado => 'Confirmado',
             self::Cancelado => 'Cancelado',
             self::Ausente => 'Ausente',
+            self::Presente => 'Presente',
             self::Atendido => 'Atendido',
         };
     }
@@ -30,6 +32,7 @@ enum EstadosTurno: string implements HasLabel, HasColor
             self::Confirmado => 'success',
             self::Cancelado => 'danger',
             self::Ausente => 'warning',
+            self::Presente => 'purple',
             self::Atendido => 'info',
         };
     }
@@ -41,6 +44,7 @@ enum EstadosTurno: string implements HasLabel, HasColor
             self::Confirmado => '#38c172',
             self::Cancelado => '#ec4d4c',
             self::Ausente => '#4a5568',
+            self::Presente => '#a855f7',
             self::Atendido => '#f6993f',
         };
     }
@@ -52,6 +56,7 @@ enum EstadosTurno: string implements HasLabel, HasColor
             'confirmado',
             'cancelado',
             'ausente',
+            'presente',
             'atendido',
         ];
     }

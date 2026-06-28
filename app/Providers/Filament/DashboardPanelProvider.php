@@ -42,7 +42,8 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->colors([
                 'primary' => Color::hex('#BDECB6'),
-                'danger' => Color::hex('#FFC7C7'),
+                'danger'  => Color::hex('#FFC7C7'),
+                'purple'  => Color::Purple,
             ])
             ->plugin(FilamentFullCalendarPlugin::make()->config([])->locale('es')->selectable(true))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
