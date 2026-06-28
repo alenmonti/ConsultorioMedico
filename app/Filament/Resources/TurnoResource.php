@@ -105,6 +105,34 @@ class TurnoResource extends Resource
                 ->rows(3)
                 ->columnSpan(2)
                 ->autosize(),
+            Hidden::make('senia_informada_at'),
+            Hidden::make('senia_pagada_at'),
+            Hidden::make('recordatorio_enviado_at'),
+            Grid::make(3)
+                ->columnSpan(2)
+                ->schema([
+                    Forms\Components\Toggle::make('_senia_informada')
+                        ->label('Seña avisada')
+                        ->dehydrated(false)
+                        ->afterStateHydrated(fn ($component, $record) => $component->state($record?->senia_informada_at !== null))
+                        ->live()
+                        ->hint(fn (Get $get) => $get('senia_informada_at') ? Carbon::parse($get('senia_informada_at'))->format('d/m/Y H:i') : null)
+                        ->afterStateUpdated(fn ($state, Set $set) => $set('senia_informada_at', $state ? now()->toDateTimeString() : null)),
+                    Forms\Components\Toggle::make('_senia_pagada')
+                        ->label('Seña pagada')
+                        ->dehydrated(false)
+                        ->afterStateHydrated(fn ($component, $record) => $component->state($record?->senia_pagada_at !== null))
+                        ->live()
+                        ->hint(fn (Get $get) => $get('senia_pagada_at') ? Carbon::parse($get('senia_pagada_at'))->format('d/m/Y H:i') : null)
+                        ->afterStateUpdated(fn ($state, Set $set) => $set('senia_pagada_at', $state ? now()->toDateTimeString() : null)),
+                    Forms\Components\Toggle::make('_recordatorio_enviado')
+                        ->label('Recordatorio enviado')
+                        ->dehydrated(false)
+                        ->afterStateHydrated(fn ($component, $record) => $component->state($record?->recordatorio_enviado_at !== null))
+                        ->live()
+                        ->hint(fn (Get $get) => $get('recordatorio_enviado_at') ? Carbon::parse($get('recordatorio_enviado_at'))->format('d/m/Y H:i') : null)
+                        ->afterStateUpdated(fn ($state, Set $set) => $set('recordatorio_enviado_at', $state ? now()->toDateTimeString() : null)),
+                ]),
             Hidden::make('medico_id')
                 ->default(Auth::user()->medico_id),
         ];

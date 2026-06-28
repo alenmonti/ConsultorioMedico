@@ -86,7 +86,7 @@ class ListRecordatorios extends ListRecords
                     ->icon('heroicon-o-chat-bubble-left-ellipsis')
                     ->iconButton()
                     ->color('success')
-                    ->visible(fn () => $this->activeTab === 'sin_informar' || $this->activeTab === null)
+                    ->visible(fn (Turno $record) => ($this->activeTab === 'sin_informar' || $this->activeTab === null) && $record->paciente_id !== null)
                     ->action(function (Turno $record) {
                         $record->update(['senia_informada_at' => now()]);
 
@@ -118,7 +118,7 @@ class ListRecordatorios extends ListRecords
                     ->icon('heroicon-o-chat-bubble-left-ellipsis')
                     ->iconButton()
                     ->color('success')
-                    ->visible(fn () => $this->activeTab === 'informados')
+                    ->visible(fn (Turno $record) => $this->activeTab === 'informados' && $record->paciente_id !== null)
                     ->url(fn (Turno $record) => "https://wa.me/549{$record->paciente->telefono}")
                     ->openUrlInNewTab(),
 
@@ -128,7 +128,7 @@ class ListRecordatorios extends ListRecords
                     ->icon('heroicon-o-check-circle')
                     ->iconButton()
                     ->color('primary')
-                    ->visible(fn () => $this->activeTab === 'informados')
+                    ->visible(fn (Turno $record) => $this->activeTab === 'informados' && $record->paciente_id !== null)
                     ->requiresConfirmation()
                     ->modalIcon('heroicon-o-check-circle')
                     ->modalIconColor('success')
@@ -155,6 +155,7 @@ class ListRecordatorios extends ListRecords
                     ->iconButton()
                     ->color('danger')
                     ->visible(fn (Turno $record) => $this->activeTab === 'informados'
+                        && $record->paciente_id !== null
                         && $record->senia_informada_at
                         && $record->senia_informada_at->diffInDays(now()) >= 2
                     )
@@ -191,7 +192,7 @@ class ListRecordatorios extends ListRecords
                     ->icon('heroicon-o-bell-alert')
                     ->iconButton()
                     ->color('warning')
-                    ->visible(fn () => $this->activeTab === 'recordatorio')
+                    ->visible(fn (Turno $record) => $this->activeTab === 'recordatorio' && $record->paciente_id !== null)
                     ->requiresConfirmation()
                     ->modalHeading('Enviar recordatorio de turno')
                     ->modalDescription(fn (Turno $record) => "Se generarán links de confirmación/cancelación para {$record->paciente->nombre} {$record->paciente->apellido} y se marcará el recordatorio como enviado.")
