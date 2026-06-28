@@ -59,24 +59,35 @@ class PracticaResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('nombre')
+                    ->label('Práctica')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(40)
+                    ->hiddenFrom('sm'),
                 Tables\Columns\TextColumn::make('display_name')
                     ->label('Práctica')
                     ->searchable(['nombre', 'tipo'])
-                    ->sortable('nombre'),
+                    ->sortable('nombre')
+                    ->visibleFrom('sm'),
                 Tables\Columns\TextColumn::make('tipo')
                     ->searchable()
                     ->badge()
-                    ->color('info'),
+                    ->color('info')
+                    ->visibleFrom('sm'),
                 Tables\Columns\TextColumn::make('costo')
                     ->money('ARS')
-                    ->sortable(),
+                    ->sortable()
+                    ->visibleFrom('sm'),
                 Tables\Columns\TextColumn::make('duracion_min')
                     ->label('Duración')
                     ->suffix(' min')
-                    ->sortable(),
+                    ->sortable()
+                    ->visibleFrom('sm'),
                 Tables\Columns\TextColumn::make('codigo_osde')
                     ->label('Cód. OSDE')
-                    ->color('gray'),
+                    ->color('gray')
+                    ->visibleFrom('sm'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

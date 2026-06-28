@@ -62,13 +62,17 @@ class SecretarioResource extends Resource
                 ->label('Nombre')
                 ->state(fn ($record) => $record->name . ' ' . $record->surname),
                 TextColumn::make('email'),
-                TextColumn::make('rol')->badge(),
+                TextColumn::make('rol')
+                    ->badge()
+                    ->visibleFrom('sm'),
                 TextColumn::make('medico.name')
                     ->label('Médico')
-                    ->state(fn ($record) => $record->medico->name.' '.$record->medico->surname),
+                    ->state(fn ($record) => $record->medico->name.' '.$record->medico->surname)
+                    ->visibleFrom('sm'),
                 TextColumn::make('created_at')
                     ->label('Creado en')
-                    ->dateTime('d/m/Y H:i:s'),
+                    ->dateTime('d/m/Y H:i:s')
+                    ->visibleFrom('sm'),
             ])
             ->filters([
                 //

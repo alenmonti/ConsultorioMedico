@@ -24,7 +24,12 @@ class PacienteResource extends Resource
 
     public static function getForm() {
         return [
-            Forms\Components\Split::make([
+            Forms\Components\Grid::make([
+                'default' => 1,
+                'sm' => 3,
+            ])
+            ->columnSpan('full')
+            ->schema([
                 Forms\Components\TextInput::make('apellido')
                     ->placeholder('Apellido del paciente')
                     ->required(),
@@ -34,10 +39,8 @@ class PacienteResource extends Resource
                 Forms\Components\TextInput::make('dni')
                     ->placeholder('DNI sin puntos ni guiones')
                     ->label('DNI')
-                    ->required()
-            ])
-            ->columnSpan('full')
-            ->columns(3),
+                    ->required(),
+            ]),
             Forms\Components\Grid::make()
                 ->columns(2)
                 ->columnSpan('full')
@@ -105,7 +108,8 @@ class PacienteResource extends Resource
                         return ucfirst($record->apellido).' '.ucfirst($record->nombre);
                     }),
                 TextColumn::make('email')
-                    ->searchable(),
+                    ->searchable()
+                    ->visibleFrom('sm'),
                 TextColumn::make('telefono')
                     ->label('Teléfono')
                     ->searchable()
@@ -115,23 +119,27 @@ class PacienteResource extends Resource
                     ->label('DNI')
                     ->searchable()
                     ->copyable()
-                    ->color('info'),
+                    ->color('info')
+                    ->visibleFrom('sm'),
                 TextColumn::make('afiliado')
                     ->copyable()
                     ->searchable()
-                    ->color('warning'),
+                    ->color('warning')
+                    ->visibleFrom('sm'),
                 TextColumn::make('obra_social')
                         ->searchable()
                         ->badge()
                         ->state(fn($record) => config('paciente.obras_sociales')[$record->obra_social] ?? ucfirst($record->obra_social))
-                        ->color(fn($record) => config('paciente.obras_sociales_colores')[$record->obra_social] ?? 'gray'),
+                        ->color(fn($record) => config('paciente.obras_sociales_colores')[$record->obra_social] ?? 'gray')
+                        ->visibleFrom('sm'),
                 TextColumn::make('fecha_nacimiento')->label('Nacimiento')
                     ->state(function ($record) {
                         if (!$record->fecha_nacimiento) return null;
                         $fecha = \Carbon\Carbon::parse($record->fecha_nacimiento);
                         return $fecha->format('d/m/Y').', '.$fecha->age.' años';
                     })
-                    ->searchable(),
+                    ->searchable()
+                    ->visibleFrom('sm'),
                 // TextColumn::make('medico.name')->label('Médico')
                 //     ->state(function ($record) {
                 //         return ucfirst($record->medico->name.' '.$record->medico->surname);

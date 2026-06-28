@@ -66,7 +66,8 @@ class HorarioResource extends Resource
                 Tables\Columns\TextColumn::make('intervalo')
                     ->time('i \m\i\n')
                     ->badge()
-                    ->color('info'),
+                    ->color('info')
+                    ->visibleFrom('sm'),
             ])
             ->filters([
                 //

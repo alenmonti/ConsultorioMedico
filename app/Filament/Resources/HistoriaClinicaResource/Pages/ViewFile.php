@@ -81,10 +81,10 @@ class ViewFile extends Page implements HasForms, HasInfolists
                 ->columnSpan(2),
             RichEditor::make('estudios')
                 ->placeholder('Estudios realizados')
-                ->columnSpan(1),
+                ->columnSpan(['default' => 2, 'sm' => 1]),
             RichEditor::make('tratamiento')
                 ->placeholder('Tratamiento del paciente')
-                ->columnSpan(1),
+                ->columnSpan(['default' => 2, 'sm' => 1]),
             FileUpload::make('imagenes')
                 ->label('Imagenes de estudios')
                 ->directory(fn () => 'usuarios/' . auth()->id() . '/imagenes')
@@ -130,10 +130,12 @@ class ViewFile extends Page implements HasForms, HasInfolists
                     ->columnSpan(2),
                 RichEditor::make('vacunacion')
                     ->label('Vacunación')
-                    ->placeholder('Ingrese vacunación del paciente'),
+                    ->placeholder('Ingrese vacunación del paciente')
+                    ->columnSpan(['default' => 2, 'sm' => 1]),
                 RichEditor::make('medicacion')
                     ->label('Medicación')
-                    ->placeholder('Ingrese medicación del paciente'),
+                    ->placeholder('Ingrese medicación del paciente')
+                    ->columnSpan(['default' => 2, 'sm' => 1]),
             ]),
         ];
     }
@@ -181,16 +183,18 @@ class ViewFile extends Page implements HasForms, HasInfolists
                     ->autosize(),
                 RichEditor::make('vacunacion')
                     ->label('Vacunación')
-                    ->placeholder('Ingrese vacunación del paciente'),
+                    ->placeholder('Ingrese vacunación del paciente')
+                    ->columnSpan(['default' => 2, 'sm' => 1]),
                 RichEditor::make('medicacion')
                     ->label('Medicación')
-                    ->placeholder('Ingrese medicación del paciente'),
+                    ->placeholder('Ingrese medicación del paciente')
+                    ->columnSpan(['default' => 2, 'sm' => 1]),
                 RichEditor::make('estudios')
                     ->placeholder('Estudios realizados')
-                    ->columnSpan(1),
+                    ->columnSpan(['default' => 2, 'sm' => 1]),
                 RichEditor::make('tratamiento')
                     ->placeholder('Tratamiento del paciente')
-                    ->columnSpan(1),
+                    ->columnSpan(['default' => 2, 'sm' => 1]),
                 FileUpload::make('imagenes')
                     ->label('Imagenes de estudios')
                     ->directory(fn () => 'usuarios/' . auth()->id() . '/imagenes')
@@ -311,63 +315,49 @@ class ViewFile extends Page implements HasForms, HasInfolists
                                 
                         ->heading(function($record){return 'Evolución '.$record->fecha;})
                         ->icon('heroicon-o-clipboard-document-list')
-                        ->columns(2)
+                        ->columns(1)
                         ->schema([
                             Fieldset::make('Antecedentes')
-                                ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->antecedentes)
                                 ->schema([TextEntry::make('antecedentes')->label('')->columnSpan(2)]),
                             Fieldset::make('Tóxicos')
-                                ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->toxicos)
                                 ->schema([TextEntry::make('toxicos')->label('')->columnSpan(2)]),
                             Fieldset::make('Quirúrgicos')
-                                ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->quirurgicos)
                                 ->schema([TextEntry::make('quirurgicos')->label('')->columnSpan(2)]),
                             Fieldset::make('Alergias')
-                                ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->alergias)
                                 ->schema([TextEntry::make('alergias')->label('')->columnSpan(2)]),
                             Fieldset::make('Vacunación')
-                                ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->vacunacion)
                                 ->schema([TextEntry::make('vacunacion')->label('')->columnSpan(2)->html()]),
                             Fieldset::make('Medicación')
-                                ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->medicacion)
                                 ->schema([TextEntry::make('medicacion')->label('')->columnSpan(2)->html()]),
                             Fieldset::make('Diagnóstico')
-                                ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->diagnostico)
                                 ->schema([TextEntry::make('diagnostico')->label('')->columnSpan(2)]),
                             Fieldset::make('Motivo')
-                                ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->motivo)
                                 ->schema([TextEntry::make('motivo')->label('')->columnSpan(2)]),
                             Fieldset::make('Examen Físico')
-                                ->columnSpan(2)
                                 ->hidden(fn($record) => !$record->examen_fisico)
                                 ->schema([TextEntry::make('examen_fisico')->label('')->columnSpan(2)]),
                             Fieldset::make('Evolución')
-                                ->columnSpan(2)
                                 ->hidden(fn($record) => !$record->evolucion)
                                 ->schema([TextEntry::make('evolucion')->label('')->columnSpan(2)]),
                             Fieldset::make('Resultados')
-                                ->columnSpan(2)
                                 ->hidden(fn($record) => !$record->resultados)
                                 ->schema([TextEntry::make('resultados')->label('')->columnSpan(2)]),
                             Fieldset::make('Estudios')
-                                ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->estudios)
                                 ->schema([TextEntry::make('estudios')->label('')->columnSpan(2)->html()]),
                             Fieldset::make('Tratamiento')
-                                ->columnSpan(1)
                                 ->hidden(fn($record) => !$record->tratamiento)
                                 ->schema([TextEntry::make('tratamiento')->label('')->columnSpan(2)->html()]),
                             Fieldset::make('Imagenes')
                                 ->label('Estudios')
-                                ->columnSpan(2)
                                 ->columns(8)
                                 ->hidden(fn($record) => !$record->imagenes)
                                 ->schema(

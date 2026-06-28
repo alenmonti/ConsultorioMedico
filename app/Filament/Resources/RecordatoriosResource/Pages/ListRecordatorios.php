@@ -55,25 +55,30 @@ class ListRecordatorios extends ListRecords
                     ->sortable(),
 
                 TextColumn::make('hora')
-                    ->label('Hora'),
+                    ->label('Hora')
+                    ->visibleFrom('sm'),
 
                 TextColumn::make('practica.nombre')
                     ->label('Práctica')
-                    ->default('-'),
+                    ->default('-')
+                    ->visibleFrom('sm'),
 
                 TextColumn::make('estado')
                     ->label('Estado')
-                    ->badge(),
+                    ->badge()
+                    ->visibleFrom('sm'),
 
                 TextColumn::make('senia_informada_at')
                     ->label('Seña informada')
                     ->dateTime('d/m/Y H:i')
                     ->placeholder('—')
-                    ->visible(fn () => $this->activeTab === 'informados'),
+                    ->visible(fn () => $this->activeTab === 'informados')
+                    ->visibleFrom('sm'),
 
                 TextColumn::make('paciente.telefono')
                     ->label('Teléfono')
-                    ->placeholder('Sin teléfono'),
+                    ->placeholder('Sin teléfono')
+                    ->visibleFrom('sm'),
             ])
             ->actions([
                 // Tab 1: informar seña (link directo a WhatsApp, sin modal)

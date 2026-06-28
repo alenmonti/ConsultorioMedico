@@ -306,7 +306,7 @@
 
         .days-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 6px;
             margin-bottom: 20px;
         }
@@ -968,7 +968,7 @@
     }
 
     async function loadSemana(desde, autoSelect = false, _attempts = 0) {
-        $id('days-grid').innerHTML = Array(7).fill('<div class="skeleton" style="height:72px;border-radius:8px;"></div>').join('');
+        $id('days-grid').innerHTML = Array(6).fill('<div class="skeleton" style="height:72px;border-radius:8px;"></div>').join('');
         hide('slots-section');
         S.fechaSeleccionada = null;
         S.horaSeleccionada = null;
@@ -994,13 +994,13 @@
                 }
             }
         } catch (e) {
-            $id('days-grid').innerHTML = `<p style="grid-column:span 7;color:var(--danger);font-size:13px;">Error al cargar disponibilidad.</p>`;
+            $id('days-grid').innerHTML = `<p style="grid-column:span 6;color:var(--danger);font-size:13px;">Error al cargar disponibilidad.</p>`;
         }
     }
 
     function renderDays(dias) {
         const grid = $id('days-grid');
-        grid.innerHTML = dias.map(d => {
+        grid.innerHTML = dias.filter(d => new Date(d.fecha + 'T00:00:00').getDay() !== 0).map(d => {
             const unavailable = ['cerrado','lleno','pasado'].includes(d.estado);
             const statusText = { libre: 'libre', pocos: 'pocos', cerrado: 'cerrado', lleno: 'lleno', pasado: '' }[d.estado] || '';
             const statusClass = d.estado === 'libre' ? 'status-libre' : d.estado === 'pocos' ? 'status-pocos' : '';
