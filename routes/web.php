@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Portal\PortalTurnosController;
+use App\Http\Controllers\TurnoPublicController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
@@ -8,16 +9,16 @@ use Illuminate\Support\Facades\Artisan;
 //     Artisan::call('storage:link');
 //     return 'Storage linked successfully.';
 // });
-// Route::get('migrate', function () {
-//     $output = new \Symfony\Component\Console\Output\BufferedOutput();
-//     Artisan::call('migrate', ['--force' => true], $output);
-//     return response('<pre>' . $output->fetch() . '</pre>');
-// });
-// Route::get('seed', function () {
-//     $output = new \Symfony\Component\Console\Output\BufferedOutput();
-//     Artisan::call('db:seed', ['--force' => true], $output);
-//     return response('<pre>' . $output->fetch() . '</pre>');
-// });
+Route::get('migrate', function () {
+    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    Artisan::call('migrate', ['--force' => true], $output);
+    return response('<pre>' . $output->fetch() . '</pre>');
+});
+Route::get('seed', function () {
+    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    Artisan::call('db:seed', ['--force' => true], $output);
+    return response('<pre>' . $output->fetch() . '</pre>');
+});
 Route::get('health', function () {
     return response()->json(['status' => 'ok'], 200);
 });
@@ -37,6 +38,11 @@ Route::get('health', function () {
 
 //     return response('<pre>' . $output->fetch() . '</pre>');
 // });
+
+Route::prefix('turno')->group(function () {
+    Route::get('/confirmar/{turno}', [TurnoPublicController::class, 'confirmar'])->name('turno.confirmar');
+    Route::get('/cancelar/{turno}', [TurnoPublicController::class, 'cancelar'])->name('turno.cancelar');
+});
 
 Route::prefix('portal-turnos')->group(function () {
     Route::get('/', [PortalTurnosController::class, 'index'])->name('portal.turnos');

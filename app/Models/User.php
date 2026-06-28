@@ -43,6 +43,8 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         'descripcion',
         'foto_portal',
         'whatsapp',
+        'monto_senia',
+        'alias_pago',
     ];
 
     /**

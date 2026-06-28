@@ -25,6 +25,10 @@ class Turno extends Model
         'tipo',
         'notas',
         'origen',
+        'senia_informada_at',
+        'senia_pagada_at',
+        'recordatorio_enviado_at',
+        'turno_token',
     ];
 
     protected function casts(): array
@@ -32,7 +36,10 @@ class Turno extends Model
         return [
             'estado' => EstadosTurno::class,
             'tipo' => TipoTurno::class,
-            'hora' => TimeCast::class
+            'hora' => TimeCast::class,
+            'senia_informada_at' => 'datetime',
+            'senia_pagada_at' => 'datetime',
+            'recordatorio_enviado_at' => 'datetime',
         ];
     }
 

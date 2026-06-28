@@ -41,6 +41,8 @@ class PerfilPortalPage extends Page implements HasForms
             'foto_portal'         => $user->foto_portal,
             'whatsapp'            => $user->whatsapp,
             'portal_turnos_activo' => (bool) $user->portal_turnos_activo,
+            'monto_senia'         => $user->monto_senia,
+            'alias_pago'          => $user->alias_pago,
         ]);
     }
 
@@ -65,6 +67,19 @@ class PerfilPortalPage extends Page implements HasForms
                             ->placeholder('Ej: 5491112345678')
                             ->helperText('Número completo con código de país, sin +, sin espacios.')
                             ->maxLength(30),
+
+                        TextInput::make('monto_senia')
+                            ->label('Monto de seña')
+                            ->numeric()
+                            ->prefix('$')
+                            ->minValue(0)
+                            ->helperText('Monto que se informa al paciente como seña para confirmar el turno.'),
+
+                        TextInput::make('alias_pago')
+                            ->label('Alias de pago')
+                            ->placeholder('Ej: consultorio.perez.mp')
+                            ->helperText('Alias al que el paciente debe enviar la seña (Mercado Pago, transferencia, etc.).')
+                            ->maxLength(100),
 
                         Textarea::make('descripcion')
                             ->label('Descripción')
@@ -95,6 +110,8 @@ class PerfilPortalPage extends Page implements HasForms
             'descripcion'  => $state['descripcion'],
             'foto_portal'  => $state['foto_portal'],
             'whatsapp'     => $state['whatsapp'],
+            'monto_senia'  => $state['monto_senia'] ?: null,
+            'alias_pago'   => $state['alias_pago'] ?: null,
         ]);
         $user->save();
 
