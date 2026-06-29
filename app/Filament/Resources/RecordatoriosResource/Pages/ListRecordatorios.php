@@ -138,13 +138,11 @@ class ListRecordatorios extends ListRecords
                         $record->update([
                             'senia_informada_at' => $record->senia_informada_at ?? now(),
                             'senia_pagada_at' => now(),
-                            'estado' => EstadosTurno::Confirmado,
                         ]);
 
                         Notification::make()
                             ->success()
                             ->title('Seña registrada como pagada')
-                            ->body('El turno quedó confirmado.')
                             ->send();
                     }),
 

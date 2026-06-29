@@ -45,15 +45,17 @@ class Calendario extends FullCalendarWidget
             ->get()
             ->map(fn (Turno $turno) => [
                     'id' => $turno->id,
-                    'title' => $turno->paciente
+                    'title' => ($turno->paciente
                         ? $turno->paciente->nombre . ' ' . $turno->paciente->apellido
-                        : '(Web) ' . str($turno->notas)->after('Nombre: ')->before(' |')->value(),
+                        : '(Web) ' . str($turno->notas)->after('Nombre: ')->before(' |')->value())
+                        . ($turno->practica ? ' | ' . $turno->practica->nombre . ($turno->practica->costo !== null ? ' $' . number_format($turno->practica->costo, 2, ',', '.') : '') : '')
+                        . ($turno->senia_pagada_at ? ' (seña)' : ''),
                     'start' => Carbon::parse($turno->fecha . ' ' . $turno->hora),
                     'end' => Carbon::parse($turno->fecha . ' ' . $turno->hora)->addMinutes($turno->practica?->duracion_min ?? 20),
                     'backgroundColor' => $turno->estado->getHexColor(),
                     'shouldOpenInNewTab' => true,
                     'extendedProps' => [
-                        'notas' => $turno->notas
+                        'notas' => $turno->notas,
                     ],
                     'display' => 'block',
                 ])
