@@ -49,6 +49,14 @@ class HorarioResource extends Resource
                 TimePickerField::make('hasta')
                     ->default('18:00')
                     ->required(),
+                Forms\Components\Toggle::make('activo_sistema')
+                    ->label('Activo en sistema')
+                    ->default(true)
+                    ->helperText('Si está desactivado, este horario no genera turnos en el sistema.'),
+                Forms\Components\Toggle::make('activo_portal')
+                    ->label('Activo en portal')
+                    ->default(false)
+                    ->helperText('Si está activado, este horario es visible para reservas desde el portal web.'),
             ]);
     }
 
@@ -67,6 +75,14 @@ class HorarioResource extends Resource
                     ->time('i \m\i\n')
                     ->badge()
                     ->color('info')
+                    ->visibleFrom('sm'),
+                Tables\Columns\IconColumn::make('activo_sistema')
+                    ->label('Sistema')
+                    ->boolean()
+                    ->visibleFrom('sm'),
+                Tables\Columns\IconColumn::make('activo_portal')
+                    ->label('Portal')
+                    ->boolean()
                     ->visibleFrom('sm'),
             ])
             ->filters([

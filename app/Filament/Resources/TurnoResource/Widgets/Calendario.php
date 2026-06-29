@@ -76,6 +76,7 @@ class Calendario extends FullCalendarWidget
         $fechaHasta = Carbon::parse($hasta);
 
         $horariosPorDia = Horario::where('medico_id', $medico->medico_id)
+            ->where('activo_sistema', true)
             ->get()
             ->groupBy(fn ($h) => $h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia);
 
@@ -160,7 +161,7 @@ class Calendario extends FullCalendarWidget
 
     private function getSlotRange(): array
     {
-        $horarios = Horario::where('medico_id', user()->medico_id)->get();
+        $horarios = Horario::where('medico_id', user()->medico_id)->where('activo_sistema', true)->get();
 
         if ($horarios->isEmpty()) {
             return ['slotMinTime' => '06:00:00', 'slotMaxTime' => '20:00:00'];
@@ -178,6 +179,7 @@ class Calendario extends FullCalendarWidget
     private function getHiddenDays(): array
     {
         $diasConHorario = Horario::where('medico_id', user()->medico_id)
+            ->where('activo_sistema', true)
             ->pluck('dia')
             ->map(fn ($d) => $d instanceof \BackedEnum ? $d->value : $d)
             ->toArray();

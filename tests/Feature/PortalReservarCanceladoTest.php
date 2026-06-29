@@ -27,11 +27,12 @@ class PortalReservarCanceladoTest extends TestCase
         $this->medico = $this->createMedico();
 
         Horario::create([
-            'medico_id' => $this->medico->id,
-            'dia'       => 'lunes',
-            'desde'     => '09:00',
-            'hasta'     => '10:00',
-            'intervalo' => '00:20',
+            'medico_id'     => $this->medico->id,
+            'dia'           => 'lunes',
+            'desde'         => '09:00',
+            'hasta'         => '10:00',
+            'intervalo'     => '00:20',
+            'activo_portal' => true,
         ]);
     }
 
@@ -161,7 +162,6 @@ class PortalReservarCanceladoTest extends TestCase
         $user->forceFill([
             'medico_id'               => $user->id,
             'portal_dias_anticipacion' => 30,
-            'portal_dias_excluidos'   => [],
         ])->saveQuietly();
         return $user->fresh();
     }

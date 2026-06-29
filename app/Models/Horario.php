@@ -17,7 +17,9 @@ class Horario extends Model
         'dia',
         'desde',
         'hasta',
-        'intervalo'
+        'intervalo',
+        'activo_sistema',
+        'activo_portal',
     ];
 
     public function medico()
@@ -31,7 +33,9 @@ class Horario extends Model
             'desde' => TimeCast::class,
             'hasta' => TimeCast::class,
             'intervalo' => TimeCast::class,
-            'dia' => Dias::class
+            'dia' => Dias::class,
+            'activo_sistema' => 'boolean',
+            'activo_portal' => 'boolean',
         ];
     }
 

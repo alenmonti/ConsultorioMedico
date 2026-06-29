@@ -91,12 +91,11 @@ class PortalSemanaConfigTest extends TestCase
         $res->assertOk()->assertJsonPath('limite_portal', '2024-01-31');
     }
 
-    // ── portal_dias_excluidos ─────────────────────────────────────────────────
+    // ── activo_portal en Horario ──────────────────────────────────────────────
 
-    public function test_dia_excluido_aparece_como_cerrado_aunque_tenga_horario(): void
+    public function test_horario_con_activo_portal_false_aparece_como_cerrado(): void
     {
-        $this->medico->forceFill(['portal_dias_excluidos' => ['martes']])->save();
-        $this->createHorario('martes');
+        $this->createHorario('martes', activo_portal: false);
 
         $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
 
@@ -105,10 +104,9 @@ class PortalSemanaConfigTest extends TestCase
         $this->assertEquals('cerrado', $martes['estado']);
     }
 
-    public function test_dia_no_excluido_con_horario_no_es_cerrado(): void
+    public function test_horario_con_activo_portal_true_no_es_cerrado(): void
     {
-        $this->medico->forceFill(['portal_dias_excluidos' => ['martes']])->save();
-        $this->createHorario('miercoles');
+        $this->createHorario('miercoles', activo_portal: true);
 
         $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
 
@@ -117,11 +115,10 @@ class PortalSemanaConfigTest extends TestCase
         $this->assertNotEquals('cerrado', $miercoles['estado']);
     }
 
-    public function test_excluir_un_dia_no_afecta_a_otros_dias(): void
+    public function test_activo_portal_false_no_afecta_a_otros_dias(): void
     {
-        $this->medico->forceFill(['portal_dias_excluidos' => ['lunes']])->save();
-        $this->createHorario('lunes');
-        $this->createHorario('miercoles');
+        $this->createHorario('lunes', activo_portal: false);
+        $this->createHorario('miercoles', activo_portal: true);
 
         $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
 
@@ -130,13 +127,12 @@ class PortalSemanaConfigTest extends TestCase
         $this->assertNotEquals('cerrado', $this->diaEnRespuesta($res, '2024-01-03')['estado']);
     }
 
-    public function test_multiples_dias_excluidos(): void
+    public function test_multiples_horarios_con_activo_portal_false(): void
     {
-        $this->medico->forceFill(['portal_dias_excluidos' => ['lunes', 'miercoles', 'viernes']])->save();
-        $this->createHorario('lunes');
-        $this->createHorario('miercoles');
-        $this->createHorario('viernes');
-        $this->createHorario('martes');
+        $this->createHorario('lunes', activo_portal: false);
+        $this->createHorario('miercoles', activo_portal: false);
+        $this->createHorario('viernes', activo_portal: false);
+        $this->createHorario('martes', activo_portal: true);
 
         $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
 
@@ -147,29 +143,24 @@ class PortalSemanaConfigTest extends TestCase
         $this->assertNotEquals('cerrado', $this->diaEnRespuesta($res, '2024-01-02')['estado']); // martes
     }
 
-    public function test_sin_dias_excluidos_no_cierra_ningun_dia(): void
+    public function test_sin_horarios_con_activo_portal_no_cierra_dias_con_activo_true(): void
     {
-        $this->medico->forceFill(['portal_dias_excluidos' => []])->save();
-        $this->createHorario('lunes');
-        $this->createHorario('martes');
+        $this->createHorario('lunes', activo_portal: true);
+        $this->createHorario('martes', activo_portal: true);
 
         $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
 
         $res->assertOk();
-        // Ninguno debe ser cerrado por exclusión (lunes y martes tienen horario)
         $this->assertNotEquals('cerrado', $this->diaEnRespuesta($res, '2024-01-01')['estado']);
         $this->assertNotEquals('cerrado', $this->diaEnRespuesta($res, '2024-01-02')['estado']);
     }
 
     // ── Interacción entre ambas configs ──────────────────────────────────────
 
-    public function test_dia_excluido_dentro_del_limite_sigue_siendo_cerrado(): void
+    public function test_horario_activo_portal_false_dentro_del_limite_sigue_siendo_cerrado(): void
     {
-        $this->medico->forceFill([
-            'portal_dias_anticipacion' => 30,
-            'portal_dias_excluidos'    => ['martes'],
-        ])->save();
-        $this->createHorario('martes');
+        $this->medico->forceFill(['portal_dias_anticipacion' => 30])->save();
+        $this->createHorario('martes', activo_portal: false);
 
         $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
 
@@ -187,14 +178,16 @@ class PortalSemanaConfigTest extends TestCase
         return $user->fresh();
     }
 
-    private function createHorario(string $dia): Horario
+    private function createHorario(string $dia, bool $activo_portal = true): Horario
     {
         return Horario::create([
-            'medico_id' => $this->medico->id,
-            'dia'       => $dia,
-            'desde'     => '09:00',
-            'hasta'     => '09:00',
-            'intervalo' => '00:20',
+            'medico_id'     => $this->medico->id,
+            'dia'           => $dia,
+            'desde'         => '09:00',
+            'hasta'         => '09:00',
+            'intervalo'     => '00:20',
+            'activo_sistema' => true,
+            'activo_portal'  => $activo_portal,
         ]);
     }
 

@@ -10,12 +10,14 @@ use Carbon\Carbon;
 
 class ScheduleService
 {
-    public function horariosDisponibles(User $medico, string $fecha, string $tipo = 'turno', int $duracion = 20, bool $ignorarCancelados = false): array
+    public function horariosDisponibles(User $medico, string $fecha, string $tipo = 'turno', int $duracion = 20, bool $ignorarCancelados = false, bool $portal = false): array
     {
         $diaSemana = $this->dayOfWeekToString(Carbon::parse($fecha)->dayOfWeek);
 
         $configHorarios = Horario::where('medico_id', $medico->medico_id)
             ->where('dia', $diaSemana)
+            ->where('activo_sistema', true)
+            ->when($portal, fn ($q) => $q->where('activo_portal', true))
             ->get();
 
         if ($configHorarios->isEmpty()) {
@@ -70,12 +72,14 @@ class ScheduleService
         return $result;
     }
 
-    public function diasNoDisponibles(User $medico, string $desde, string $hasta, bool $ignorarCancelados = false): array
+    public function diasNoDisponibles(User $medico, string $desde, string $hasta, bool $ignorarCancelados = false, bool $portal = false): array
     {
         $fechaDesde = Carbon::parse($desde);
         $fechaHasta = Carbon::parse($hasta);
 
         $horariosPorDia = Horario::where('medico_id', $medico->medico_id)
+            ->where('activo_sistema', true)
+            ->when($portal, fn ($q) => $q->where('activo_portal', true))
             ->get()
             ->groupBy(fn ($h) => $h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia);
 

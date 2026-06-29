@@ -49,9 +49,8 @@ class PortalTurnosController extends Controller
 
         $diasAnticipacion = (int) ($medico->portal_dias_anticipacion ?? 30);
         $limitePortal     = Carbon::today()->addDays($diasAnticipacion);
-        $diasExcluidos    = $medico->portal_dias_excluidos ?? [];
 
-        $diasNoDisponibles = $schedule->diasNoDisponibles($medico, $desde->format('Y-m-d'), $hasta->format('Y-m-d'), ignorarCancelados: true);
+        $diasNoDisponibles = $schedule->diasNoDisponibles($medico, $desde->format('Y-m-d'), $hasta->format('Y-m-d'), ignorarCancelados: true, portal: true);
 
         $dias = [];
         $cursor = $desde->copy();
@@ -62,22 +61,23 @@ class PortalTurnosController extends Controller
             $diaNombre  = $this->diaSemana($cursor->dayOfWeek);
             $pasado     = $cursor->lt($hoy);
             $fueraLimite = $cursor->gt($limitePortal);
-            $excluido   = in_array($diaNombre, $diasExcluidos);
 
             if ($pasado) {
                 $estado = 'pasado';
                 $slots = 0;
-            } elseif ($fueraLimite || $excluido) {
+            } elseif ($fueraLimite) {
                 $estado = 'cerrado';
                 $slots = 0;
             } elseif (in_array($fechaStr, $diasNoDisponibles)) {
                 $horarioDelDia = $medico->horarios()
                     ->where('dia', $diaNombre)
+                    ->where('activo_sistema', true)
+                    ->where('activo_portal', true)
                     ->exists();
                 $estado = $horarioDelDia ? 'lleno' : 'cerrado';
                 $slots = 0;
             } else {
-                $disponibles = $schedule->horariosDisponibles($medico, $fechaStr, ignorarCancelados: true);
+                $disponibles = $schedule->horariosDisponibles($medico, $fechaStr, ignorarCancelados: true, portal: true);
                 $slots = count($disponibles);
                 $estado = $slots <= 3 ? 'pocos' : 'libre';
             }

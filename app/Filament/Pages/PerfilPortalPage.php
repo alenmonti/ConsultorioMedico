@@ -3,7 +3,6 @@
 namespace App\Filament\Pages;
 
 use Filament\Actions\Action;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
@@ -45,7 +44,6 @@ class PerfilPortalPage extends Page implements HasForms
             'monto_senia'             => $user->monto_senia,
             'alias_pago'              => $user->alias_pago,
             'portal_dias_anticipacion' => $user->portal_dias_anticipacion ?? 30,
-            'portal_dias_excluidos'   => $user->portal_dias_excluidos ?? [],
         ]);
     }
 
@@ -54,7 +52,24 @@ class PerfilPortalPage extends Page implements HasForms
         return $form
             ->schema([
                 Section::make('Perfil público')
-                    ->description('Estos datos se muestran a los pacientes cuando buscan turno en el portal web.')
+                    ->description('Datos de pago que se informan al paciente para confirmar el turno.')
+                    ->schema([
+                        TextInput::make('monto_senia')
+                            ->label('Monto de seña')
+                            ->numeric()
+                            ->prefix('$')
+                            ->minValue(0)
+                            ->helperText('Monto que se informa al paciente como seña para confirmar el turno.'),
+
+                        TextInput::make('alias_pago')
+                            ->label('Alias de pago')
+                            ->placeholder('Ej: consultorio.perez.mp')
+                            ->helperText('Alias al que el paciente debe enviar la seña (Mercado Pago, transferencia, etc.).')
+                            ->maxLength(100),
+                    ]),
+
+                Section::make('Configuración del portal')
+                    ->description('Controlá cómo los pacientes pueden encontrarte y reservar turnos desde el portal web.')
                     ->schema([
                         Toggle::make('portal_turnos_activo')
                             ->label('Activar portal de turnos')
@@ -71,18 +86,14 @@ class PerfilPortalPage extends Page implements HasForms
                             ->helperText('Número completo con código de país, sin +, sin espacios.')
                             ->maxLength(30),
 
-                        TextInput::make('monto_senia')
-                            ->label('Monto de seña')
+                        TextInput::make('portal_dias_anticipacion')
+                            ->label('Días de anticipación')
                             ->numeric()
-                            ->prefix('$')
-                            ->minValue(0)
-                            ->helperText('Monto que se informa al paciente como seña para confirmar el turno.'),
-
-                        TextInput::make('alias_pago')
-                            ->label('Alias de pago')
-                            ->placeholder('Ej: consultorio.perez.mp')
-                            ->helperText('Alias al que el paciente debe enviar la seña (Mercado Pago, transferencia, etc.).')
-                            ->maxLength(100),
+                            ->minValue(1)
+                            ->maxValue(365)
+                            ->default(30)
+                            ->suffix('días')
+                            ->helperText('Con cuántos días de anticipación puede un paciente pedir turno desde el portal.'),
 
                         Textarea::make('descripcion')
                             ->label('Descripción')
@@ -97,33 +108,6 @@ class PerfilPortalPage extends Page implements HasForms
                             ->directory(fn () => 'usuarios/' . auth()->id() . '/configuracion')
                             ->maxSize(2048)
                             ->helperText('Imagen cuadrada recomendada. Máximo 2 MB.'),
-                    ]),
-
-                Section::make('Configuración del portal')
-                    ->description('Controlá cómo los pacientes pueden reservar turnos desde el portal web.')
-                    ->schema([
-                        TextInput::make('portal_dias_anticipacion')
-                            ->label('Días de anticipación')
-                            ->numeric()
-                            ->minValue(1)
-                            ->maxValue(365)
-                            ->default(30)
-                            ->suffix('días')
-                            ->helperText('Con cuántos días de anticipación puede un paciente pedir turno desde el portal.'),
-
-                        CheckboxList::make('portal_dias_excluidos')
-                            ->label('Días excluidos del portal')
-                            ->options([
-                                'lunes'     => 'Lunes',
-                                'martes'    => 'Martes',
-                                'miercoles' => 'Miércoles',
-                                'jueves'    => 'Jueves',
-                                'viernes'   => 'Viernes',
-                                'sabado'    => 'Sábado',
-                                'domingo'   => 'Domingo',
-                            ])
-                            ->columns(4)
-                            ->helperText('Los días marcados aparecerán como sin disponibilidad en el portal, aunque el sistema tenga horarios configurados.'),
                     ]),
             ])
             ->statePath('data');
@@ -143,7 +127,6 @@ class PerfilPortalPage extends Page implements HasForms
             'monto_senia'              => $state['monto_senia'] ?: null,
             'alias_pago'               => $state['alias_pago'] ?: null,
             'portal_dias_anticipacion' => $state['portal_dias_anticipacion'] ?? 30,
-            'portal_dias_excluidos'    => $state['portal_dias_excluidos'] ?? [],
         ]);
         $user->save();
 
