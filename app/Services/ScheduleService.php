@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EstadosTurno;
 use App\Models\Horario;
+use App\Models\HorarioExclusion;
 use App\Models\Turno;
 use App\Models\User;
 use Carbon\Carbon;
@@ -24,6 +25,14 @@ class ScheduleService
             return [];
         }
 
+        $exclusion = HorarioExclusion::where('medico_id', $medico->medico_id)
+            ->where('fecha', $fecha)
+            ->first();
+
+        if ($exclusion && $exclusion->todo_el_dia) {
+            return [];
+        }
+
         $intervalo = 20;
         $slots = [];
         foreach ($configHorarios as $horario) {
@@ -34,6 +43,15 @@ class ScheduleService
                 $slots[] = $desde->format('H:i');
                 $desde->addMinutes($intervalo);
             }
+        }
+
+        if ($exclusion) {
+            $exDesde = Carbon::parse($exclusion->desde);
+            $exHasta = Carbon::parse($exclusion->hasta);
+            $slots = array_values(array_filter(
+                $slots,
+                fn ($s) => ! (Carbon::parse($s)->between($exDesde, $exHasta, true))
+            ));
         }
 
         $turnosDelDia = Turno::where('medico_id', $medico->medico_id)
@@ -90,6 +108,11 @@ class ScheduleService
             ->get()
             ->groupBy('fecha');
 
+        $exclusionesPorFecha = HorarioExclusion::where('medico_id', $medico->medico_id)
+            ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
+            ->get()
+            ->keyBy(fn ($e) => $e->fecha->format('Y-m-d'));
+
         $diasNoDisponibles = [];
         $cursor = $fechaDesde->copy();
 
@@ -98,8 +121,9 @@ class ScheduleService
             $diaSemana = $this->dayOfWeekToString($cursor->dayOfWeek);
 
             $configHorarios = $horariosPorDia->get($diaSemana, collect());
+            $exclusion = $exclusionesPorFecha->get($fechaStr);
 
-            if ($configHorarios->isEmpty()) {
+            if ($configHorarios->isEmpty() || ($exclusion && $exclusion->todo_el_dia)) {
                 $diasNoDisponibles[] = $fechaStr;
                 $cursor->addDay();
                 continue;
@@ -117,12 +141,21 @@ class ScheduleService
                 }
             }
 
+            if ($exclusion) {
+                $exDesde = Carbon::parse($exclusion->desde);
+                $exHasta = Carbon::parse($exclusion->hasta);
+                $slots = array_values(array_filter(
+                    $slots,
+                    fn ($s) => ! (Carbon::parse($s)->between($exDesde, $exHasta, true))
+                ));
+            }
+
             $slotsOcupados = $this->expandirSlotsOcupados(
                 $turnosPorFecha->get($fechaStr, collect()),
                 $intervalo
             );
 
-            if (empty(array_diff($slots, $slotsOcupados))) {
+            if (empty($slots) || empty(array_diff($slots, $slotsOcupados))) {
                 $diasNoDisponibles[] = $fechaStr;
             }
 

@@ -6,6 +6,7 @@ use App\Enums\EstadosTurno;
 use App\Enums\Roles;
 use App\Filament\Resources\HistoriaClinicaResource;
 use App\Filament\Resources\TurnoResource;
+use App\Models\HorarioExclusion;
 use App\Models\Practica;
 use App\Models\Horario;
 use App\Models\Turno;
@@ -86,6 +87,11 @@ class Calendario extends FullCalendarWidget
             ->get()
             ->groupBy('fecha');
 
+        $exclusionesPorFecha = HorarioExclusion::where('medico_id', $medico->medico_id)
+            ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
+            ->get()
+            ->keyBy(fn ($e) => $e->fecha->format('Y-m-d'));
+
         $dayMap = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
         $slotEvents = [];
         $cursor = $fechaDesde->copy();
@@ -95,8 +101,9 @@ class Calendario extends FullCalendarWidget
             $diaSemana = $dayMap[$cursor->dayOfWeek];
 
             $configHorarios = $horariosPorDia->get($diaSemana, collect());
+            $exclusion = $exclusionesPorFecha->get($fechaStr);
 
-            if ($configHorarios->isNotEmpty()) {
+            if ($configHorarios->isNotEmpty() && ! ($exclusion && $exclusion->todo_el_dia)) {
                 $intervalo = (int) Carbon::parse($configHorarios->first()->intervalo)->format('i');
                 $turnosDelDia = $turnosPorFecha->get($fechaStr, collect());
                 $horasOcupadas = [];
@@ -117,7 +124,11 @@ class Calendario extends FullCalendarWidget
 
                     while ($time <= $fin) {
                         $horaStr = $time->format('H:i');
-                        if (! in_array($horaStr, $horasOcupadas)) {
+
+                        $excluido = $exclusion && ! $exclusion->todo_el_dia
+                            && $time->between(Carbon::parse($exclusion->desde), Carbon::parse($exclusion->hasta), true);
+
+                        if (! in_array($horaStr, $horasOcupadas) && ! $excluido) {
                             $start = Carbon::parse($fechaStr . ' ' . $horaStr);
                             $slotEvents[] = [
                                 'id' => 'slot_' . $fechaStr . '_' . $horaStr,
