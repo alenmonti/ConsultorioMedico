@@ -48,8 +48,8 @@ class Calendario extends FullCalendarWidget
                     'title' => ($turno->paciente
                         ? $turno->paciente->nombre . ' ' . $turno->paciente->apellido
                         : '(Web) ' . str($turno->notas)->after('Nombre: ')->before(' |')->value())
-                        . ($turno->practica ? ' | ' . $turno->practica->nombre . ($turno->practica->costo !== null ? ' $' . number_format($turno->practica->costo, 2, ',', '.') : '') : '')
-                        . ($turno->senia_pagada_at ? ' (seña)' : ''),
+                        . ($turno->senia_pagada_at ? ' (seña)' : '')
+                        . ($turno->practica ? ' | ' . $turno->practica->display_name : ''),
                     'start' => Carbon::parse($turno->fecha . ' ' . $turno->hora),
                     'end' => Carbon::parse($turno->fecha . ' ' . $turno->hora)->addMinutes($turno->practica?->duracion_min ?? 20),
                     'backgroundColor' => $turno->estado->getHexColor(),

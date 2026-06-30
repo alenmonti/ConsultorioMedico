@@ -18,6 +18,7 @@ class HorarioExclusionesWidget extends BaseWidget
 {
     protected static ?int $sort = 2;
     protected static bool $isLazy = false;
+    protected static bool $isDiscovered = false;
     protected int | string | array $columnSpan = 'full';
 
     public function table(Table $table): Table
