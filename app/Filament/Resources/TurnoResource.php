@@ -21,7 +21,6 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use HusamTariq\FilamentTimePicker\Forms\Components\TimePickerField;
 use Illuminate\Support\Facades\Auth;
 
 class TurnoResource extends Resource
@@ -60,7 +59,6 @@ class TurnoResource extends Resource
                         ->required()
                         ->placeholder('Seleccione una fecha')
                         ->live()
-                        ->native(false)
                         ->afterStateUpdated(fn (Set $set) => $set('hora', null)),
                     Select::make('hora')
                         ->required()
@@ -182,8 +180,7 @@ class TurnoResource extends Resource
                     ->options(EstadosTurno::class),
                 Filter::make('fecha2')
                     ->form([
-                        DatePicker::make('desde')
-                            ->native(false),
+                        DatePicker::make('desde'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -194,8 +191,7 @@ class TurnoResource extends Resource
                     }),
                 Filter::make('fecha')
                     ->form([
-                        DatePicker::make('hasta')
-                            ->native(false),
+                        DatePicker::make('hasta'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query

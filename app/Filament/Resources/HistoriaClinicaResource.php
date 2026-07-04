@@ -52,7 +52,6 @@ class HistoriaClinicaResource extends Resource
                     ->required(),
                 DatePicker::make('fecha')
                     ->default(now())
-                    ->native(false)
                     ->required(),
                 Textarea::make('diagnostico')
                     ->placeholder('Diagnóstico del paciente')

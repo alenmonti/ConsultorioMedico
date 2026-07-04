@@ -28,15 +28,8 @@ class ListHorarios extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->mutateFormDataUsing(function (array $data): array {
-                    $data['anio'] = $this->tableFilters['anio']['value'] ?? now()->year;
-                    $data['mes'] = $this->tableFilters['mes']['value'] ?? now()->month;
-
-                    return $data;
-                }),
             Actions\Action::make('importar_horarios_base')
-                ->label('Importar horarios base')
+                ->label('Copiar horarios base')
                 ->color('gray')
                 ->icon('heroicon-o-document-duplicate')
                 ->visible(fn (): bool => ! $this->mesFiltradoTieneHorarios())
@@ -45,6 +38,13 @@ class ListHorarios extends ListRecords
                     $mes = (int) ($this->tableFilters['mes']['value'] ?? now()->month);
 
                     app(HorarioMesService::class)->asegurarMesConfigurado(auth()->user(), $anio, $mes);
+                }),
+            Actions\CreateAction::make()
+                ->mutateFormDataUsing(function (array $data): array {
+                    $data['anio'] = $this->tableFilters['anio']['value'] ?? now()->year;
+                    $data['mes'] = $this->tableFilters['mes']['value'] ?? now()->month;
+
+                    return $data;
                 }),
             Actions\Action::make('abrir_mes')
                 ->label(fn () => $this->mesFiltradoAbierto() ? 'Cerrar mes' : 'Abrir mes')

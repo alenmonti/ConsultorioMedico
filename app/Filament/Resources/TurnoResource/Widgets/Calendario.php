@@ -229,23 +229,9 @@ class Calendario extends FullCalendarWidget
 
     private function getHiddenDays(): array
     {
-        $diasConHorario = Horario::where('medico_id', user()->medico_id)
-            ->where('anio', now()->year)
-            ->where('mes', now()->month)
-            ->where('activo_sistema', true)
-            ->pluck('dia')
-            ->map(fn ($d) => $d instanceof \BackedEnum ? $d->value : $d)
-            ->toArray();
-
-        $hidden = [];
-        if (! in_array('domingo', $diasConHorario)) {
-            $hidden[] = 0;
-        }
-        if (! in_array('sabado', $diasConHorario)) {
-            $hidden[] = 6;
-        }
-
-        return $hidden;
+        // Siempre se muestra de lunes a sábado; un horario especial puede caer
+        // en sábado aunque el horario regular no lo incluya.
+        return [0];
     }
 
     public function config(): array

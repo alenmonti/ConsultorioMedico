@@ -58,7 +58,6 @@ class ViewFile extends Page implements HasForms, HasInfolists
         ->schema([
             Hidden::make('paciente_id'),
             DatePicker::make('fecha')
-                ->native(false)
                 ->default(now())
                 ->required()
                 ->columnSpan(2),
@@ -106,7 +105,6 @@ class ViewFile extends Page implements HasForms, HasInfolists
             ->schema([
                 Hidden::make('paciente_id'),
                 DatePicker::make('fecha')
-                    ->native(false)
                     ->default(now())
                     ->required()
                     ->columnSpan(2),
@@ -149,7 +147,6 @@ class ViewFile extends Page implements HasForms, HasInfolists
             ->schema([
                 Hidden::make('paciente_id'),
                 DatePicker::make('fecha')
-                    ->native(false)
                     ->default(now())
                     ->required()
                     ->columnSpan(2),

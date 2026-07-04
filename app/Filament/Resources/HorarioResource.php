@@ -11,7 +11,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use HusamTariq\FilamentTimePicker\Forms\Components\TimePickerField;
 
 class HorarioResource extends Resource
 {
@@ -39,10 +38,14 @@ class HorarioResource extends Resource
                     ])
                     ->default('00:20')
                     ->required(),
-                TimePickerField::make('desde')
+                Forms\Components\TimePicker::make('desde')
+                    ->seconds(false)
+                    ->step(60)
                     ->default('09:00')
                     ->required(),
-                TimePickerField::make('hasta')
+                Forms\Components\TimePicker::make('hasta')
+                    ->seconds(false)
+                    ->step(60)
                     ->default('18:00')
                     ->required(),
                 Forms\Components\Toggle::make('activo_sistema')

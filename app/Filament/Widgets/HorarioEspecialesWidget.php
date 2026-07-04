@@ -5,14 +5,15 @@ namespace App\Filament\Widgets;
 use App\Enums\TipoHorarioEspecial;
 use App\Models\HorarioEspecial;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use HusamTariq\FilamentTimePicker\Forms\Components\TimePickerField;
 use Illuminate\Support\Facades\Http;
 use Livewire\Attributes\On;
 
@@ -45,24 +46,34 @@ class HorarioEspecialesWidget extends BaseWidget
             DatePicker::make('fecha')
                 ->label('Fecha')
                 ->required()
-                ->native(false)
-                ->displayFormat('d/m/Y')
                 ->minDate(fn () => \Carbon\Carbon::create($this->anio, $this->mes, 1)->startOfMonth())
                 ->maxDate(fn () => \Carbon\Carbon::create($this->anio, $this->mes, 1)->endOfMonth()),
-            TimePickerField::make('desde')
-                ->label('Desde')
-                ->required(),
-            TimePickerField::make('hasta')
-                ->label('Hasta')
-                ->required(),
-            Toggle::make('activo_sistema')
-                ->label('Activo en sistema')
-                ->default(true)
-                ->helperText('Si está desactivado, esta adición no genera turnos en el sistema.'),
-            Toggle::make('activo_portal')
-                ->label('Activo en portal')
-                ->default(false)
-                ->helperText('Si está activado, esta adición es visible para reservas desde el portal web.'),
+            Grid::make(2)
+                ->schema([
+                    TimePicker::make('desde')
+                        ->label('Desde')
+                        ->seconds(false)
+                        ->step(60)
+                        ->default('09:00')
+                        ->required(),
+                    TimePicker::make('hasta')
+                        ->label('Hasta')
+                        ->seconds(false)
+                        ->step(60)
+                        ->default('18:00')
+                        ->required(),
+                ]),
+            Grid::make(2)
+                ->schema([
+                    Toggle::make('activo_sistema')
+                        ->label('Activo en sistema')
+                        ->default(true)
+                        ->helperText('Si está desactivado, esta adición no genera turnos en el sistema.'),
+                    Toggle::make('activo_portal')
+                        ->label('Activo en portal')
+                        ->default(false)
+                        ->helperText('Si está activado, esta adición es visible para reservas desde el portal web.'),
+                ]),
             TextInput::make('motivo')
                 ->label('Motivo')
                 ->required()
@@ -75,21 +86,28 @@ class HorarioEspecialesWidget extends BaseWidget
         return [
             DatePicker::make('fecha')
                 ->label('Fecha')
-                ->required()
-                ->native(false)
-                ->displayFormat('d/m/Y'),
+                ->required(),
             Toggle::make('todo_el_dia')
                 ->label('Todo el día')
                 ->default(true)
                 ->live(),
-            TimePickerField::make('desde')
-                ->label('Desde')
-                ->visible(fn ($get) => ! $get('todo_el_dia'))
-                ->required(fn ($get) => ! $get('todo_el_dia')),
-            TimePickerField::make('hasta')
-                ->label('Hasta')
-                ->visible(fn ($get) => ! $get('todo_el_dia'))
-                ->required(fn ($get) => ! $get('todo_el_dia')),
+            Grid::make(2)
+                ->schema([
+                    TimePicker::make('desde')
+                        ->label('Desde')
+                        ->seconds(false)
+                        ->step(60)
+                        ->default('09:00')
+                        ->visible(fn ($get) => ! $get('todo_el_dia'))
+                        ->required(fn ($get) => ! $get('todo_el_dia')),
+                    TimePicker::make('hasta')
+                        ->label('Hasta')
+                        ->seconds(false)
+                        ->step(60)
+                        ->default('18:00')
+                        ->visible(fn ($get) => ! $get('todo_el_dia'))
+                        ->required(fn ($get) => ! $get('todo_el_dia')),
+                ]),
             TextInput::make('motivo')
                 ->label('Motivo')
                 ->required()
@@ -129,7 +147,7 @@ class HorarioEspecialesWidget extends BaseWidget
                         return HorarioEspecial::create($this->prepararDatosExclusion($data));
                     }),
                 Action::make('cargar_feriados')
-                    ->label(fn () => '')
+                    ->label(fn () => 'Cargar feriados ' . $this->anio)
                     ->color('gray')
                     ->icon('heroicon-o-calendar-days')
                     ->requiresConfirmation()

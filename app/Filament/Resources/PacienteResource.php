@@ -81,7 +81,6 @@ class PacienteResource extends Resource
                         ]),
                     Forms\Components\DatePicker::make('fecha_nacimiento')
                         ->label('Fecha de Nacimiento')
-                        ->native(false)
                         ->placeholder('01/01/1990'),
                     Forms\Components\TextInput::make('direccion')
                         ->placeholder('Dirección del paciente')
