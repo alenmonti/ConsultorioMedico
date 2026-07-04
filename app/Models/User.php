@@ -45,7 +45,6 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         'whatsapp',
         'monto_senia',
         'alias_pago',
-        'portal_dias_anticipacion',
     ];
 
     /**

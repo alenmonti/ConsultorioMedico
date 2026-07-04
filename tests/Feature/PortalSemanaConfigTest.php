@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Roles;
+use App\Models\AperturaMensual;
 use App\Models\Horario;
 use App\Models\User;
 use Carbon\Carbon;
@@ -31,64 +32,36 @@ class PortalSemanaConfigTest extends TestCase
         parent::tearDown();
     }
 
-    // ── portal_dias_anticipacion ──────────────────────────────────────────────
+    // ── meses cerrados (apertura mensual) ─────────────────────────────────────
 
-    public function test_dias_dentro_del_limite_no_son_cerrados_por_anticipacion(): void
+    public function test_semana_de_mes_futuro_sin_abrir_aparece_cerrada(): void
     {
-        $this->medico->forceFill(['portal_dias_anticipacion' => 30])->save();
-        $this->createHorario('lunes');
+        // hoy = 2024-01-01 → febrero es un mes futuro sin AperturaMensual
+        $this->createHorario('jueves', anio: 2024, mes: 2);
 
-        // Semana actual (hoy = lunes 2024-01-01), dentro de los 30 días
-        $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
+        $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-02-01");
 
         $res->assertOk();
-        $lunes = $this->diaEnRespuesta($res, '2024-01-01');
-        $this->assertNotEquals('cerrado', $lunes['estado']);
+        $jueves = $this->diaEnRespuesta($res, '2024-02-01');
+        $this->assertEquals('cerrado', $jueves['estado']);
     }
 
-    public function test_dias_fuera_del_limite_aparecen_como_cerrados(): void
+    public function test_semana_de_mes_futuro_abierto_muestra_disponibilidad(): void
     {
-        // hoy = 2024-01-01, anticipacion = 7 → límite = 2024-01-08
-        // 2024-01-09 está estrictamente más allá del límite
-        $this->medico->forceFill(['portal_dias_anticipacion' => 7])->save();
-        $this->createHorario('martes');
+        $this->createHorario('jueves', anio: 2024, mes: 2);
 
-        $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-08");
+        AperturaMensual::create([
+            'medico_id' => $this->medico->id,
+            'anio' => 2024,
+            'mes' => 2,
+            'abierto' => true,
+        ]);
+
+        $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-02-01");
 
         $res->assertOk();
-        $martes = $this->diaEnRespuesta($res, '2024-01-09');
-        $this->assertEquals('cerrado', $martes['estado']);
-    }
-
-    public function test_el_dia_exacto_del_limite_no_es_cerrado(): void
-    {
-        $this->medico->forceFill(['portal_dias_anticipacion' => 6])->save();
-        // hoy = 2024-01-01, límite = 2024-01-07 (domingo), día del límite = 2024-01-07
-        $this->createHorario('domingo');
-
-        $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
-
-        $res->assertOk();
-        $domingo = $this->diaEnRespuesta($res, '2024-01-07');
-        // El domingo está en el límite (<=), no debe ser cerrado por anticipación
-        $this->assertNotEquals('cerrado', $domingo['estado']);
-    }
-
-    public function test_respuesta_incluye_limite_portal(): void
-    {
-        $this->medico->forceFill(['portal_dias_anticipacion' => 14])->save();
-
-        $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
-
-        $res->assertOk()->assertJsonPath('limite_portal', '2024-01-15');
-    }
-
-    public function test_limite_por_defecto_es_30_dias(): void
-    {
-        // medico sin portal_dias_anticipacion configurado explícitamente (null en DB)
-        $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
-
-        $res->assertOk()->assertJsonPath('limite_portal', '2024-01-31');
+        $jueves = $this->diaEnRespuesta($res, '2024-02-01');
+        $this->assertNotEquals('cerrado', $jueves['estado']);
     }
 
     // ── activo_portal en Horario ──────────────────────────────────────────────
@@ -155,33 +128,22 @@ class PortalSemanaConfigTest extends TestCase
         $this->assertNotEquals('cerrado', $this->diaEnRespuesta($res, '2024-01-02')['estado']);
     }
 
-    // ── Interacción entre ambas configs ──────────────────────────────────────
-
-    public function test_horario_activo_portal_false_dentro_del_limite_sigue_siendo_cerrado(): void
-    {
-        $this->medico->forceFill(['portal_dias_anticipacion' => 30])->save();
-        $this->createHorario('martes', activo_portal: false);
-
-        $res = $this->getJson("/portal-turnos/semana?medico_id={$this->medico->id}&desde=2024-01-01");
-
-        $res->assertOk();
-        $this->assertEquals('cerrado', $this->diaEnRespuesta($res, '2024-01-02')['estado']);
-    }
-
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private function createMedico(): User
     {
         $user = User::factory()->make(['rol' => Roles::Medico]);
         $user->saveQuietly();
-        $user->forceFill(['medico_id' => $user->id, 'portal_dias_anticipacion' => 30])->saveQuietly();
+        $user->forceFill(['medico_id' => $user->id])->saveQuietly();
         return $user->fresh();
     }
 
-    private function createHorario(string $dia, bool $activo_portal = true): Horario
+    private function createHorario(string $dia, bool $activo_portal = true, int $anio = 2024, int $mes = 1): Horario
     {
         return Horario::create([
             'medico_id'     => $this->medico->id,
+            'anio'          => $anio,
+            'mes'           => $mes,
             'dia'           => $dia,
             'desde'         => '09:00',
             'hasta'         => '09:00',

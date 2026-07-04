@@ -43,7 +43,6 @@ class PerfilPortalPage extends Page implements HasForms
             'portal_turnos_activo'     => (bool) $user->portal_turnos_activo,
             'monto_senia'             => $user->monto_senia,
             'alias_pago'              => $user->alias_pago,
-            'portal_dias_anticipacion' => $user->portal_dias_anticipacion ?? 30,
         ]);
     }
 
@@ -51,7 +50,7 @@ class PerfilPortalPage extends Page implements HasForms
     {
         return $form
             ->schema([
-                Section::make('Perfil público')
+                Section::make('Configuración de notificaciones')
                     ->description('Datos de pago que se informan al paciente para confirmar el turno.')
                     ->schema([
                         TextInput::make('monto_senia')
@@ -86,15 +85,6 @@ class PerfilPortalPage extends Page implements HasForms
                             ->helperText('Número completo con código de país, sin +, sin espacios.')
                             ->maxLength(30),
 
-                        TextInput::make('portal_dias_anticipacion')
-                            ->label('Días de anticipación')
-                            ->numeric()
-                            ->minValue(1)
-                            ->maxValue(365)
-                            ->default(30)
-                            ->suffix('días')
-                            ->helperText('Con cuántos días de anticipación puede un paciente pedir turno desde el portal.'),
-
                         Textarea::make('descripcion')
                             ->label('Descripción')
                             ->placeholder('Una breve presentación que verán los pacientes…')
@@ -126,7 +116,6 @@ class PerfilPortalPage extends Page implements HasForms
             'whatsapp'                 => $state['whatsapp'],
             'monto_senia'              => $state['monto_senia'] ?: null,
             'alias_pago'               => $state['alias_pago'] ?: null,
-            'portal_dias_anticipacion' => $state['portal_dias_anticipacion'] ?? 30,
         ]);
         $user->save();
 

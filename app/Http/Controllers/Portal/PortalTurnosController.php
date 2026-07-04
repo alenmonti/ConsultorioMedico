@@ -47,10 +47,8 @@ class PortalTurnosController extends Controller
         $desde  = Carbon::parse($request->desde)->startOfWeek(Carbon::MONDAY);
         $hasta  = $desde->copy()->endOfWeek(Carbon::SUNDAY);
 
-        $diasAnticipacion = (int) ($medico->portal_dias_anticipacion ?? 30);
-        $limitePortal     = Carbon::today()->addDays($diasAnticipacion);
-
         $diasNoDisponibles = $schedule->diasNoDisponibles($medico, $desde->format('Y-m-d'), $hasta->format('Y-m-d'), ignorarCancelados: true, portal: true);
+        $mesesAbiertos     = $schedule->mesesAbiertos($medico, $desde->format('Y-m-d'), $hasta->format('Y-m-d'));
 
         $dias = [];
         $cursor = $desde->copy();
@@ -60,16 +58,16 @@ class PortalTurnosController extends Controller
             $fechaStr   = $cursor->format('Y-m-d');
             $diaNombre  = $this->diaSemana($cursor->dayOfWeek);
             $pasado     = $cursor->lt($hoy);
-            $fueraLimite = $cursor->gt($limitePortal);
 
             if ($pasado) {
                 $estado = 'pasado';
                 $slots = 0;
-            } elseif ($fueraLimite) {
-                $estado = 'cerrado';
-                $slots = 0;
             } elseif (in_array($fechaStr, $diasNoDisponibles)) {
-                $horarioDelDia = $medico->horarios()
+                // Un mes todavía no abierto siempre es 'cerrado', tenga o no horarios configurados.
+                $mesAbierto = in_array("{$cursor->year}-{$cursor->month}", $mesesAbiertos, true);
+                $horarioDelDia = $mesAbierto && $medico->horarios()
+                    ->where('anio', $cursor->year)
+                    ->where('mes', $cursor->month)
                     ->where('dia', $diaNombre)
                     ->where('activo_sistema', true)
                     ->where('activo_portal', true)
@@ -97,7 +95,6 @@ class PortalTurnosController extends Controller
             'semana_label'  => $desde->isoFormat('D MMM') . '–' . $hasta->isoFormat('D MMM'),
             'desde'         => $desde->format('Y-m-d'),
             'hasta'         => $hasta->format('Y-m-d'),
-            'limite_portal' => $limitePortal->format('Y-m-d'),
             'dias'          => $dias,
         ]);
     }

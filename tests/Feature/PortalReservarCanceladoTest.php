@@ -160,8 +160,7 @@ class PortalReservarCanceladoTest extends TestCase
         $user = User::factory()->make(['rol' => Roles::Medico]);
         $user->saveQuietly();
         $user->forceFill([
-            'medico_id'               => $user->id,
-            'portal_dias_anticipacion' => 30,
+            'medico_id' => $user->id,
         ])->saveQuietly();
         return $user->fresh();
     }

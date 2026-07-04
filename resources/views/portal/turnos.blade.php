@@ -946,7 +946,6 @@
 
     // ── Step 2: week & slots ──
     let currentWeekDesde = null;
-    let limitePortal = null;
 
     function startOfWeek(date) {
         const d = new Date(date);
@@ -977,16 +976,14 @@
             const data = await apiFetch(`/portal-turnos/semana?medico_id=${S.medicoId}&desde=${fmtDate(desde)}`);
             $id('week-label').textContent = data.semana_label;
             currentWeekDesde = new Date(data.desde + 'T00:00:00');
-            limitePortal = data.limite_portal ? new Date(data.limite_portal + 'T00:00:00') : null;
             renderDays(data.dias);
 
             // prev button: disable if week starts today or earlier
             const hoy = new Date(); hoy.setHours(0,0,0,0);
             $id('btn-prev-week').disabled = currentWeekDesde <= hoy;
 
-            // next button: disable if the next week starts after the portal limit
-            const proximaSemana = addDays(currentWeekDesde, 7);
-            $id('btn-next-week').disabled = !!(limitePortal && proximaSemana > limitePortal);
+            // next button: disable once the whole visible week is closed (más allá del último mes abierto)
+            $id('btn-next-week').disabled = data.dias.every(d => d.estado === 'cerrado' || d.estado === 'pasado');
 
             if (autoSelect) {
                 const primer = $id('days-grid').querySelector('.day-card:not(.day-unavailable):not(.day-pasado)');
