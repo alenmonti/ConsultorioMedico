@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Enums\EstadosTurno;
+use App\Enums\TipoHorarioEspecial;
+use App\Models\AperturaMensual;
 use App\Models\Horario;
-use App\Models\HorarioExclusion;
+use App\Models\HorarioEspecial;
 use App\Models\Turno;
 use App\Models\User;
 use Carbon\Carbon;
@@ -13,23 +15,31 @@ class ScheduleService
 {
     public function horariosDisponibles(User $medico, string $fecha, string $tipo = 'turno', int $duracion = 20, bool $ignorarCancelados = false, bool $portal = false): array
     {
-        $diaSemana = $this->dayOfWeekToString(Carbon::parse($fecha)->dayOfWeek);
+        $fechaCarbon = Carbon::parse($fecha);
+
+        if (empty($this->mesesAbiertos($medico, $fecha, $fecha))) {
+            return [];
+        }
+
+        $diaSemana = $this->dayOfWeekToString($fechaCarbon->dayOfWeek);
 
         $configHorarios = Horario::where('medico_id', $medico->medico_id)
+            ->where('anio', $fechaCarbon->year)
+            ->where('mes', $fechaCarbon->month)
             ->where('dia', $diaSemana)
             ->where('activo_sistema', true)
             ->when($portal, fn ($q) => $q->where('activo_portal', true))
             ->get();
 
-        if ($configHorarios->isEmpty()) {
+        $especiales = HorarioEspecial::where('medico_id', $medico->medico_id)
+            ->whereDate('fecha', $fecha)
+            ->get();
+
+        if ($configHorarios->isEmpty() && $especiales->isEmpty()) {
             return [];
         }
 
-        $exclusion = HorarioExclusion::where('medico_id', $medico->medico_id)
-            ->where('fecha', $fecha)
-            ->first();
-
-        if ($exclusion && $exclusion->todo_el_dia) {
+        if ($especiales->contains(fn ($e) => $e->tipo === TipoHorarioEspecial::Exclusion && $e->todo_el_dia)) {
             return [];
         }
 
@@ -45,9 +55,29 @@ class ScheduleService
             }
         }
 
-        if ($exclusion) {
-            $exDesde = Carbon::parse($exclusion->desde);
-            $exHasta = Carbon::parse($exclusion->hasta);
+        foreach ($especiales as $especial) {
+            if ($especial->tipo !== TipoHorarioEspecial::Adicion) {
+                continue;
+            }
+            if ($portal ? ! $especial->activo_portal : ! $especial->activo_sistema) {
+                continue;
+            }
+            $desde = Carbon::parse($especial->desde);
+            $hasta = Carbon::parse($especial->hasta);
+            while ($desde <= $hasta) {
+                $slots[] = $desde->format('H:i');
+                $desde->addMinutes($intervalo);
+            }
+        }
+        $slots = array_values(array_unique($slots));
+        sort($slots);
+
+        foreach ($especiales as $especial) {
+            if ($especial->tipo !== TipoHorarioEspecial::Exclusion || $especial->todo_el_dia) {
+                continue;
+            }
+            $exDesde = Carbon::parse($especial->desde);
+            $exHasta = Carbon::parse($especial->hasta);
             $slots = array_values(array_filter(
                 $slots,
                 fn ($s) => ! (Carbon::parse($s)->between($exDesde, $exHasta, true))
@@ -95,11 +125,13 @@ class ScheduleService
         $fechaDesde = Carbon::parse($desde);
         $fechaHasta = Carbon::parse($hasta);
 
+        $mesesAbiertos = $this->mesesAbiertos($medico, $desde, $hasta);
+
         $horariosPorDia = Horario::where('medico_id', $medico->medico_id)
             ->where('activo_sistema', true)
             ->when($portal, fn ($q) => $q->where('activo_portal', true))
             ->get()
-            ->groupBy(fn ($h) => $h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia);
+            ->groupBy(fn ($h) => "{$h->anio}-{$h->mes}-" . ($h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia));
 
         $turnosPorFecha = Turno::where('medico_id', $medico->medico_id)
             ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
@@ -108,10 +140,11 @@ class ScheduleService
             ->get()
             ->groupBy('fecha');
 
-        $exclusionesPorFecha = HorarioExclusion::where('medico_id', $medico->medico_id)
-            ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
+        $especialesPorFecha = HorarioEspecial::where('medico_id', $medico->medico_id)
+            ->whereDate('fecha', '>=', $fechaDesde->format('Y-m-d'))
+            ->whereDate('fecha', '<=', $fechaHasta->format('Y-m-d'))
             ->get()
-            ->keyBy(fn ($e) => $e->fecha->format('Y-m-d'));
+            ->groupBy(fn ($e) => $e->fecha->format('Y-m-d'));
 
         $diasNoDisponibles = [];
         $cursor = $fechaDesde->copy();
@@ -120,16 +153,31 @@ class ScheduleService
             $fechaStr = $cursor->format('Y-m-d');
             $diaSemana = $this->dayOfWeekToString($cursor->dayOfWeek);
 
-            $configHorarios = $horariosPorDia->get($diaSemana, collect());
-            $exclusion = $exclusionesPorFecha->get($fechaStr);
-
-            if ($configHorarios->isEmpty() || ($exclusion && $exclusion->todo_el_dia)) {
+            if (! in_array("{$cursor->year}-{$cursor->month}", $mesesAbiertos, true)) {
                 $diasNoDisponibles[] = $fechaStr;
                 $cursor->addDay();
                 continue;
             }
 
-            $intervalo = (int) Carbon::parse($configHorarios->first()->intervalo)->format('i');
+            $configHorarios = $horariosPorDia->get("{$cursor->year}-{$cursor->month}-{$diaSemana}", collect());
+            $especiales = $especialesPorFecha->get($fechaStr, collect());
+
+            if ($configHorarios->isEmpty() && $especiales->isEmpty()) {
+                $diasNoDisponibles[] = $fechaStr;
+                $cursor->addDay();
+                continue;
+            }
+
+            if ($especiales->contains(fn ($e) => $e->tipo === TipoHorarioEspecial::Exclusion && $e->todo_el_dia)) {
+                $diasNoDisponibles[] = $fechaStr;
+                $cursor->addDay();
+                continue;
+            }
+
+            $intervalo = $configHorarios->isNotEmpty()
+                ? (int) Carbon::parse($configHorarios->first()->intervalo)->format('i')
+                : 20;
+
             $slots = [];
             foreach ($configHorarios as $horario) {
                 $time = Carbon::parse($horario->desde);
@@ -141,9 +189,28 @@ class ScheduleService
                 }
             }
 
-            if ($exclusion) {
-                $exDesde = Carbon::parse($exclusion->desde);
-                $exHasta = Carbon::parse($exclusion->hasta);
+            foreach ($especiales as $especial) {
+                if ($especial->tipo !== TipoHorarioEspecial::Adicion) {
+                    continue;
+                }
+                if ($portal ? ! $especial->activo_portal : ! $especial->activo_sistema) {
+                    continue;
+                }
+                $time = Carbon::parse($especial->desde);
+                $fin = Carbon::parse($especial->hasta);
+                while ($time <= $fin) {
+                    $slots[] = $time->format('H:i');
+                    $time->addMinutes($intervalo);
+                }
+            }
+            $slots = array_values(array_unique($slots));
+
+            foreach ($especiales as $especial) {
+                if ($especial->tipo !== TipoHorarioEspecial::Exclusion || $especial->todo_el_dia) {
+                    continue;
+                }
+                $exDesde = Carbon::parse($especial->desde);
+                $exHasta = Carbon::parse($especial->hasta);
                 $slots = array_values(array_filter(
                     $slots,
                     fn ($s) => ! (Carbon::parse($s)->between($exDesde, $exHasta, true))
@@ -163,6 +230,44 @@ class ScheduleService
         }
 
         return $diasNoDisponibles;
+    }
+
+    public function mesesAbiertos(User $medico, string $desde, string $hasta): array
+    {
+        $fechaDesde = Carbon::parse($desde);
+        $fechaHasta = Carbon::parse($hasta);
+
+        $aperturas = AperturaMensual::where('medico_id', $medico->medico_id)
+            ->get()
+            ->keyBy(fn ($a) => "{$a->anio}-{$a->mes}");
+
+        $hoy = Carbon::now();
+
+        $abiertos = [];
+        $cursor = $fechaDesde->copy()->startOfMonth();
+        $fin = $fechaHasta->copy()->startOfMonth();
+
+        while ($cursor <= $fin) {
+            $clave = "{$cursor->year}-{$cursor->month}";
+            $esPasadoOActual = $cursor->year < $hoy->year || ($cursor->year === $hoy->year && $cursor->month <= $hoy->month);
+            $apertura = $aperturas->get($clave);
+
+            // Un mes ya iniciado siempre está abierto: el toggle de apertura solo rige meses futuros.
+            // Si quedó una fila cerrada de cuando todavía era futuro, se corrige en la DB para que quede claro.
+            if ($esPasadoOActual && $apertura && ! $apertura->abierto) {
+                $apertura->update(['abierto' => true]);
+            }
+
+            $abierto = $esPasadoOActual || ($apertura?->abierto ?? false);
+
+            if ($abierto) {
+                $abiertos[] = $clave;
+            }
+
+            $cursor->addMonth();
+        }
+
+        return $abiertos;
     }
 
     private function expandirSlotsOcupados($turnos, int $intervalo): array

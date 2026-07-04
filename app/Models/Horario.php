@@ -14,6 +14,8 @@ class Horario extends Model
 
     protected $fillable = [
         'medico_id',
+        'anio',
+        'mes',
         'dia',
         'desde',
         'hasta',
@@ -39,28 +41,12 @@ class Horario extends Model
         ];
     }
 
-    public function getHorariosArray($fecha)
-    {
-        $horarios = $this->where('dia', $fecha->format('N'))->get();
-        $horariosArray = [];
-        foreach ($horarios as $horario) {
-            $desde = $horario->desde;
-            $hasta = $horario->hasta;
-            $intervalo = $horario->intervalo;
-            $hora = $desde;
-            while ($hora <= $hasta) {
-                $horariosArray[] = $hora;
-                $hora = $hora->add($intervalo);
-            }
-        }
-        return $horariosArray;
-    
-    }
-
     public static function booted()
     {
         static::creating(function ($horario) {
             $horario->medico_id = $horario->medico_id ?? auth()->user()->medico_id;
+            $horario->anio = $horario->anio ?? now()->year;
+            $horario->mes = $horario->mes ?? now()->month;
         });
 
         static::addGlobalScope(Own::class);

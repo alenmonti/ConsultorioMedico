@@ -3,19 +3,15 @@
 namespace App\Filament\Resources;
 
 use App\Enums\Dias;
+use App\Enums\Mes;
 use App\Filament\Resources\HorarioResource\Pages;
-use App\Filament\Resources\HorarioResource\RelationManagers;
 use App\Models\Horario;
 use Filament\Forms;
-use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use HusamTariq\FilamentTimePicker\Forms\Components\TimePickerField;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Ramsey\Uuid\Type\Time;
 
 class HorarioResource extends Resource
 {
@@ -63,6 +59,8 @@ class HorarioResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->filtersLayout(Tables\Enums\FiltersLayout::AboveContent)
+            ->filtersFormColumns(2)
             ->defaultSort('dia', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('dia')
@@ -86,7 +84,14 @@ class HorarioResource extends Resource
                     ->visibleFrom('sm'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('anio')
+                    ->label('Año')
+                    ->options(array_combine(config('horario.anios_disponibles'), config('horario.anios_disponibles')))
+                    ->default(now()->year),
+                Tables\Filters\SelectFilter::make('mes')
+                    ->label('Mes')
+                    ->options(Mes::class)
+                    ->default(now()->month),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -110,8 +115,6 @@ class HorarioResource extends Resource
     {
         return [
             'index' => Pages\ListHorarios::route('/'),
-            // 'create' => Pages\CreateHorario::route('/create'),
-            // 'edit' => Pages\EditHorario::route('/{record}/edit'),
         ];
     }
 }

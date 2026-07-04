@@ -4,12 +4,14 @@ namespace App\Filament\Resources\TurnoResource\Widgets;
 
 use App\Enums\EstadosTurno;
 use App\Enums\Roles;
+use App\Enums\TipoHorarioEspecial;
 use App\Filament\Resources\HistoriaClinicaResource;
 use App\Filament\Resources\TurnoResource;
-use App\Models\HorarioExclusion;
+use App\Models\HorarioEspecial;
 use App\Models\Practica;
 use App\Models\Horario;
 use App\Models\Turno;
+use App\Services\ScheduleService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms\Form;
@@ -78,10 +80,12 @@ class Calendario extends FullCalendarWidget
         $fechaDesde = Carbon::parse($desde);
         $fechaHasta = Carbon::parse($hasta);
 
+        $mesesAbiertos = app(ScheduleService::class)->mesesAbiertos($medico, $desde, $hasta);
+
         $horariosPorDia = Horario::where('medico_id', $medico->medico_id)
             ->where('activo_sistema', true)
             ->get()
-            ->groupBy(fn ($h) => $h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia);
+            ->groupBy(fn ($h) => "{$h->anio}-{$h->mes}-" . ($h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia));
 
         $turnosPorFecha = Turno::where('medico_id', $medico->medico_id)
             ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
@@ -89,10 +93,11 @@ class Calendario extends FullCalendarWidget
             ->get()
             ->groupBy('fecha');
 
-        $exclusionesPorFecha = HorarioExclusion::where('medico_id', $medico->medico_id)
-            ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
+        $especialesPorFecha = HorarioEspecial::where('medico_id', $medico->medico_id)
+            ->whereDate('fecha', '>=', $fechaDesde->format('Y-m-d'))
+            ->whereDate('fecha', '<=', $fechaHasta->format('Y-m-d'))
             ->get()
-            ->keyBy(fn ($e) => $e->fecha->format('Y-m-d'));
+            ->groupBy(fn ($e) => $e->fecha->format('Y-m-d'));
 
         $dayMap = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
         $slotEvents = [];
@@ -102,11 +107,21 @@ class Calendario extends FullCalendarWidget
             $fechaStr = $cursor->format('Y-m-d');
             $diaSemana = $dayMap[$cursor->dayOfWeek];
 
-            $configHorarios = $horariosPorDia->get($diaSemana, collect());
-            $exclusion = $exclusionesPorFecha->get($fechaStr);
+            if (! in_array("{$cursor->year}-{$cursor->month}", $mesesAbiertos, true)) {
+                $cursor->addDay();
+                continue;
+            }
 
-            if ($configHorarios->isNotEmpty() && ! ($exclusion && $exclusion->todo_el_dia)) {
-                $intervalo = (int) Carbon::parse($configHorarios->first()->intervalo)->format('i');
+            $configHorarios = $horariosPorDia->get("{$cursor->year}-{$cursor->month}-{$diaSemana}", collect());
+            $especiales = $especialesPorFecha->get($fechaStr, collect());
+            $diaExcluido = $especiales->contains(fn ($e) => $e->tipo === TipoHorarioEspecial::Exclusion && $e->todo_el_dia);
+            $adiciones = $especiales->filter(fn ($e) => $e->tipo === TipoHorarioEspecial::Adicion);
+
+            if (($configHorarios->isNotEmpty() || $adiciones->isNotEmpty()) && ! $diaExcluido) {
+                $intervalo = $configHorarios->isNotEmpty()
+                    ? (int) Carbon::parse($configHorarios->first()->intervalo)->format('i')
+                    : 20;
+
                 $turnosDelDia = $turnosPorFecha->get($fechaStr, collect());
                 $horasOcupadas = [];
                 foreach ($turnosDelDia as $turno) {
@@ -119,36 +134,55 @@ class Calendario extends FullCalendarWidget
                 }
                 $horasOcupadas = array_unique($horasOcupadas);
 
-                foreach ($configHorarios as $horario) {
-                    $time = Carbon::parse($horario->desde);
-                    $fin = Carbon::parse($horario->hasta);
-                    $intervalo = (int) Carbon::parse($horario->intervalo)->format('i');
+                $exclusionesParciales = $especiales->filter(fn ($e) => $e->tipo === TipoHorarioEspecial::Exclusion && ! $e->todo_el_dia);
+
+                $rangos = $configHorarios
+                    ->map(fn ($h) => [
+                        'desde' => Carbon::parse($h->desde),
+                        'hasta' => Carbon::parse($h->hasta),
+                        'intervalo' => (int) Carbon::parse($h->intervalo)->format('i'),
+                    ])
+                    ->concat($adiciones->map(fn ($e) => [
+                        'desde' => Carbon::parse($e->desde),
+                        'hasta' => Carbon::parse($e->hasta),
+                        'intervalo' => $intervalo,
+                    ]));
+
+                $emitidos = [];
+                foreach ($rangos as $rango) {
+                    $time = $rango['desde']->copy();
+                    $fin = $rango['hasta'];
+                    $iv = $rango['intervalo'];
 
                     while ($time <= $fin) {
                         $horaStr = $time->format('H:i');
 
-                        $excluido = $exclusion && ! $exclusion->todo_el_dia
-                            && $time->between(Carbon::parse($exclusion->desde), Carbon::parse($exclusion->hasta), true);
+                        if (! isset($emitidos[$horaStr])) {
+                            $excluido = $exclusionesParciales->contains(
+                                fn ($e) => $time->between(Carbon::parse($e->desde), Carbon::parse($e->hasta), true)
+                            );
 
-                        if (! in_array($horaStr, $horasOcupadas) && ! $excluido) {
-                            $start = Carbon::parse($fechaStr . ' ' . $horaStr);
-                            $slotEvents[] = [
-                                'id' => 'slot_' . $fechaStr . '_' . $horaStr,
-                                'title' => 'DISPONIBLE',
-                                'start' => $start->toIso8601String(),
-                                'end' => $start->copy()->addMinutes($intervalo)->toIso8601String(),
-                                'backgroundColor' => '#7dd3fc',
-                                'borderColor' => '#0284c7',
-                                'textColor' => '#0c4a6e',
-                                'display' => 'block',
-                                'extendedProps' => [
-                                    'isAvailable' => true,
-                                    'fecha' => $fechaStr,
-                                    'hora' => $horaStr,
-                                ],
-                            ];
+                            if (! in_array($horaStr, $horasOcupadas) && ! $excluido) {
+                                $start = Carbon::parse($fechaStr . ' ' . $horaStr);
+                                $slotEvents[] = [
+                                    'id' => 'slot_' . $fechaStr . '_' . $horaStr,
+                                    'title' => 'DISPONIBLE',
+                                    'start' => $start->toIso8601String(),
+                                    'end' => $start->copy()->addMinutes($iv)->toIso8601String(),
+                                    'backgroundColor' => '#7dd3fc',
+                                    'borderColor' => '#0284c7',
+                                    'textColor' => '#0c4a6e',
+                                    'display' => 'block',
+                                    'extendedProps' => [
+                                        'isAvailable' => true,
+                                        'fecha' => $fechaStr,
+                                        'hora' => $horaStr,
+                                    ],
+                                ];
+                            }
+                            $emitidos[$horaStr] = true;
                         }
-                        $time->addMinutes($intervalo);
+                        $time->addMinutes($iv);
                     }
                 }
             }
@@ -174,7 +208,11 @@ class Calendario extends FullCalendarWidget
 
     private function getSlotRange(): array
     {
-        $horarios = Horario::where('medico_id', user()->medico_id)->where('activo_sistema', true)->get();
+        $horarios = Horario::where('medico_id', user()->medico_id)
+            ->where('anio', now()->year)
+            ->where('mes', now()->month)
+            ->where('activo_sistema', true)
+            ->get();
 
         if ($horarios->isEmpty()) {
             return ['slotMinTime' => '06:00:00', 'slotMaxTime' => '20:00:00'];
@@ -192,6 +230,8 @@ class Calendario extends FullCalendarWidget
     private function getHiddenDays(): array
     {
         $diasConHorario = Horario::where('medico_id', user()->medico_id)
+            ->where('anio', now()->year)
+            ->where('mes', now()->month)
             ->where('activo_sistema', true)
             ->pluck('dia')
             ->map(fn ($d) => $d instanceof \BackedEnum ? $d->value : $d)

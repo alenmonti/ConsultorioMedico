@@ -4,13 +4,18 @@ namespace Tests\Feature;
 
 use App\Enums\EstadosTurno;
 use App\Enums\Roles;
+use App\Enums\TipoHorarioEspecial;
 use App\Enums\TipoTurno;
+use App\Models\AperturaMensual;
 use App\Models\Horario;
+use App\Models\HorarioEspecial;
 use App\Models\Paciente;
 use App\Models\Practica;
 use App\Models\Turno;
 use App\Models\User;
+use App\Services\HorarioMesService;
 use App\Services\ScheduleService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -150,8 +155,8 @@ class ScheduleServiceTest extends TestCase
 
         $this->service->diasNoDisponibles($this->medico, '2024-01-01', '2024-01-07');
 
-        // horarios query + turnos query + practica eager load (skipped when no turnos)
-        $this->assertLessThanOrEqual(3, $queryCount);
+        // horarios query + turnos query + especiales query + aperturas mensuales query
+        $this->assertLessThanOrEqual(4, $queryCount);
     }
 
     // multi-slot: horariosDisponibles
@@ -330,6 +335,243 @@ class ScheduleServiceTest extends TestCase
         $this->assertContains('2024-01-01', $result);
     }
 
+    // horarios especiales: exclusión
+
+    public function test_exclusion_todo_el_dia_vacia_horarios_disponibles(): void
+    {
+        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        $this->createEspecial('2024-01-01', TipoHorarioEspecial::Exclusion, todoElDia: true);
+
+        $result = $this->service->horariosDisponibles($this->medico, '2024-01-01');
+
+        $this->assertEmpty($result);
+    }
+
+    public function test_exclusion_parcial_quita_solo_los_slots_del_rango(): void
+    {
+        $this->createHorario('lunes', '09:00', '10:00', '00:20');
+        $this->createEspecial('2024-01-01', TipoHorarioEspecial::Exclusion, desde: '09:00', hasta: '09:20');
+
+        $result = $this->service->horariosDisponibles($this->medico, '2024-01-01');
+
+        $this->assertArrayNotHasKey('09:00', $result);
+        $this->assertArrayNotHasKey('09:20', $result);
+        $this->assertArrayHasKey('09:40', $result);
+        $this->assertArrayHasKey('10:00', $result);
+    }
+
+    public function test_exclusion_todo_el_dia_marca_dia_no_disponible(): void
+    {
+        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        $this->createEspecial('2024-01-01', TipoHorarioEspecial::Exclusion, todoElDia: true);
+
+        $result = $this->service->diasNoDisponibles($this->medico, '2024-01-01', '2024-01-01');
+
+        $this->assertContains('2024-01-01', $result);
+    }
+
+    // horarios especiales: adición
+
+    public function test_adicion_agrega_slots_en_dia_sin_horario_configurado(): void
+    {
+        // domingo sin Horario semanal configurado
+        $this->createEspecial('2024-01-07', TipoHorarioEspecial::Adicion, desde: '10:00', hasta: '10:40');
+
+        $result = $this->service->horariosDisponibles($this->medico, '2024-01-07');
+
+        $this->assertSame(['10:00' => '10:00', '10:20' => '10:20', '10:40' => '10:40'], $result);
+    }
+
+    public function test_adicion_agrega_slots_fuera_del_rango_del_horario_semanal(): void
+    {
+        $this->createHorario('lunes', '09:00', '09:20', '00:20');
+        $this->createEspecial('2024-01-01', TipoHorarioEspecial::Adicion, desde: '18:00', hasta: '18:20');
+
+        $result = $this->service->horariosDisponibles($this->medico, '2024-01-01');
+
+        $this->assertArrayHasKey('09:00', $result);
+        $this->assertArrayHasKey('09:20', $result);
+        $this->assertArrayHasKey('18:00', $result);
+        $this->assertArrayHasKey('18:20', $result);
+    }
+
+    public function test_adicion_respeta_turnos_ya_ocupados_en_ese_rango(): void
+    {
+        $this->createEspecial('2024-01-07', TipoHorarioEspecial::Adicion, desde: '10:00', hasta: '10:40');
+        $this->createTurno('2024-01-07', '10:00');
+
+        $result = $this->service->horariosDisponibles($this->medico, '2024-01-07');
+
+        $this->assertArrayNotHasKey('10:00', $result);
+        $this->assertArrayHasKey('10:20', $result);
+    }
+
+    public function test_dia_con_solo_adicion_no_se_marca_no_disponible(): void
+    {
+        $this->createEspecial('2024-01-07', TipoHorarioEspecial::Adicion, desde: '10:00', hasta: '10:00');
+
+        $result = $this->service->diasNoDisponibles($this->medico, '2024-01-07', '2024-01-07');
+
+        $this->assertNotContains('2024-01-07', $result);
+    }
+
+    public function test_dia_sin_horario_ni_especial_sigue_no_disponible(): void
+    {
+        $result = $this->service->diasNoDisponibles($this->medico, '2024-01-07', '2024-01-07');
+
+        $this->assertContains('2024-01-07', $result);
+    }
+
+    // apertura mensual
+
+    public function test_mes_futuro_sin_apertura_mensual_se_considera_cerrado(): void
+    {
+        $futuro = Carbon::now()->addMonth()->startOfMonth();
+        $dia = $this->diaDeSemana($futuro);
+        $fecha = $futuro->format('Y-m-d');
+
+        $this->createHorario($dia, '09:00', '09:40', '00:20', $futuro->year, $futuro->month);
+        $this->createEspecial($fecha, TipoHorarioEspecial::Adicion, desde: '10:00', hasta: '10:00');
+
+        $result = $this->service->horariosDisponibles($this->medico, $fecha);
+        $this->assertEmpty($result);
+
+        $diasNoDisponibles = $this->service->diasNoDisponibles($this->medico, $fecha, $fecha);
+        $this->assertContains($fecha, $diasNoDisponibles);
+    }
+
+    public function test_mes_futuro_con_apertura_mensual_abierta_vuelve_a_estar_disponible(): void
+    {
+        $futuro = Carbon::now()->addMonth()->startOfMonth();
+        $dia = $this->diaDeSemana($futuro);
+        $fecha = $futuro->format('Y-m-d');
+
+        $this->createHorario($dia, '09:00', '09:40', '00:20', $futuro->year, $futuro->month);
+
+        AperturaMensual::create([
+            'medico_id' => $this->medico->id,
+            'anio' => $futuro->year,
+            'mes' => $futuro->month,
+            'abierto' => true,
+        ]);
+
+        $result = $this->service->horariosDisponibles($this->medico, $fecha);
+        $this->assertArrayHasKey('09:00', $result);
+
+        $diasNoDisponibles = $this->service->diasNoDisponibles($this->medico, $fecha, $fecha);
+        $this->assertNotContains($fecha, $diasNoDisponibles);
+    }
+
+    public function test_mes_actual_esta_abierto_aunque_haya_quedado_cerrado_de_cuando_era_futuro(): void
+    {
+        // 2024-01 es pasado respecto a "hoy": si quedó una fila cerrada de cuando
+        // todavía era un mes futuro, el toggle ya no debe aplicar.
+        $this->createHorario('lunes', '09:00', '09:00', '00:20', 2024, 1);
+
+        $apertura = AperturaMensual::create([
+            'medico_id' => $this->medico->id,
+            'anio' => 2024,
+            'mes' => 1,
+            'abierto' => false,
+        ]);
+
+        $result = $this->service->horariosDisponibles($this->medico, '2024-01-01');
+        $this->assertArrayHasKey('09:00', $result);
+
+        $diasNoDisponibles = $this->service->diasNoDisponibles($this->medico, '2024-01-01', '2024-01-01');
+        $this->assertNotContains('2024-01-01', $diasNoDisponibles);
+
+        // se autocorrige en la DB para que quede claro que el mes está abierto
+        $this->assertTrue($apertura->fresh()->abierto);
+    }
+
+    public function test_horario_de_un_mes_no_se_filtra_en_otro_mes_mismo_dia(): void
+    {
+        // mismo día de semana (lunes) en dos meses distintos
+        $this->createHorario('lunes', '09:00', '09:00', '00:20', 2024, 1);
+        $this->createHorario('lunes', '10:00', '10:00', '00:20', 2024, 2);
+
+        $resultEnero = $this->service->horariosDisponibles($this->medico, '2024-01-01');
+        $resultFebrero = $this->service->horariosDisponibles($this->medico, '2024-02-05');
+
+        $this->assertSame(['09:00' => '09:00'], $resultEnero);
+        $this->assertSame(['10:00' => '10:00'], $resultFebrero);
+    }
+
+    // adición: activo_sistema / activo_portal
+
+    public function test_adicion_solo_portal_no_aparece_en_sistema_pero_si_en_portal(): void
+    {
+        $this->createEspecial(
+            '2024-01-07',
+            TipoHorarioEspecial::Adicion,
+            desde: '10:00',
+            hasta: '10:00',
+            activoSistema: false,
+            activoPortal: true,
+        );
+
+        $resultSistema = $this->service->horariosDisponibles($this->medico, '2024-01-07', portal: false);
+        $resultPortal = $this->service->horariosDisponibles($this->medico, '2024-01-07', portal: true);
+
+        $this->assertArrayNotHasKey('10:00', $resultSistema);
+        $this->assertArrayHasKey('10:00', $resultPortal);
+    }
+
+    public function test_adicion_solo_sistema_no_aparece_en_portal_pero_si_en_sistema(): void
+    {
+        $this->createEspecial(
+            '2024-01-07',
+            TipoHorarioEspecial::Adicion,
+            desde: '10:00',
+            hasta: '10:00',
+            activoSistema: true,
+            activoPortal: false,
+        );
+
+        $resultSistema = $this->service->horariosDisponibles($this->medico, '2024-01-07', portal: false);
+        $resultPortal = $this->service->horariosDisponibles($this->medico, '2024-01-07', portal: true);
+
+        $this->assertArrayHasKey('10:00', $resultSistema);
+        $this->assertArrayNotHasKey('10:00', $resultPortal);
+    }
+
+    // HorarioMesService
+
+    public function test_asegurar_mes_configurado_clona_del_mes_anterior(): void
+    {
+        $this->createHorario('lunes', '09:00', '10:00', '00:20', 2024, 1);
+
+        app(HorarioMesService::class)->asegurarMesConfigurado($this->medico, 2024, 2);
+
+        $clonados = Horario::where('medico_id', $this->medico->id)->where('anio', 2024)->where('mes', 2)->get();
+        $this->assertCount(1, $clonados);
+        $this->assertSame('lunes', $clonados->first()->dia->value);
+    }
+
+    public function test_asegurar_mes_configurado_no_hace_nada_si_ya_hay_filas(): void
+    {
+        $this->createHorario('lunes', '09:00', '10:00', '00:20', 2024, 2);
+
+        app(HorarioMesService::class)->asegurarMesConfigurado($this->medico, 2024, 2);
+
+        $this->assertCount(1, Horario::where('medico_id', $this->medico->id)->where('anio', 2024)->where('mes', 2)->get());
+    }
+
+    public function test_asegurar_mes_configurado_no_hace_nada_si_no_hay_mes_previo_con_datos(): void
+    {
+        app(HorarioMesService::class)->asegurarMesConfigurado($this->medico, 2024, 1);
+
+        $this->assertCount(0, Horario::where('medico_id', $this->medico->id)->where('anio', 2024)->where('mes', 1)->get());
+    }
+
+    private function diaDeSemana(Carbon $fecha): string
+    {
+        $dayMap = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+
+        return $dayMap[$fecha->dayOfWeek];
+    }
+
     private function createMedicoSilently(): User
     {
         $user = User::factory()->make(['rol' => Roles::Medico]);
@@ -338,10 +580,12 @@ class ScheduleServiceTest extends TestCase
         return $user->fresh();
     }
 
-    private function createHorario(string $dia, string $desde, string $hasta, string $intervalo): Horario
+    private function createHorario(string $dia, string $desde, string $hasta, string $intervalo, int $anio = 2024, int $mes = 1): Horario
     {
         return Horario::create([
             'medico_id' => $this->medico->id,
+            'anio' => $anio,
+            'mes' => $mes,
             'dia' => $dia,
             'desde' => $desde,
             'hasta' => $hasta,
@@ -359,6 +603,28 @@ class ScheduleServiceTest extends TestCase
             'estado' => EstadosTurno::Pendiente,
             'tipo' => TipoTurno::Turno,
             'practica_id' => $practicaId,
+        ]);
+    }
+
+    private function createEspecial(
+        string $fecha,
+        TipoHorarioEspecial $tipo,
+        bool $todoElDia = false,
+        ?string $desde = null,
+        ?string $hasta = null,
+        bool $activoSistema = true,
+        bool $activoPortal = false,
+    ): HorarioEspecial {
+        return HorarioEspecial::create([
+            'medico_id' => $this->medico->id,
+            'fecha' => $fecha,
+            'tipo' => $tipo,
+            'todo_el_dia' => $todoElDia,
+            'desde' => $desde,
+            'hasta' => $hasta,
+            'motivo' => 'Test',
+            'activo_sistema' => $activoSistema,
+            'activo_portal' => $activoPortal,
         ]);
     }
 

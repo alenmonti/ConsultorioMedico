@@ -26,11 +26,11 @@ class UserObserver
 
             // Create default schedule
             $user->horarios()->createMany([
-                ['dia' => 'lunes', 'desde' => '09:00', 'hasta' => '18:00', 'intervalo' => '00:20'],
-                ['dia' => 'martes', 'desde' => '09:00', 'hasta' => '18:00', 'intervalo' => '00:20'],
-                ['dia' => 'miercoles', 'desde' => '09:00', 'hasta' => '18:00', 'intervalo' => '00:20'],
-                ['dia' => 'jueves', 'desde' => '09:00', 'hasta' => '18:00', 'intervalo' => '00:20'],
-                ['dia' => 'viernes', 'desde' => '09:00', 'hasta' => '18:00', 'intervalo' => '00:20'],
+                ['dia' => 'lunes', 'desde' => '09:00', 'hasta' => '18:00', 'intervalo' => '00:20', 'anio' => now()->year, 'mes' => now()->month],
+                ['dia' => 'martes', 'desde' => '09:00', 'hasta' => '18:00', 'intervalo' => '00:20', 'anio' => now()->year, 'mes' => now()->month],
+                ['dia' => 'miercoles', 'desde' => '09:00', 'hasta' => '18:00', 'intervalo' => '00:20', 'anio' => now()->year, 'mes' => now()->month],
+                ['dia' => 'jueves', 'desde' => '09:00', 'hasta' => '18:00', 'intervalo' => '00:20', 'anio' => now()->year, 'mes' => now()->month],
+                ['dia' => 'viernes', 'desde' => '09:00', 'hasta' => '18:00', 'intervalo' => '00:20', 'anio' => now()->year, 'mes' => now()->month],
             ]);
         }
     }

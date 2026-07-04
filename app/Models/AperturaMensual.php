@@ -5,22 +5,19 @@ namespace App\Models;
 use App\Models\Scopes\Own;
 use Illuminate\Database\Eloquent\Model;
 
-class HorarioExclusion extends Model
+class AperturaMensual extends Model
 {
-    protected $table = 'horarios_excluidos';
+    protected $table = 'aperturas_mensuales';
 
     protected $fillable = [
         'medico_id',
-        'fecha',
-        'todo_el_dia',
-        'desde',
-        'hasta',
-        'motivo',
+        'anio',
+        'mes',
+        'abierto',
     ];
 
     protected $casts = [
-        'fecha' => 'date',
-        'todo_el_dia' => 'boolean',
+        'abierto' => 'boolean',
     ];
 
     public function medico()
@@ -30,8 +27,8 @@ class HorarioExclusion extends Model
 
     public static function booted(): void
     {
-        static::creating(function ($exclusion) {
-            $exclusion->medico_id = $exclusion->medico_id ?? auth()->user()->medico_id;
+        static::creating(function ($apertura) {
+            $apertura->medico_id = $apertura->medico_id ?? auth()->user()->medico_id;
         });
 
         static::addGlobalScope(Own::class);
