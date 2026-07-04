@@ -5,8 +5,11 @@ namespace App\Filament\Resources\RecordatoriosResource\Pages;
 use App\Enums\EstadosTurno;
 use App\Filament\Resources\PacienteResource;
 use App\Filament\Resources\RecordatoriosResource;
+use App\Jobs\EnviarRecordatorioWhatsAppJob;
 use App\Models\Turno;
+use App\Notifications\RecordatorioTurnoWhatsApp;
 use Carbon\Carbon;
+use Filament\Actions\Action as HeaderAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -14,6 +17,7 @@ use Filament\Tables\Actions\Action as TableAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class ListRecordatorios extends ListRecords
@@ -22,7 +26,106 @@ class ListRecordatorios extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            HeaderAction::make('enviar_todos_recordatorios')
+                ->label('Enviar todos los recordatorios')
+                ->icon('heroicon-o-paper-airplane')
+                ->color('primary')
+                // ->visible(fn () => $this->activeTab === 'recordatorio')
+                ->visible(false)
+                ->modalHeading('Enviar todos los recordatorios pendientes')
+                ->modalSubmitActionLabel('Enviar todos')
+                ->modalContent(function () {
+                    $pendientes = $this->getPendientesRecordatorio()->with('paciente')->get();
+
+                    if ($pendientes->isEmpty()) {
+                        return new HtmlString('<p class="text-sm text-gray-500 dark:text-gray-400">No hay recordatorios pendientes para enviar.</p>');
+                    }
+
+                    $totalSegundos = ($pendientes->count() - 1) * 10;
+                    $minutos = intdiv($totalSegundos, 60);
+                    $segundos = $totalSegundos % 60;
+                    $tiempoEstimado = $minutos > 0 ? "{$minutos} min {$segundos} seg" : "{$segundos} seg";
+
+                    $filas = $pendientes->map(function (Turno $t) {
+                        $nombre = $t->paciente
+                            ? "{$t->paciente->apellido}, {$t->paciente->nombre}"
+                            : '(sin paciente)';
+                        $telefono = $t->paciente?->telefono ?? '—';
+                        $fecha = Carbon::parse($t->fecha)->format('d/m/Y');
+                        $sinTelefono = ! $t->paciente?->telefono;
+
+                        $clases = $sinTelefono
+                            ? 'text-danger-600 dark:text-danger-400'
+                            : 'text-gray-700 dark:text-gray-200';
+
+                        $icono = $sinTelefono
+                            ? '<span title="Sin teléfono — se omitirá">⚠️</span>'
+                            : '✅';
+
+                        return "<tr class=\"border-b border-gray-100 dark:border-white/10\">
+                            <td class=\"py-2 pr-4 text-sm {$clases}\">{$nombre}</td>
+                            <td class=\"py-2 pr-4 text-sm {$clases}\">{$telefono}</td>
+                            <td class=\"py-2 text-sm {$clases}\">{$fecha}</td>
+                            <td class=\"py-2 pl-2 text-sm\">{$icono}</td>
+                        </tr>";
+                    })->implode('');
+
+                    $conTelefono = $pendientes->filter(fn ($t) => $t->paciente?->telefono)->count();
+
+                    return new HtmlString("
+                        <div class=\"space-y-3\">
+                            <p class=\"text-sm text-gray-600 dark:text-gray-300\">
+                                Se enviarán <strong>{$conTelefono}</strong> de {$pendientes->count()} recordatorios (uno cada 10 segundos, tiempo estimado: {$tiempoEstimado}).
+                            </p>
+                            <div class=\"overflow-auto max-h-72 rounded-lg border border-gray-200 dark:border-white/10\">
+                                <table class=\"w-full\">
+                                    <thead>
+                                        <tr class=\"border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5\">
+                                            <th class=\"py-2 pr-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase\">Paciente</th>
+                                            <th class=\"py-2 pr-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase\">Teléfono</th>
+                                            <th class=\"py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase\">Fecha turno</th>
+                                            <th class=\"py-2\"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>{$filas}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ");
+                })
+                ->action(function () {
+                    $pendientes = $this->getPendientesRecordatorio()->get();
+
+                    $delay = 0;
+                    foreach ($pendientes as $turno) {
+                        EnviarRecordatorioWhatsAppJob::dispatch($turno->id)
+                            ->delay(now()->addSeconds($delay));
+                        $delay += 10;
+                    }
+
+                    Notification::make()
+                        ->success()
+                        ->title('Recordatorios encolados')
+                        ->body("{$pendientes->count()} mensajes se enviarán en los próximos " . round($delay / 60, 1) . ' minutos.')
+                        ->send();
+                }),
+        ];
+    }
+
+    private function getPendientesRecordatorio(): \Illuminate\Database\Eloquent\Builder
+    {
+        $estadosActivos = [EstadosTurno::Pendiente->value, EstadosTurno::Confirmado->value];
+        $businessDates = static::nextBusinessDays(2);
+
+        return Turno::query()
+            ->whereNull('recordatorio_enviado_at')
+            ->whereIn('estado', $estadosActivos)
+            ->where(function ($q) use ($businessDates) {
+                foreach ($businessDates as $date) {
+                    $q->orWhereDate('fecha', $date);
+                }
+            });
     }
 
     public function getTitle(): string
@@ -231,6 +334,49 @@ class ListRecordatorios extends ListRecords
                         $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
 
                         $this->js("window.open(" . json_encode($url) . ", '_blank')");
+                    }),
+
+                // Tab 3: enviar recordatorio via API de WhatsApp
+                TableAction::make('enviar_recordatorio_api')
+                    ->tooltip('Enviar recordatorio por WhatsApp (API)')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->iconButton()
+                    ->color('primary')
+                    // ->visible(fn (Turno $record) => $this->activeTab === 'recordatorio'
+                    //     && $record->paciente_id !== null
+                    //     && $record->paciente?->telefono
+                    // )
+                    ->visible(false)
+                    ->requiresConfirmation()
+                    ->modalHeading('Enviar recordatorio por WhatsApp')
+                    ->modalDescription(fn (Turno $record) => "Se enviará el recordatorio con links de confirmación/cancelación a {$record->paciente->nombre} {$record->paciente->apellido} ({$record->paciente->telefono}) directamente por WhatsApp.")
+                    ->modalSubmitActionLabel('Enviar')
+                    ->action(function (Turno $record) {
+                        if (! $record->turno_token) {
+                            $token = Str::random(40);
+                            while (Turno::withoutGlobalScopes()->where('turno_token', $token)->exists()) {
+                                $token = Str::random(40);
+                            }
+                            $record->update(['turno_token' => $token]);
+                            $record->refresh();
+                        }
+
+                        try {
+                            $record->paciente->notify(new RecordatorioTurnoWhatsApp($record));
+                            $record->update(['recordatorio_enviado_at' => now()]);
+
+                            Notification::make()
+                                ->success()
+                                ->title('Recordatorio enviado')
+                                ->body("Mensaje enviado a {$record->paciente->nombre} {$record->paciente->apellido}")
+                                ->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Error al enviar por WhatsApp')
+                                ->body("No se pudo enviar el mensaje a {$record->paciente->telefono}. Verificá que el número sea correcto.")
+                                ->send();
+                        }
                     }),
 
                 // Todos los tabs: editar turno

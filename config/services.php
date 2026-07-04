@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'url' => env('WHATSAPP_API_URL', 'https://wsp.bewit.com.ar'),
+        'token' => env('WHATSAPP_API_TOKEN', ''),
+    ],
+
 ];
