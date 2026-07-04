@@ -38,6 +38,7 @@ class HorarioEspecialesWidget extends BaseWidget
     {
         $this->anio = $anio;
         $this->mes = $mes;
+        $this->resetTable();
     }
 
     private function adicionForm(): array
