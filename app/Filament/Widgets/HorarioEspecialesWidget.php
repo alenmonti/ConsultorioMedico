@@ -148,7 +148,7 @@ class HorarioEspecialesWidget extends BaseWidget
                         return HorarioEspecial::create($this->prepararDatosExclusion($data));
                     }),
                 Action::make('cargar_feriados')
-                    ->label(fn () => 'Cargar feriados ' . $this->anio)
+                    ->label(fn () => '')
                     ->color('gray')
                     ->icon('heroicon-o-calendar-days')
                     ->requiresConfirmation()
