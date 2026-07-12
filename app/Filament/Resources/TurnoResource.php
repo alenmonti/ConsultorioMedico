@@ -127,12 +127,20 @@ class TurnoResource extends Resource
                 ->rows(3)
                 ->columnSpan(2)
                 ->autosize(),
+            Hidden::make('aviso_asignacion_enviado_at'),
             Hidden::make('senia_informada_at'),
             Hidden::make('senia_pagada_at'),
             Hidden::make('recordatorio_enviado_at'),
-            Grid::make(3)
+            Grid::make(4)
                 ->columnSpan(2)
                 ->schema([
+                    Forms\Components\Toggle::make('_aviso_asignacion_enviado')
+                        ->label('Turno asignado')
+                        ->dehydrated(false)
+                        ->afterStateHydrated(fn ($component, $record) => $component->state($record?->aviso_asignacion_enviado_at !== null))
+                        ->live()
+                        ->hint(fn (Get $get) => $get('aviso_asignacion_enviado_at') ? Carbon::parse($get('aviso_asignacion_enviado_at'))->format('d/m/Y H:i') : null)
+                        ->afterStateUpdated(fn ($state, Set $set) => $set('aviso_asignacion_enviado_at', $state ? now()->toDateTimeString() : null)),
                     Forms\Components\Toggle::make('_senia_informada')
                         ->label('Seña avisada')
                         ->dehydrated(false)

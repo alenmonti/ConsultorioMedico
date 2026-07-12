@@ -170,6 +170,13 @@ class ListRecordatorios extends ListRecords
                     ->badge()
                     ->visibleFrom('sm'),
 
+                TextColumn::make('aviso_asignacion_enviado_at')
+                    ->label('Aviso enviado')
+                    ->dateTime('d/m/Y H:i')
+                    ->placeholder('—')
+                    ->visible(fn () => $this->activeTab === 'aviso_asignacion')
+                    ->visibleFrom('sm'),
+
                 TextColumn::make('senia_informada_at')
                     ->label('Seña informada')
                     ->dateTime('d/m/Y H:i')
@@ -183,13 +190,47 @@ class ListRecordatorios extends ListRecords
                     ->visibleFrom('sm'),
             ])
             ->actions([
+                // Tab 0: enviar aviso de turno asignado
+                TableAction::make('enviar_aviso_asignacion')
+                    ->tooltip('Enviar aviso de turno asignado')
+                    ->icon('heroicon-o-check-badge')
+                    ->iconButton()
+                    ->color('success')
+                    ->visible(fn (Turno $record) => ($this->activeTab === 'aviso_asignacion' || $this->activeTab === null) && $record->paciente_id !== null)
+                    ->requiresConfirmation()
+                    ->modalHeading('Enviar aviso de turno asignado')
+                    ->modalDescription(fn (Turno $record) => "Se enviará un aviso a {$record->paciente->nombre} {$record->paciente->apellido} confirmando que su turno fue asignado correctamente y se marcará como enviado.")
+                    ->modalSubmitActionLabel('Marcar como enviado y abrir WhatsApp')
+                    ->action(function (Turno $record) {
+                        $record->update(['aviso_asignacion_enviado_at' => now()]);
+
+                        $paciente = $record->paciente;
+                        $medico = $record->medico;
+                        $fecha = Carbon::parse($record->fecha)
+                            ->locale('es')
+                            ->isoFormat('dddd D [de] MMMM');
+                        $fecha = ucfirst($fecha);
+                        $medicoNombre = $medico ? $medico->name : '';
+
+                        $mensaje = urlencode(
+                            "Hola {$paciente->nombre}! Le confirmamos que su turno" .
+                            ($medicoNombre ? " con {$medicoNombre}" : '') .
+                            " quedó asignado correctamente para el *{$fecha}* a las *{$record->hora} hs*.\n\n" .
+                            "¡Muchas gracias!"
+                        );
+
+                        $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
+
+                        $this->js("window.open(" . json_encode($url) . ", '_blank')");
+                    }),
+
                 // Tab 1: informar seña (link directo a WhatsApp, sin modal)
                 TableAction::make('informar_senia')
                     ->tooltip('Informar seña')
                     ->icon('heroicon-o-chat-bubble-left-ellipsis')
                     ->iconButton()
                     ->color('success')
-                    ->visible(fn (Turno $record) => ($this->activeTab === 'sin_informar' || $this->activeTab === null) && $record->paciente_id !== null)
+                    ->visible(fn (Turno $record) => $this->activeTab === 'sin_informar' && $record->paciente_id !== null)
                     ->action(function (Turno $record) {
                         $record->update(['senia_informada_at' => now()]);
 
@@ -412,6 +453,21 @@ class ListRecordatorios extends ListRecords
         $businessDates = static::nextBusinessDays(2);
 
         return [
+            'aviso_asignacion' => Tab::make('Turno asignado')
+                ->icon('heroicon-o-calendar-days')
+                ->badge(
+                    Turno::query()
+                        ->whereNull('aviso_asignacion_enviado_at')
+                        ->whereIn('estado', $estadosActivos)
+                        ->whereDate('fecha', '>=', today())
+                        ->count()
+                )
+                ->modifyQueryUsing(fn ($query) => $query
+                    ->whereNull('aviso_asignacion_enviado_at')
+                    ->whereIn('estado', $estadosActivos)
+                    ->whereDate('fecha', '>=', today())
+                ),
+
             'sin_informar' => Tab::make('Sin informar seña')
                 ->icon('heroicon-o-bell-slash')
                 ->badge(
