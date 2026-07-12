@@ -24,8 +24,11 @@ class ListRecordatorios extends ListRecords
 {
     protected static string $resource = RecordatoriosResource::class;
 
+    // No usar emojis en los mensajes de WhatsApp: el redirect de wa.me/api.whatsapp.com
+    // corrompe ciertos emojis (los reemplaza por U+FFFD) antes de que el chat los reciba,
+    // y no depende de nuestro código (probado con urlencode, rawurlencode y sin pasar por wa.me).
     private const DIRECCION_CONSULTORIO = 'Conesa 849, timbre 4F, Muñiz.';
-    private const INSTRUCCION_TIMBRE = '👉 Al llegar, toque el timbre para que puedan bajar a abrirle.';
+    private const INSTRUCCION_TIMBRE = 'Al llegar, toque el timbre para que puedan bajar a abrirle.';
     private const FIRMA_CONSULTORIO = '*Consultorio Monti.*';
 
     private static function medicoNombreCompleto(?\App\Models\User $medico): string
@@ -224,17 +227,17 @@ class ListRecordatorios extends ListRecords
                         $medicoNombre = static::medicoNombreCompleto($record->medico);
                         $fecha = Carbon::parse($record->fecha)->format('d/m/Y');
 
-                        $mensaje = urlencode(
+                        $mensaje = rawurlencode(
                             "Hola, ¡buenos días!\n\n" .
                             "Le confirmamos que su turno con la *{$medicoNombre}* quedó asignado correctamente.\n\n" .
-                            "📅 *{$fecha} a las {$record->hora} hs*\n" .
-                            "📍 *" . self::DIRECCION_CONSULTORIO . "*\n" .
+                            "*{$fecha} a las {$record->hora} hs*\n" .
+                            "*" . self::DIRECCION_CONSULTORIO . "*\n" .
                             self::INSTRUCCION_TIMBRE . "\n" .
-                            "❌ Si por algún motivo no puede asistir, le pedimos que nos lo informe con anticipación.\n\n" .
+                            "Si por algún motivo no puede asistir, le pedimos que nos lo informe con anticipación.\n\n" .
                             self::FIRMA_CONSULTORIO
                         );
 
-                        $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
+                        $url = "https://api.whatsapp.com/send?phone=549{$paciente->telefono}&text={$mensaje}";
 
                         $this->js("window.open(" . json_encode($url) . ", '_blank')");
                     }),
@@ -260,14 +263,14 @@ class ListRecordatorios extends ListRecords
 
                         $montoTexto = $monto ? " de *\${$monto}*" : '';
 
-                        $mensaje = urlencode(
+                        $mensaje = rawurlencode(
                             "Hola, ¡buenos días!\n\n" .
                             "Para confirmar su turno del *{$fecha} a las {$record->hora} hs*, deberá abonar una seña{$montoTexto} {$textoAlias}\n\n" .
-                            "📩 Por favor, envíe el comprobante por este chat dentro de las *48 horas hábiles* para mantener la reserva de su turno.\n\n" .
+                            "Por favor, envíe el comprobante por este chat dentro de las *48 horas hábiles* para mantener la reserva de su turno.\n\n" .
                             self::FIRMA_CONSULTORIO
                         );
 
-                        $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
+                        $url = "https://api.whatsapp.com/send?phone=549{$paciente->telefono}&text={$mensaje}";
 
                         $this->js("window.open(" . json_encode($url) . ", '_blank')");
                     }),
@@ -279,7 +282,7 @@ class ListRecordatorios extends ListRecords
                     ->iconButton()
                     ->color('success')
                     ->visible(fn (Turno $record) => $this->activeTab === 'informados' && $record->paciente_id !== null)
-                    ->url(fn (Turno $record) => "https://wa.me/549{$record->paciente->telefono}")
+                    ->url(fn (Turno $record) => "https://api.whatsapp.com/send?phone=549{$record->paciente->telefono}")
                     ->openUrlInNewTab(),
 
                 // Tab 2: marcar seña como pagada
@@ -328,15 +331,15 @@ class ListRecordatorios extends ListRecords
                         $fecha = Carbon::parse($record->fecha)->format('d/m/Y');
                         $portalUrl = config('app.url') . '/portal-turnos';
 
-                        $mensaje = urlencode(
+                        $mensaje = rawurlencode(
                             "Hola, ¡buenos días!\n\n" .
-                            "ℹ️ Le informamos que su turno del *{$fecha} a las {$record->hora} hs* fue cancelado debido a que no recibimos el pago de la seña dentro del plazo establecido.\n\n" .
-                            "📅 Si desea reservar un nuevo turno, puede hacerlo desde nuestro portal:\n{$portalUrl}\n\n" .
-                            "💬 También puede comunicarse con nosotros por este mismo chat para asignarle un nuevo turno.\n\n" .
+                            "Le informamos que su turno del *{$fecha} a las {$record->hora} hs* fue cancelado debido a que no recibimos el pago de la seña dentro del plazo establecido.\n\n" .
+                            "Si desea reservar un nuevo turno, puede hacerlo desde nuestro portal:\n{$portalUrl}\n\n" .
+                            "También puede comunicarse con nosotros por este mismo chat para asignarle un nuevo turno.\n\n" .
                             self::FIRMA_CONSULTORIO
                         );
 
-                        $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
+                        $url = "https://api.whatsapp.com/send?phone=549{$paciente->telefono}&text={$mensaje}";
 
                         Notification::make()
                             ->warning()
@@ -379,18 +382,18 @@ class ListRecordatorios extends ListRecords
 
                         $medicoNombre = static::medicoNombreCompleto($record->medico);
 
-                        $mensaje = urlencode(
+                        $mensaje = rawurlencode(
                             "Hola, ¡buenos días!\n\n" .
                             "Le recordamos que tiene un turno con la *{$medicoNombre}*.\n\n" .
-                            "📅 *{$fecha} a las {$record->hora} hs*\n" .
-                            "📍 *" . self::DIRECCION_CONSULTORIO . "*\n" .
+                            "*{$fecha} a las {$record->hora} hs*\n" .
+                            "*" . self::DIRECCION_CONSULTORIO . "*\n" .
                             self::INSTRUCCION_TIMBRE . "\n\n" .
                             "*Confirmar turno:*\n{$confirmUrl}\n\n" .
                             "*Cancelar turno:*\n{$cancelUrl}\n\n" .
                             self::FIRMA_CONSULTORIO
                         );
 
-                        $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
+                        $url = "https://api.whatsapp.com/send?phone=549{$paciente->telefono}&text={$mensaje}";
 
                         $this->js("window.open(" . json_encode($url) . ", '_blank')");
                     }),
