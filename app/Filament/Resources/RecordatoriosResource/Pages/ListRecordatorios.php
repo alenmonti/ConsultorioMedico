@@ -24,6 +24,22 @@ class ListRecordatorios extends ListRecords
 {
     protected static string $resource = RecordatoriosResource::class;
 
+    private const DIRECCION_CONSULTORIO = 'Conesa 849, timbre 4F, Muñiz.';
+    private const INSTRUCCION_TIMBRE = '👉 Al llegar, toque el timbre para que puedan bajar a abrirle.';
+    private const FIRMA_CONSULTORIO = '*Consultorio Monti.*';
+
+    private static function medicoNombreCompleto(?\App\Models\User $medico): string
+    {
+        if (! $medico) {
+            return '';
+        }
+
+        $nombre = trim("{$medico->name} {$medico->surname}");
+        $especialidad = $medico->especialidad ? " ({$medico->especialidad})" : '';
+
+        return "Dra. {$nombre}{$especialidad}";
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -205,18 +221,17 @@ class ListRecordatorios extends ListRecords
                         $record->update(['aviso_asignacion_enviado_at' => now()]);
 
                         $paciente = $record->paciente;
-                        $medico = $record->medico;
-                        $fecha = Carbon::parse($record->fecha)
-                            ->locale('es')
-                            ->isoFormat('dddd D [de] MMMM');
-                        $fecha = ucfirst($fecha);
-                        $medicoNombre = $medico ? $medico->name : '';
+                        $medicoNombre = static::medicoNombreCompleto($record->medico);
+                        $fecha = Carbon::parse($record->fecha)->format('d/m/Y');
 
                         $mensaje = urlencode(
-                            "Hola {$paciente->nombre}! Le confirmamos que su turno" .
-                            ($medicoNombre ? " con {$medicoNombre}" : '') .
-                            " quedó asignado correctamente para el *{$fecha}* a las *{$record->hora} hs*.\n\n" .
-                            "¡Muchas gracias!"
+                            "Hola, ¡buenos días!\n\n" .
+                            "Le confirmamos que su turno con la *{$medicoNombre}* quedó asignado correctamente.\n\n" .
+                            "📅 *{$fecha} a las {$record->hora} hs*\n" .
+                            "📍 *" . self::DIRECCION_CONSULTORIO . "*\n" .
+                            self::INSTRUCCION_TIMBRE . "\n" .
+                            "❌ Si por algún motivo no puede asistir, le pedimos que nos lo informe con anticipación.\n\n" .
+                            self::FIRMA_CONSULTORIO
                         );
 
                         $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
@@ -240,15 +255,16 @@ class ListRecordatorios extends ListRecords
                         $alias = auth()->user()->alias_pago;
 
                         $textoAlias = $alias
-                            ? "enviando el monto al alias *{$alias}*"
-                            : 'coordinando el pago con nosotros';
+                            ? "mediante transferencia al alias *{$alias}*"
+                            : 'coordinando el pago con nosotros.';
 
                         $montoTexto = $monto ? " de *\${$monto}*" : '';
 
                         $mensaje = urlencode(
-                            "Hola {$paciente->nombre}! Le informamos que para confirmar su turno del {$fecha} a las {$record->hora} deberá abonar una seña{$montoTexto} {$textoAlias}.\n\n" .
-                            "Por favor compartí el comprobante por este chat dentro de las *48 hs hábiles* para mantener el turno.\n\n" .
-                            "¡Muchas gracias!"
+                            "Hola, ¡buenos días!\n\n" .
+                            "Para confirmar su turno del *{$fecha} a las {$record->hora} hs*, deberá abonar una seña{$montoTexto} {$textoAlias}\n\n" .
+                            "📩 Por favor, envíe el comprobante por este chat dentro de las *48 horas hábiles* para mantener la reserva de su turno.\n\n" .
+                            self::FIRMA_CONSULTORIO
                         );
 
                         $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
@@ -313,8 +329,11 @@ class ListRecordatorios extends ListRecords
                         $portalUrl = config('app.url') . '/portal-turnos';
 
                         $mensaje = urlencode(
-                            "Hola {$paciente->nombre}! Le informamos que su turno del {$fecha} a las {$record->hora} fue *cancelado* debido a que no recibimos el pago de la seña dentro del plazo establecido.\n\n" .
-                            "Si desea reservar un nuevo turno puede hacerlo desde nuestro portal: {$portalUrl}\n\n"
+                            "Hola, ¡buenos días!\n\n" .
+                            "ℹ️ Le informamos que su turno del *{$fecha} a las {$record->hora} hs* fue cancelado debido a que no recibimos el pago de la seña dentro del plazo establecido.\n\n" .
+                            "📅 Si desea reservar un nuevo turno, puede hacerlo desde nuestro portal:\n{$portalUrl}\n\n" .
+                            "💬 También puede comunicarse con nosotros por este mismo chat para asignarle un nuevo turno.\n\n" .
+                            self::FIRMA_CONSULTORIO
                         );
 
                         $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
@@ -352,24 +371,23 @@ class ListRecordatorios extends ListRecords
                         ]);
 
                         $paciente = $record->paciente;
-                        $medico = $record->medico;
-                        $fecha = Carbon::parse($record->fecha)
-                            ->locale('es')
-                            ->isoFormat('dddd D [de] MMMM');
-                        $fecha = ucfirst($fecha);
+                        $fecha = Carbon::parse($record->fecha)->format('d/m/Y');
                         $appUrl = config('app.url');
 
                         $confirmUrl = "{$appUrl}/turno/confirmar/{$record->id}?token={$token}";
                         $cancelUrl = "{$appUrl}/turno/cancelar/{$record->id}?token={$token}";
 
-                        $medicoNombre = $medico ? $medico->name : '';
+                        $medicoNombre = static::medicoNombreCompleto($record->medico);
 
                         $mensaje = urlencode(
-                            "Hola {$paciente->nombre}, te recordamos que el día *{$fecha}* a las *{$record->hora} hs* tenés turno" .
-                            ($medicoNombre ? " con {$medicoNombre}" : '') . ".\n\n" .
-                            "Confirmar turno:\n{$confirmUrl}\n\n" .
-                            "Cancelar turno:\n{$cancelUrl}\n\n" .
-                            "¡Muchas gracias!"
+                            "Hola, ¡buenos días!\n\n" .
+                            "Le recordamos que tiene un turno con la *{$medicoNombre}*.\n\n" .
+                            "📅 *{$fecha} a las {$record->hora} hs*\n" .
+                            "📍 *" . self::DIRECCION_CONSULTORIO . "*\n" .
+                            self::INSTRUCCION_TIMBRE . "\n\n" .
+                            "*Confirmar turno:*\n{$confirmUrl}\n\n" .
+                            "*Cancelar turno:*\n{$cancelUrl}\n\n" .
+                            self::FIRMA_CONSULTORIO
                         );
 
                         $url = "https://wa.me/549{$paciente->telefono}?text={$mensaje}";
