@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Portal Pacientes — Reservar turno</title>
+    <meta name="description" content="Reservá tu turno online de forma rápida y sencilla.">
+    <meta property="og:title" content="Portal Pacientes — Reservar turno">
+    <meta property="og:description" content="Reservá tu turno online de forma rápida y sencilla.">
+    <meta property="og:image" content="{{ asset('logo-transparent.png') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Portal Pacientes — Reservar turno">
+    <meta name="twitter:description" content="Reservá tu turno online de forma rápida y sencilla.">
+    <meta name="twitter:image" content="{{ asset('logo-transparent.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
