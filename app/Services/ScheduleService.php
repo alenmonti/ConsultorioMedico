@@ -49,7 +49,7 @@ class ScheduleService
             $desde = Carbon::parse($horario->desde);
             $hasta = Carbon::parse($horario->hasta);
             $intervalo = (int) Carbon::parse($horario->intervalo)->format('i');
-            while ($desde <= $hasta) {
+            while ($desde->copy()->addMinutes($intervalo) <= $hasta) {
                 $slots[] = $desde->format('H:i');
                 $desde->addMinutes($intervalo);
             }
@@ -64,7 +64,7 @@ class ScheduleService
             }
             $desde = Carbon::parse($especial->desde);
             $hasta = Carbon::parse($especial->hasta);
-            while ($desde <= $hasta) {
+            while ($desde->copy()->addMinutes($intervalo) <= $hasta) {
                 $slots[] = $desde->format('H:i');
                 $desde->addMinutes($intervalo);
             }
@@ -95,6 +95,7 @@ class ScheduleService
         if ($tipo !== 'turno') {
             $horasConTurno = $turnosDelDia->pluck('hora')->toArray();
             $result = array_intersect($slots, $horasConTurno);
+
             return array_combine($result, $result);
         }
 
@@ -200,9 +201,9 @@ class ScheduleService
                 'nombre' => $this->nombreDiaCorto($cursor->dayOfWeek),
                 'numero' => $cursor->day,
                 'estado' => $estado,
-                'slots'  => count($libres),
+                'slots' => count($libres),
                 'manana' => $manana,
-                'tarde'  => $tarde,
+                'tarde' => $tarde,
             ];
 
             $cursor->addDay();
@@ -211,7 +212,7 @@ class ScheduleService
         return [
             'desde' => $fechaDesde->format('Y-m-d'),
             'hasta' => $fechaHasta->format('Y-m-d'),
-            'dias'  => $dias,
+            'dias' => $dias,
         ];
     }
 
@@ -228,7 +229,7 @@ class ScheduleService
             ->where('activo_sistema', true)
             ->when($portal, fn ($q) => $q->where('activo_portal', true))
             ->get()
-            ->groupBy(fn ($h) => "{$h->anio}-{$h->mes}-" . ($h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia));
+            ->groupBy(fn ($h) => "{$h->anio}-{$h->mes}-".($h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia));
 
         $turnosPorFecha = Turno::where('medico_id', $medico->medico_id)
             ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
@@ -281,7 +282,7 @@ class ScheduleService
             $time = Carbon::parse($horario->desde);
             $fin = Carbon::parse($horario->hasta);
             $iv = (int) Carbon::parse($horario->intervalo)->format('i');
-            while ($time <= $fin) {
+            while ($time->copy()->addMinutes($iv) <= $fin) {
                 $slots[] = $time->format('H:i');
                 $time->addMinutes($iv);
             }
@@ -296,7 +297,7 @@ class ScheduleService
             }
             $time = Carbon::parse($especial->desde);
             $fin = Carbon::parse($especial->hasta);
-            while ($time <= $fin) {
+            while ($time->copy()->addMinutes($intervalo) <= $fin) {
                 $slots[] = $time->format('H:i');
                 $time->addMinutes($intervalo);
             }

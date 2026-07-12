@@ -7,9 +7,9 @@ use App\Enums\Roles;
 use App\Enums\TipoHorarioEspecial;
 use App\Filament\Resources\HistoriaClinicaResource;
 use App\Filament\Resources\TurnoResource;
+use App\Models\Horario;
 use App\Models\HorarioEspecial;
 use App\Models\Practica;
-use App\Models\Horario;
 use App\Models\Turno;
 use App\Services\ScheduleService;
 use Carbon\Carbon;
@@ -17,12 +17,14 @@ use Filament\Actions\Action;
 use Filament\Forms\Form;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Saade\FilamentFullCalendar\Actions\CreateAction;
+use Saade\FilamentFullCalendar\Actions\DeleteAction;
+use Saade\FilamentFullCalendar\Actions\EditAction;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
-use Saade\FilamentFullCalendar\Actions\{EditAction, DeleteAction, CreateAction};
 
 class Calendario extends FullCalendarWidget
 {
-    public Model | string | null $model = Turno::class;
+    public Model|string|null $model = Turno::class;
 
     public string $initialView = 'timeGridWeek';
 
@@ -46,21 +48,21 @@ class Calendario extends FullCalendarWidget
             ->with(['practica', 'paciente'])
             ->get()
             ->map(fn (Turno $turno) => [
-                    'id' => $turno->id,
-                    'title' => ($turno->paciente
-                        ? $turno->paciente->nombre . ' ' . $turno->paciente->apellido
-                        : '(Web) ' . str($turno->notas)->after('Nombre: ')->before(' |')->value())
-                        . ($turno->senia_pagada_at ? ' (seña)' : '')
-                        . ($turno->practica ? ' | ' . $turno->practica->display_name : ''),
-                    'start' => Carbon::parse($turno->fecha . ' ' . $turno->hora),
-                    'end' => Carbon::parse($turno->fecha . ' ' . $turno->hora)->addMinutes($turno->practica?->duracion_min ?? 20),
-                    'backgroundColor' => $turno->estado->getHexColor(),
-                    'shouldOpenInNewTab' => true,
-                    'extendedProps' => [
-                        'notas' => $turno->notas,
-                    ],
-                    'display' => 'block',
-                ])
+                'id' => $turno->id,
+                'title' => ($turno->paciente
+                    ? $turno->paciente->nombre.' '.$turno->paciente->apellido
+                    : '(Web) '.str($turno->notas)->after('Nombre: ')->before(' |')->value())
+                    .($turno->senia_pagada_at ? ' (seña)' : '')
+                    .($turno->practica ? ' | '.$turno->practica->display_name : ''),
+                'start' => Carbon::parse($turno->fecha.' '.$turno->hora),
+                'end' => Carbon::parse($turno->fecha.' '.$turno->hora)->addMinutes($turno->practica?->duracion_min ?? 20),
+                'backgroundColor' => $turno->estado->getHexColor(),
+                'shouldOpenInNewTab' => true,
+                'extendedProps' => [
+                    'notas' => $turno->notas,
+                ],
+                'display' => 'block',
+            ])
             ->all();
 
         $slotEvents = $this->getAvailableSlotEvents($fetchInfo['start'], $fetchInfo['end']);
@@ -85,7 +87,7 @@ class Calendario extends FullCalendarWidget
         $horariosPorDia = Horario::where('medico_id', $medico->medico_id)
             ->where('activo_sistema', true)
             ->get()
-            ->groupBy(fn ($h) => "{$h->anio}-{$h->mes}-" . ($h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia));
+            ->groupBy(fn ($h) => "{$h->anio}-{$h->mes}-".($h->dia instanceof \BackedEnum ? $h->dia->value : $h->dia));
 
         $turnosPorFecha = Turno::where('medico_id', $medico->medico_id)
             ->whereBetween('fecha', [$fechaDesde->format('Y-m-d'), $fechaHasta->format('Y-m-d')])
@@ -109,6 +111,7 @@ class Calendario extends FullCalendarWidget
 
             if (! in_array("{$cursor->year}-{$cursor->month}", $mesesAbiertos, true)) {
                 $cursor->addDay();
+
                 continue;
             }
 
@@ -154,7 +157,7 @@ class Calendario extends FullCalendarWidget
                     $fin = $rango['hasta'];
                     $iv = $rango['intervalo'];
 
-                    while ($time <= $fin) {
+                    while ($time->copy()->addMinutes($iv) <= $fin) {
                         $horaStr = $time->format('H:i');
 
                         if (! isset($emitidos[$horaStr])) {
@@ -163,9 +166,9 @@ class Calendario extends FullCalendarWidget
                             );
 
                             if (! in_array($horaStr, $horasOcupadas) && ! $excluido) {
-                                $start = Carbon::parse($fechaStr . ' ' . $horaStr);
+                                $start = Carbon::parse($fechaStr.' '.$horaStr);
                                 $slotEvents[] = [
-                                    'id' => 'slot_' . $fechaStr . '_' . $horaStr,
+                                    'id' => 'slot_'.$fechaStr.'_'.$horaStr,
                                     'title' => 'DISPONIBLE',
                                     'start' => $start->toIso8601String(),
                                     'end' => $start->copy()->addMinutes($iv)->toIso8601String(),
@@ -201,6 +204,7 @@ class Calendario extends FullCalendarWidget
                 'start' => $event['extendedProps']['fecha'],
                 'hora' => $event['extendedProps']['hora'],
             ]);
+
             return;
         }
         parent::onEventClick($event);
@@ -267,14 +271,16 @@ class Calendario extends FullCalendarWidget
                 ->label('Atender')
                 ->action(function (Turno $turno) {
                     $turno->update(['estado' => EstadosTurno::Atendido]);
+
                     return redirect(HistoriaClinicaResource::getUrl('viewFile', ['paciente_id' => $turno->paciente_id]));
                 })
                 ->icon('heroicon-o-clipboard-document-list')
-                ->hidden(function(Turno $turno) {
+                ->hidden(function (Turno $turno) {
                     if (user()->rol == Roles::Secretario || ! $turno->paciente_id) {
                         return true;
                     }
-                    return !in_array($turno->estado, [EstadosTurno::Pendiente, EstadosTurno::Confirmado]);
+
+                    return ! in_array($turno->estado, [EstadosTurno::Pendiente, EstadosTurno::Confirmado]);
                 }),
             EditAction::make()
                 ->extraAttributes(['class' => 'attend-button'])
@@ -298,7 +304,7 @@ class Calendario extends FullCalendarWidget
                             'practica_id' => Practica::whereRaw('lower(nombre) = ?', ['consulta'])->value('id'),
                         ]);
                     }
-                )
+                ),
         ];
     }
 

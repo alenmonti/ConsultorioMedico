@@ -5,16 +5,20 @@ namespace App\Filament\Resources;
 use App\Enums\EstadosTurno;
 use App\Enums\TipoTurno;
 use App\Filament\Resources\TurnoResource\Pages;
-use App\Filament\Resources\TurnoResource\RelationManagers;
 use App\Forms\Components\TextInfo;
-use App\Filament\Resources\PacienteResource;
 use App\Models\Paciente;
 use App\Models\Practica;
 use App\Models\Turno;
 use Carbon\Carbon;
 use Filament\Forms;
-use Filament\Forms\Components\{DatePicker, Grid, Hidden, Select, Textarea};
-use Filament\Forms\{Form, Get, Set};
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\Filter;
@@ -26,7 +30,9 @@ use Illuminate\Support\Facades\Auth;
 class TurnoResource extends Resource
 {
     protected static ?string $model = Turno::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
+
     protected static ?int $navigationSort = 1;
 
     public static function getFormSchema(): array
@@ -42,7 +48,7 @@ class TurnoResource extends Resource
                 ->live()
                 ->afterStateUpdated(fn (Set $set) => $set('hora', null)),
             TextInfo::make('info')
-                ->hidden(fn(Get $get) => $get('tipo') == 'turno')
+                ->hidden(fn (Get $get) => $get('tipo') == 'turno')
                 ->columnSpan(2),
             Select::make('practica_id')
                 ->label('Práctica')
@@ -51,7 +57,23 @@ class TurnoResource extends Resource
                 ->default(fn () => (string) Practica::whereRaw('lower(nombre) = ?', ['consulta'])->value('id'))
                 ->columnSpan(2)
                 ->live()
-                ->afterStateUpdated(fn (Set $set) => $set('hora', null)),
+                ->afterStateUpdated(function (Get $get, Set $set) {
+                    $hora = $get('hora');
+                    if ($hora === null || $get('fecha') === null) {
+                        return;
+                    }
+
+                    $fecha = Carbon::parse($get('fecha'))->format('Y-m-d');
+                    $tipo = $get('tipo') ?? 'turno';
+                    $practicaId = $get('practica_id');
+                    $duracion = $practicaId
+                        ? (Practica::find($practicaId)?->duracion_min ?? 20)
+                        : 20;
+
+                    if (! array_key_exists($hora, Auth::user()->horariosDisponibles($fecha, $tipo, $duracion))) {
+                        $set('hora', null);
+                    }
+                }),
             Grid::make('')
                 ->columns(2)
                 ->schema([
@@ -71,6 +93,7 @@ class TurnoResource extends Resource
                             $duracion = $practicaId
                                 ? (Practica::find($practicaId)?->duracion_min ?? 20)
                                 : 20;
+
                             return Auth::user()->horariosDisponibles($fecha, $tipo, $duracion);
                         }),
                 ]),
@@ -88,6 +111,7 @@ class TurnoResource extends Resource
                                 ...$data,
                                 'medico_id' => Auth::user()->medico_id,
                             ]);
+
                             return $paciente->id;
                         })
                         ->createOptionAction(fn ($action) => $action->label('Crear paciente')),
@@ -173,9 +197,9 @@ class TurnoResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('paciente_id')
-                ->label('Paciente')
-                ->options(Paciente::selectOptions())    
-                ->searchable(),
+                    ->label('Paciente')
+                    ->options(Paciente::selectOptions())
+                    ->searchable(),
                 SelectFilter::make('estado')
                     ->options(EstadosTurno::class),
                 Filter::make('fecha2')
@@ -199,8 +223,8 @@ class TurnoResource extends Resource
                                 $data['hasta'],
                                 fn (Builder $query, $date): Builder => $query->whereDate('fecha', '<=', $date),
                             );
-                    })
-                
+                    }),
+
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
