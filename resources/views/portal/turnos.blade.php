@@ -657,6 +657,11 @@
 
                     <div class="section-title">Elegí día y horario</div>
 
+                    <div class="info-box hidden" id="slot-taken-banner" style="background:#fdecea;border-color:rgba(192,57,43,0.2);">
+                        <div class="info-box-icon" style="background:var(--danger);">!</div>
+                        <span>Ese horario ya fue tomado por otra persona. Elegí otro, por favor.</span>
+                    </div>
+
                     <div class="week-nav">
                         <button class="week-btn" id="btn-prev-week" disabled>‹ anterior</button>
                         <span class="week-nav-label" id="week-label">Cargando…</span>
@@ -791,6 +796,7 @@
         horaSeleccionada: null,
         nombre: '',
         whatsapp: '',
+        disponibilidad: null, // { 'YYYY-MM-DD': { nombre, numero, estado, slots, manana:[], tarde:[] }, ... }
     };
 
     // ── Helpers ──
@@ -808,7 +814,10 @@
         });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Error al conectar con el servidor.');
+            const error = new Error(err.message || 'Error al conectar con el servidor.');
+            error.status = res.status;
+            error.code = err.code || null;
+            throw error;
         }
         return res.json();
     }
@@ -944,7 +953,7 @@
         if (primero) primero.click();
     }
 
-    // ── Step 2: week & slots ──
+    // ── Step 2: week & slots (100% desde caché S.disponibilidad, sin fetch) ──
     let currentWeekDesde = null;
 
     function startOfWeek(date) {
@@ -965,37 +974,81 @@
         return d.toISOString().slice(0, 10);
     }
 
-    async function loadSemana(desde, autoSelect = false, _attempts = 0) {
+    const MESES_LABEL = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    function semanaLabel(desde, hasta) {
+        return `${desde.getDate()} ${MESES_LABEL[desde.getMonth()]}–${hasta.getDate()} ${MESES_LABEL[hasta.getMonth()]}`;
+    }
+
+    async function cargarDisponibilidad() {
+        S.disponibilidad = null;
         $id('days-grid').innerHTML = Array(6).fill('<div class="skeleton" style="height:72px;border-radius:8px;"></div>').join('');
+        $id('week-label').textContent = 'Cargando…';
+
+        try {
+            const data = await apiFetch(`/portal-turnos/disponibilidad?medico_id=${S.medicoId}`);
+            S.disponibilidad = data.dias;
+        } catch (e) {
+            $id('days-grid').innerHTML = `<p style="grid-column:span 6;color:var(--danger);font-size:13px;">Error al cargar disponibilidad.</p>`;
+        }
+    }
+
+    // Recorre la caché (sin fetch) hasta encontrar la primera semana con un día
+    // seleccionable, o hasta quedarse sin datos cacheados.
+    function loadSemana(desde, autoSelect = false) {
         hide('slots-section');
         S.fechaSeleccionada = null;
         S.horaSeleccionada = null;
         updateMainBtn();
 
-        try {
-            const data = await apiFetch(`/portal-turnos/semana?medico_id=${S.medicoId}&desde=${fmtDate(desde)}`);
-            $id('week-label').textContent = data.semana_label;
-            currentWeekDesde = new Date(data.desde + 'T00:00:00');
-            renderDays(data.dias);
-
-            // prev button: disable if week starts today or earlier
-            const hoy = new Date(); hoy.setHours(0,0,0,0);
-            $id('btn-prev-week').disabled = currentWeekDesde <= hoy;
-
-            // next button: disable once the whole visible week is closed (más allá del último mes abierto)
-            $id('btn-next-week').disabled = data.dias.every(d => d.estado === 'cerrado' || d.estado === 'pasado');
-
-            if (autoSelect) {
-                const primer = $id('days-grid').querySelector('.day-card:not(.day-unavailable):not(.day-pasado)');
-                if (primer) {
-                    primer.click();
-                } else if (_attempts < 8) {
-                    // semana sin disponibilidad: avanzar automáticamente
-                    loadSemana(addDays(currentWeekDesde, 7), true, _attempts + 1);
-                }
-            }
-        } catch (e) {
+        if (!S.disponibilidad) {
             $id('days-grid').innerHTML = `<p style="grid-column:span 6;color:var(--danger);font-size:13px;">Error al cargar disponibilidad.</p>`;
+            return;
+        }
+
+        let cursor = new Date(desde);
+
+        while (true) {
+            const hasta = addDays(cursor, 6);
+            const dias = [];
+            for (let i = 0; i < 7; i++) {
+                const d = addDays(cursor, i);
+                const fecha = fmtDate(d);
+                const cache = S.disponibilidad[fecha];
+                dias.push(cache
+                    ? { fecha, nombre: cache.nombre, numero: cache.numero, estado: cache.estado, slots: cache.slots }
+                    : { fecha, nombre: '', numero: d.getDate(), estado: 'cerrado', slots: 0 });
+            }
+
+            const haySeleccionable = dias.some(d => !['cerrado','lleno','pasado'].includes(d.estado));
+
+            if (haySeleccionable || !autoSelect) {
+                $id('week-label').textContent = semanaLabel(cursor, hasta);
+                currentWeekDesde = cursor;
+                renderDays(dias);
+
+                const hoy = new Date(); hoy.setHours(0,0,0,0);
+                $id('btn-prev-week').disabled = currentWeekDesde <= hoy;
+                $id('btn-next-week').disabled = !S.disponibilidad[fmtDate(addDays(cursor, 7))];
+
+                if (autoSelect) {
+                    const primer = $id('days-grid').querySelector('.day-card:not(.day-unavailable):not(.day-pasado)');
+                    if (primer) primer.click();
+                }
+                return;
+            }
+
+            // semana sin disponibilidad y sin más datos en caché: mostrarla igual (última semana conocida)
+            if (!S.disponibilidad[fmtDate(addDays(cursor, 7))]) {
+                $id('week-label').textContent = semanaLabel(cursor, hasta);
+                currentWeekDesde = cursor;
+                renderDays(dias);
+                const hoy = new Date(); hoy.setHours(0,0,0,0);
+                $id('btn-prev-week').disabled = currentWeekDesde <= hoy;
+                $id('btn-next-week').disabled = true;
+                return;
+            }
+
+            cursor = addDays(cursor, 7);
         }
     }
 
@@ -1024,34 +1077,33 @@
         });
     }
 
-    async function loadHorarios(fecha) {
+    function loadHorarios(fecha) {
         show('slots-section');
         hide('slots-empty');
-        $id('slots-manana').innerHTML = '<div class="skeleton" style="height:44px;border-radius:8px;grid-column:span 3;"></div>';
-        $id('slots-tarde').innerHTML = '';
         $id('fecha-label-str').textContent = '';
-        updateMainBtn();
 
-        try {
-            const data = await apiFetch(`/portal-turnos/horarios?medico_id=${S.medicoId}&fecha=${fecha}`);
-            $id('fecha-label-str').textContent = data.fecha_label;
+        const cache = S.disponibilidad ? S.disponibilidad[fecha] : null;
+        const manana = cache ? cache.manana : [];
+        const tarde = cache ? cache.tarde : [];
 
-            const allEmpty = !data.manana.length && !data.tarde.length;
-            if (allEmpty) {
-                $id('slots-manana').innerHTML = '';
-                $id('slots-tarde').innerHTML = '';
-                show('slots-empty');
-                return;
-            }
+        const d = new Date(fecha + 'T00:00:00');
+        $id('fecha-label-str').textContent = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
 
-            renderSlots('slots-manana', data.manana);
-            renderSlots('slots-tarde', data.tarde);
-
-            $id('slots-manana-wrap').style.display = data.manana.length ? 'block' : 'none';
-            $id('slots-tarde-wrap').style.display = data.tarde.length ? 'block' : 'none';
-        } catch (e) {
-            $id('slots-manana').innerHTML = `<p style="grid-column:span 3;color:var(--danger);font-size:13px;">Error al cargar horarios.</p>`;
+        const allEmpty = !manana.length && !tarde.length;
+        if (allEmpty) {
+            $id('slots-manana').innerHTML = '';
+            $id('slots-tarde').innerHTML = '';
+            show('slots-empty');
+            updateMainBtn();
+            return;
         }
+
+        renderSlots('slots-manana', manana);
+        renderSlots('slots-tarde', tarde);
+
+        $id('slots-manana-wrap').style.display = manana.length ? 'block' : 'none';
+        $id('slots-tarde-wrap').style.display = tarde.length ? 'block' : 'none';
+        updateMainBtn();
     }
 
     function renderSlots(containerId, horas) {
@@ -1065,6 +1117,7 @@
                 document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
                 S.horaSeleccionada = btn.dataset.hora;
+                hide('slot-taken-banner');
                 updateMainBtn();
             });
         });
@@ -1094,11 +1147,13 @@
         window.scrollTo(0, 0);
     }
 
-    function handleMainAction() {
+    async function handleMainAction() {
         if (S.step === 1 && S.medicoId) {
             $id('back-medico-label').textContent = `${S.medicoNombre} · ${S.medicoEsp}`;
             setWspLinks(S.medicoWsp);
+            hide('slot-taken-banner');
             goToStep(2);
+            await cargarDisponibilidad();
             const hoy = startOfWeek(new Date());
             loadSemana(hoy, true);
         } else if (S.step === 2 && S.fechaSeleccionada && S.horaSeleccionada) {
@@ -1160,9 +1215,23 @@
             S.step = 4;
             renderUI();
         } catch (e) {
-            $id('error-wsp-btn').href = wspUrl(S.medicoWsp);
-            S.step = 5;
-            renderUI();
+            if (e.status === 409) {
+                // El horario fue tomado por otra persona mientras completaba el formulario:
+                // volver al paso 2 para que elija otro, en vez de la pantalla de error genérica.
+                mobileBtn.disabled = false; mobileBtn.textContent = 'Continuar →';
+                if (pcBtn) { pcBtn.disabled = false; pcBtn.textContent = 'Continuar →'; }
+
+                S.horaSeleccionada = null;
+                goToStep(2);
+                show('slot-taken-banner');
+                await cargarDisponibilidad();
+                loadSemana(currentWeekDesde || startOfWeek(new Date()));
+                if (S.fechaSeleccionada) loadHorarios(S.fechaSeleccionada);
+            } else {
+                $id('error-wsp-btn').href = wspUrl(S.medicoWsp);
+                S.step = 5;
+                renderUI();
+            }
         }
 
         window.scrollTo(0, 0);

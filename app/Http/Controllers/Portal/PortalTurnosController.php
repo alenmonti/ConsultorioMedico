@@ -10,7 +10,9 @@ use App\Models\Turno;
 use App\Models\User;
 use App\Services\ScheduleService;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PortalTurnosController extends Controller
 {
@@ -99,6 +101,30 @@ class PortalTurnosController extends Controller
         ]);
     }
 
+    public function disponibilidad(Request $request, ScheduleService $schedule)
+    {
+        $request->validate([
+            'medico_id' => 'required|integer|exists:users,id',
+        ]);
+
+        $medico = User::findOrFail($request->medico_id);
+        $desde  = Carbon::today();
+        $tope   = $desde->copy()->addMonths(6);
+
+        $mesesAbiertos = $schedule->mesesAbiertos($medico, $desde->format('Y-m-d'), $tope->format('Y-m-d'));
+
+        if (empty($mesesAbiertos)) {
+            $hasta = $desde->copy()->endOfMonth();
+        } else {
+            [$anio, $mes] = explode('-', collect($mesesAbiertos)->sort()->last());
+            $hasta = Carbon::createFromDate((int) $anio, (int) $mes, 1)->endOfMonth();
+        }
+
+        $data = $schedule->disponibilidadCompleta($medico, $desde->format('Y-m-d'), $hasta->format('Y-m-d'));
+
+        return response()->json($data);
+    }
+
     public function horarios(Request $request, ScheduleService $schedule)
     {
         $request->validate([
@@ -145,16 +171,11 @@ class PortalTurnosController extends Controller
         // Verify slot is still available (ignoring cancelled turnos)
         $disponibles = app(ScheduleService::class)->horariosDisponibles($medico, $data['fecha'], ignorarCancelados: true);
         if (!isset($disponibles[$data['hora']])) {
-            return response()->json(['message' => 'El horario ya no está disponible.'], 422);
+            return response()->json([
+                'message' => 'Ese horario ya fue tomado por otra persona. Por favor, elegí otro horario.',
+                'code'    => 'slot_taken',
+            ], 409);
         }
-
-        // Remove any cancelled turno that occupies this slot
-        Turno::withoutGlobalScopes()
-            ->where('medico_id', $medico->id)
-            ->where('fecha', $data['fecha'])
-            ->where('hora', $data['hora'])
-            ->where('estado', EstadosTurno::Cancelado)
-            ->delete();
 
         $notas = "Reserva web — Nombre: {$data['nombre']} | WhatsApp: {$data['whatsapp']}";
 
@@ -163,17 +184,37 @@ class PortalTurnosController extends Controller
             ->whereRaw('LOWER(nombre) = ?', ['consulta'])
             ->first();
 
-        Turno::withoutGlobalScopes()->create([
-            'medico_id'   => $medico->id,
-            'paciente_id' => null,
-            'practica_id' => $consulta?->id,
-            'fecha'       => $data['fecha'],
-            'hora'        => $data['hora'],
-            'estado'      => EstadosTurno::Pendiente,
-            'tipo'        => TipoTurno::Turno,
-            'notas'       => $notas,
-            'origen'      => 'web',
-        ]);
+        try {
+            DB::transaction(function () use ($medico, $data, $consulta, $notas) {
+                // Remove any cancelled turno that occupies this slot
+                Turno::withoutGlobalScopes()
+                    ->where('medico_id', $medico->id)
+                    ->where('fecha', $data['fecha'])
+                    ->where('hora', $data['hora'])
+                    ->where('estado', EstadosTurno::Cancelado)
+                    ->delete();
+
+                Turno::withoutGlobalScopes()->create([
+                    'medico_id'   => $medico->id,
+                    'paciente_id' => null,
+                    'practica_id' => $consulta?->id,
+                    'fecha'       => $data['fecha'],
+                    'hora'        => $data['hora'],
+                    'estado'      => EstadosTurno::Pendiente,
+                    'tipo'        => TipoTurno::Turno,
+                    'notas'       => $notas,
+                    'origen'      => 'web',
+                ]);
+            });
+        } catch (QueryException $e) {
+            if (str_contains($e->getMessage(), 'UNIQUE constraint failed') || $e->getCode() === '23000') {
+                return response()->json([
+                    'message' => 'Alguien más reservó este horario recién. Por favor, elegí otro horario.',
+                    'code'    => 'slot_taken',
+                ], 409);
+            }
+            throw $e;
+        }
 
         return response()->json(['ok' => true]);
     }

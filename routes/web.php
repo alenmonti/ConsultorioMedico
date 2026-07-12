@@ -63,6 +63,7 @@ Route::prefix('portal-turnos')->group(function () {
     Route::get('/', [PortalTurnosController::class, 'index'])->name('portal.turnos');
     Route::get('/medicos', [PortalTurnosController::class, 'medicos'])->name('portal.medicos');
     Route::get('/semana', [PortalTurnosController::class, 'semana'])->name('portal.semana');
+    Route::get('/disponibilidad', [PortalTurnosController::class, 'disponibilidad'])->name('portal.disponibilidad');
     Route::get('/horarios', [PortalTurnosController::class, 'horarios'])->name('portal.horarios');
     Route::post('/reservar', [PortalTurnosController::class, 'reservar'])->name('portal.reservar');
 });

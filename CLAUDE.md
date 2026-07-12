@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Medical office management system (consultorio) built with Laravel 11 + Filament 3 + Livewire 3. The entire UI is a single Filament admin panel served at the root path (`/`). Database is SQLite.
+Medical office management system (consultorio) built with Laravel 11 + Filament 3 + Livewire 3. The entire UI is a single Filament admin panel served at the root path (`/`). Database is MySQL (see `.env` — `DB_CONNECTION=mysql`).
 
 ## Commands
 
