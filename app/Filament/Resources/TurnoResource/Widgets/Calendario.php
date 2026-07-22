@@ -280,7 +280,7 @@ class Calendario extends FullCalendarWidget
                         return true;
                     }
 
-                    return ! in_array($turno->estado, [EstadosTurno::Pendiente, EstadosTurno::Confirmado]);
+                    return ! in_array($turno->estado, [EstadosTurno::Pendiente, EstadosTurno::Confirmado, EstadosTurno::Presente]);
                 }),
             EditAction::make()
                 ->extraAttributes(['class' => 'attend-button'])
