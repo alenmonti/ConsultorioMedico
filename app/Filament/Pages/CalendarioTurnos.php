@@ -22,8 +22,8 @@ class CalendarioTurnos extends Page
     public function getHeaderWidgets(): array
     {
         return [
-            ColorGuide::class,
             Calendario::make(),
+            ColorGuide::class,
         ];
     }
 }

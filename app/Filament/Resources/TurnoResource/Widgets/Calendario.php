@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Saade\FilamentFullCalendar\Actions\CreateAction;
 use Saade\FilamentFullCalendar\Actions\DeleteAction;
 use Saade\FilamentFullCalendar\Actions\EditAction;
+use Saade\FilamentFullCalendar\Actions\ViewAction;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class Calendario extends FullCalendarWidget
@@ -70,7 +71,7 @@ class Calendario extends FullCalendarWidget
         $diasNoDisponibles = user()->diasNoDisponibles($fetchInfo['start'], $fetchInfo['end']);
         $disableDays = [];
         foreach ($diasNoDisponibles as $dia) {
-            $disableDays[] = ['start' => $dia, 'end' => $dia, 'display' => 'background', 'backgroundColor' => '#ff5858', 'allDay' => true, 'disableClick' => true];
+            $disableDays[] = ['start' => $dia.' 00:00:00', 'end' => Carbon::parse($dia)->addDay()->format('Y-m-d').' 00:00:00', 'display' => 'background', 'backgroundColor' => '#ff5858', 'allDay' => false, 'disableClick' => true];
         }
 
         return array_merge($turnos, $slotEvents, $disableDays);
@@ -244,6 +245,8 @@ class Calendario extends FullCalendarWidget
             'initialView' => $this->initialView,
             'hiddenDays' => $this->getHiddenDays(),
             ...$this->getSlotRange(),
+            'slotDuration' => '00:20:00',
+            'allDaySlot' => false,
             'height' => '800px',
             'dayMaxEventRows' => true,
             'eventTimeFormat' => [
@@ -262,6 +265,14 @@ class Calendario extends FullCalendarWidget
     public function getFormSchema(): array
     {
         return TurnoResource::getFormSchema();
+    }
+
+    protected function viewAction(): Action
+    {
+        return ViewAction::make()
+            ->modalHeading(false)
+            ->modalCloseButton(false)
+            ->extraModalWindowAttributes(['class' => 'turno-compact-modal']);
     }
 
     protected function modalActions(): array
@@ -293,6 +304,9 @@ class Calendario extends FullCalendarWidget
     {
         return [
             CreateAction::make()
+                ->modalHeading(false)
+                ->modalCloseButton(false)
+                ->extraModalWindowAttributes(['class' => 'turno-compact-modal'])
                 ->mountUsing(
                     function (Form $form, array $arguments) {
                         $form->fill([

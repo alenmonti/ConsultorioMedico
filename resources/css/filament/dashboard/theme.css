@@ -24,7 +24,7 @@ html.dark .fc-popover {
 }
 
 .fc .fc-timegrid-slot {
-    height: 3em;
+    height: 1.5em;
 }
 
 .fc .fc-timegrid-slot:hover {
@@ -46,6 +46,20 @@ html.dark .fc-popover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.turno-compact-modal .fi-modal-content {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+    gap: 0.75rem !important;
+}
+
+.turno-compact-modal .fi-fo-component-ctn {
+    gap: 0.75rem !important;
+}
+
+.turno-compact-modal .fi-fo-field-wrp-label {
+    margin-bottom: 0.15rem !important;
 }
 
 @media (max-width: 640px) {
