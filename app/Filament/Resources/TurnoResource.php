@@ -102,9 +102,8 @@ class TurnoResource extends Resource
                 ->schema([
                     Select::make('paciente_id')
                         ->label('Paciente')
-                        ->options(Paciente::selectOptions())
+                        ->options(Paciente::selectOptionsConObraSocial())
                         ->searchable()
-                        ->required()
                         ->createOptionForm(PacienteResource::getForm())
                         ->createOptionUsing(function (array $data): int {
                             $paciente = Paciente::create([
@@ -188,7 +187,7 @@ class TurnoResource extends Resource
                     ->since()
                     ->color('gray'),
                 Tables\Columns\TextColumn::make('paciente.nombre')
-                    ->state(fn ($record) => $record->paciente->apellido.' '.$record->paciente->nombre),
+                    ->state(fn ($record) => $record->paciente ? $record->paciente->apellido.' '.$record->paciente->nombre : '(sin paciente)'),
                 Tables\Columns\TextColumn::make('fecha')
                     ->date('d/m/Y')
                     ->sortable(),

@@ -61,6 +61,18 @@ class Paciente extends Model
         return $options;
     }
 
+    public static function selectOptionsConObraSocial()
+    {
+        $obrasSociales = config('paciente.obras_sociales');
+        $pacientes = Paciente::select('id', 'nombre', 'apellido', 'dni', 'obra_social')->get();
+        $options = [];
+        foreach ($pacientes as $paciente) {
+            $obraSocial = $obrasSociales[$paciente->obra_social] ?? $paciente->obra_social;
+            $options[$paciente->id] = $paciente->apellido.' '.$paciente->nombre.', '.$paciente->dni.' ('.$obraSocial.')';
+        }
+        return $options;
+    }
+
     public function getDocumentoLinkAttribute()
     {
         return $this->documento ? asset('storage/'.$this->documento) : null;

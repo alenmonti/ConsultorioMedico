@@ -50,10 +50,10 @@ class Calendario extends FullCalendarWidget
             ->map(fn (Turno $turno) => [
                 'id' => $turno->id,
                 'title' => ($turno->paciente
-                    ? $turno->paciente->nombre.' '.$turno->paciente->apellido
-                    : '(Web) '.str($turno->notas)->after('Nombre: ')->before(' |')->value())
-                    .($turno->senia_pagada_at ? ' (seña)' : '')
-                    .($turno->practica ? ' | '.$turno->practica->display_name : ''),
+                    ? $turno->paciente->nombre.' '.$turno->paciente->apellido.' ('.(config('paciente.obras_sociales')[$turno->paciente->obra_social] ?? $turno->paciente->obra_social).')'
+                    : 'Sin Paciente')
+                    .($turno->practica ? ' | '.$turno->practica->nombre.($turno->practica->costo !== null ? ' - $'.number_format($turno->practica->costo, 2, ',', '.') : '') : '')
+                    .($turno->notas ? ' | '.$turno->notas : ''),
                 'start' => Carbon::parse($turno->fecha.' '.$turno->hora),
                 'end' => Carbon::parse($turno->fecha.' '.$turno->hora)->addMinutes($turno->practica?->duracion_min ?? 20),
                 'backgroundColor' => $turno->estado->getHexColor(),

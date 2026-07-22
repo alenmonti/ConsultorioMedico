@@ -21,6 +21,8 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Blade;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 
 class DashboardPanelProvider extends PanelProvider
@@ -70,6 +72,23 @@ class DashboardPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->viteTheme('resources/css/filament/dashboard/theme.css');
+            ->viteTheme('resources/css/filament/dashboard/theme.css')
+            ->topNavigation()
+            // ->sidebarCollapsibleOnDesktop()
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => Blade::render(<<<'BLADE'
+                    <script>
+                        document.addEventListener('modal-closed', () => {
+                            queueMicrotask(() => {
+                                if (! document.querySelector('.fi-modal.fi-modal-open')) {
+                                    document.documentElement.style.overflow = '';
+                                    document.body.style.overflow = '';
+                                }
+                            });
+                        }, true);
+                    </script>
+                BLADE),
+            );
     }
 }

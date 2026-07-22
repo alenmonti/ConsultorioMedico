@@ -134,7 +134,7 @@ class ListRecordatorios extends ListRecords
 
     private function getPendientesRecordatorio(): \Illuminate\Database\Eloquent\Builder
     {
-        $estadosActivos = [EstadosTurno::Pendiente->value, EstadosTurno::Confirmado->value];
+        $estadosActivos = [EstadosTurno::Pendiente->value];
         $businessDates = static::nextBusinessDays(2);
 
         return Turno::query()
@@ -470,7 +470,7 @@ class ListRecordatorios extends ListRecords
 
     public function getTabs(): array
     {
-        $estadosActivos = [EstadosTurno::Pendiente->value, EstadosTurno::Confirmado->value];
+        $estadosActivos = [EstadosTurno::Pendiente->value];
         $businessDates = static::nextBusinessDays(2);
 
         return [
@@ -513,12 +513,14 @@ class ListRecordatorios extends ListRecords
                         ->whereNotNull('senia_informada_at')
                         ->whereNull('senia_pagada_at')
                         ->whereIn('estado', $estadosActivos)
+                        ->whereDate('fecha', '>=', today())
                         ->count()
                 )
                 ->modifyQueryUsing(fn ($query) => $query
                     ->whereNotNull('senia_informada_at')
                     ->whereNull('senia_pagada_at')
                     ->whereIn('estado', $estadosActivos)
+                    ->whereDate('fecha', '>=', today())
                 ),
 
             'recordatorio' => Tab::make('Recordatorio pendiente')
