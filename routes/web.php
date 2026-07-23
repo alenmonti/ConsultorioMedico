@@ -65,6 +65,32 @@ Route::get('/turnos/imprimir', TurnoImprimirController::class)
     ->middleware('auth')
     ->name('turnos.imprimir');
 
+// Rutas para disparar tareas cron vía wget (hostings que no permiten
+// ejecutar comandos de consola directamente, ej. Donweb/Ferozo).
+// Reutiliza REGISTRATION_CODE como token de acceso.
+Route::prefix('cron/{token}')->group(function () {
+    Route::get('/turnos-resumen-manana', function (string $token) {
+        abort_unless(hash_equals((string) config('app.registration_code'), $token), 403);
+
+        $output = new \Symfony\Component\Console\Output\BufferedOutput();
+        Artisan::call('turnos:enviar-resumen-manana', [], $output);
+
+        return response('<pre>'.$output->fetch().'</pre>');
+    });
+
+    Route::get('/queue-work', function (string $token) {
+        abort_unless(hash_equals((string) config('app.registration_code'), $token), 403);
+
+        $output = new \Symfony\Component\Console\Output\BufferedOutput();
+        Artisan::call('queue:work', [
+            '--stop-when-empty' => true,
+            '--max-time' => 25,
+        ], $output);
+
+        return response('<pre>'.$output->fetch().'</pre>');
+    });
+});
+
 Route::prefix('portal-turnos')->group(function () {
     Route::get('/', [PortalTurnosController::class, 'index'])->name('portal.turnos');
     Route::get('/medicos', [PortalTurnosController::class, 'medicos'])->name('portal.medicos');
