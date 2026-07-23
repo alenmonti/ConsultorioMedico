@@ -257,15 +257,20 @@ class ListRecordatorios extends ListRecords
                         $monto = auth()->user()->monto_senia;
                         $alias = auth()->user()->alias_pago;
 
-                        $textoAlias = $alias
-                            ? "mediante transferencia al alias *{$alias}*"
-                            : 'coordinando el pago con nosotros.';
-
                         $montoTexto = $monto ? " de *\${$monto}*" : '';
+                        $aliasTexto = $alias ? "Alias: *{$alias}*\n" : '';
+                        $costoPractica = $record->practica?->costo !== null
+                            ? number_format($record->practica->costo, 2, ',', '.')
+                            : '0';
 
                         $mensaje = rawurlencode(
                             "Hola, ¡buenos días!\n\n" .
-                            "Para confirmar su turno del *{$fecha} a las {$record->hora} hs*, deberá abonar una seña{$montoTexto} {$textoAlias}\n\n" .
+                            "Tiene un turno el *{$fecha} a las {$record->hora} hs*, el valor del mismo es de *\${$costoPractica}*.\n" .
+                            "Para confirmar su turno deberá abonar una seña{$montoTexto} que luego será descontada del valor total.\n\n" .
+                            "Información bancaria para abonar la seña:\n" .
+                            "{$aliasTexto}" .
+                            "CBU: *0140029803505567741050*\n" .
+                            "Titular de la cuenta: *Mailin Monti*\n\n" .
                             "Por favor, envíe el comprobante por este chat dentro de las *48 horas hábiles* para mantener la reserva de su turno.\n\n" .
                             self::FIRMA_CONSULTORIO
                         );

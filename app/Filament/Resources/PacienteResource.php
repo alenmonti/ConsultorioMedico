@@ -62,7 +62,8 @@ class PacienteResource extends Resource
                                 return $default;
                             }
                         })
-                        ->searchable(),
+                        ->searchable()
+                        ->required(),
                     Forms\Components\TextInput::make('afiliado')
                         ->placeholder('Nro de Afiliado')
                         ->label('Nro Afiliado'),
