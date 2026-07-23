@@ -20,8 +20,11 @@ class PerfilPortalPage extends Page implements HasForms
     use InteractsWithForms;
 
     protected static ?string $navigationIcon = null;
+
     protected static bool $shouldRegisterNavigation = false;
+
     protected static string $view = 'filament.pages.perfil-portal';
+
     protected static ?string $slug = 'configuracion';
 
     public function getTitle(): string
@@ -36,13 +39,14 @@ class PerfilPortalPage extends Page implements HasForms
         $user = auth()->user();
 
         $this->form->fill([
-            'especialidad'        => $user->especialidad,
-            'descripcion'         => $user->descripcion,
-            'foto_portal'         => $user->foto_portal,
-            'whatsapp'            => $user->whatsapp,
-            'portal_turnos_activo'     => (bool) $user->portal_turnos_activo,
-            'monto_senia'             => $user->monto_senia,
-            'alias_pago'              => $user->alias_pago,
+            'especialidad' => $user->especialidad,
+            'descripcion' => $user->descripcion,
+            'foto_portal' => $user->foto_portal,
+            'whatsapp' => $user->whatsapp,
+            'portal_turnos_activo' => (bool) $user->portal_turnos_activo,
+            'monto_senia' => $user->monto_senia,
+            'alias_pago' => $user->alias_pago,
+            'resumen_diario_turnos' => (bool) $user->resumen_diario_turnos,
         ]);
     }
 
@@ -65,6 +69,10 @@ class PerfilPortalPage extends Page implements HasForms
                             ->placeholder('Ej: consultorio.perez.mp')
                             ->helperText('Alias al que el paciente debe enviar la seña (Mercado Pago, transferencia, etc.).')
                             ->maxLength(100),
+
+                        Toggle::make('resumen_diario_turnos')
+                            ->label('Recibir resumen diario de turnos por mail')
+                            ->helperText('Todos los días a las 22:00 se envía a tu correo el listado de turnos del día siguiente.'),
                     ]),
 
                 Section::make('Configuración del portal')
@@ -95,7 +103,7 @@ class PerfilPortalPage extends Page implements HasForms
                             ->label('Foto de perfil')
                             ->image()
                             ->imageEditor()
-                            ->directory(fn () => 'usuarios/' . auth()->id() . '/configuracion')
+                            ->directory(fn () => 'usuarios/'.auth()->id().'/configuracion')
                             ->maxSize(2048)
                             ->helperText('Imagen cuadrada recomendada. Máximo 2 MB.'),
                     ]),
@@ -110,12 +118,13 @@ class PerfilPortalPage extends Page implements HasForms
         $user = auth()->user();
 
         $user->fill([
-            'especialidad'             => $state['especialidad'],
-            'descripcion'              => $state['descripcion'],
-            'foto_portal'              => $state['foto_portal'],
-            'whatsapp'                 => $state['whatsapp'],
-            'monto_senia'              => $state['monto_senia'] ?: null,
-            'alias_pago'               => $state['alias_pago'] ?: null,
+            'especialidad' => $state['especialidad'],
+            'descripcion' => $state['descripcion'],
+            'foto_portal' => $state['foto_portal'],
+            'whatsapp' => $state['whatsapp'],
+            'monto_senia' => $state['monto_senia'] ?: null,
+            'alias_pago' => $state['alias_pago'] ?: null,
+            'resumen_diario_turnos' => (bool) $state['resumen_diario_turnos'],
         ]);
         $user->save();
 
