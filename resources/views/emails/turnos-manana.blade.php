@@ -26,6 +26,7 @@
                         <th align="left" style="font-size:0.75rem; text-transform:uppercase; color:#64748b; border-bottom:1px solid #e2e8f0; padding:0.5rem 0.6rem;">Obra social</th>
                         <th align="left" style="font-size:0.75rem; text-transform:uppercase; color:#64748b; border-bottom:1px solid #e2e8f0; padding:0.5rem 0.6rem;">Teléfono</th>
                         <th align="left" style="font-size:0.75rem; text-transform:uppercase; color:#64748b; border-bottom:1px solid #e2e8f0; padding:0.5rem 0.6rem;">Práctica</th>
+                        <th align="left" style="font-size:0.75rem; text-transform:uppercase; color:#64748b; border-bottom:1px solid #e2e8f0; padding:0.5rem 0.6rem;">Precio</th>
                         <th align="left" style="font-size:0.75rem; text-transform:uppercase; color:#64748b; border-bottom:1px solid #e2e8f0; padding:0.5rem 0.6rem;">Estado</th>
                     </tr>
                 </thead>
@@ -37,6 +38,7 @@
                             <td style="font-size:0.875rem; border-bottom:1px solid #e2e8f0; padding:0.5rem 0.6rem;">{{ $turno->paciente ? (config('paciente.obras_sociales')[$turno->paciente->obra_social] ?? $turno->paciente->obra_social) : '-' }}</td>
                             <td style="font-size:0.875rem; border-bottom:1px solid #e2e8f0; padding:0.5rem 0.6rem;">{{ $turno->paciente->telefono ?? '-' }}</td>
                             <td style="font-size:0.875rem; border-bottom:1px solid #e2e8f0; padding:0.5rem 0.6rem;">{{ $turno->practica->nombre ?? '-' }}</td>
+                            <td style="font-size:0.875rem; border-bottom:1px solid #e2e8f0; padding:0.5rem 0.6rem;">{{ $turno->practica?->costo !== null ? '$'.number_format($turno->practica->costo, 2, ',', '.') : '-' }}</td>
                             <td style="font-size:0.875rem; border-bottom:1px solid #e2e8f0; padding:0.5rem 0.6rem;">
                                 <span style="display:inline-block; padding:0.15rem 0.5rem; border-radius:999px; font-size:0.75rem; font-weight:bold; color:#fff; background:{{ $turno->estado->getHexColor() }};">
                                     {{ $turno->estado->getLabel() }}

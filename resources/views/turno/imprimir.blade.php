@@ -139,6 +139,7 @@
                         <th>Obra social</th>
                         <th>Teléfono</th>
                         <th>Práctica</th>
+                        <th>Precio</th>
                         <th>Estado</th>
                         <th>Notas</th>
                     </tr>
@@ -151,6 +152,7 @@
                             <td>{{ $turno->paciente ? (config('paciente.obras_sociales')[$turno->paciente->obra_social] ?? $turno->paciente->obra_social) : '-' }}</td>
                             <td>{{ $turno->paciente->telefono ?? '-' }}</td>
                             <td>{{ $turno->practica->nombre ?? '-' }}</td>
+                            <td>{{ $turno->practica?->costo !== null ? '$'.number_format($turno->practica->costo, 2, ',', '.') : '-' }}</td>
                             <td><span class="estado-badge" style="background-color: {{ $turno->estado->getHexColor() }}">{{ $turno->estado->getLabel() }}</span></td>
                             <td>{{ $turno->notas ?? '-' }}</td>
                         </tr>
