@@ -25,6 +25,10 @@ Route::get('health', function () {
     return response()->json(['status' => 'ok'], 200);
 });
 
+Route::get('pathinfo', function () {
+    return response('<pre>'.base_path().'</pre>');
+});
+
 Route::get('optimize', function () {
     $output = new \Symfony\Component\Console\Output\BufferedOutput();
     Artisan::call('optimize', [], $output);
