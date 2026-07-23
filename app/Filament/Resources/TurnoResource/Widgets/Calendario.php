@@ -295,7 +295,10 @@ class Calendario extends FullCalendarWidget
                 }),
             EditAction::make()
                 ->extraAttributes(['class' => 'attend-button'])
-                ->color('info'),
+                ->color('info')
+                ->modalHeading(false)
+                ->modalCloseButton(false)
+                ->extraModalWindowAttributes(['class' => 'turno-compact-modal']),
             DeleteAction::make(),
         ];
     }
