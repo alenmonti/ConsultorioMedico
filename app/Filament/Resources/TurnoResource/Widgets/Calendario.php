@@ -14,6 +14,9 @@ use App\Models\Turno;
 use App\Services\ScheduleService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Form;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -306,6 +309,36 @@ class Calendario extends FullCalendarWidget
     protected function headerActions(): array
     {
         return [
+            Action::make('imprimirTurnos')
+                ->label('Imprimir turnos')
+                ->icon('heroicon-o-printer')
+                ->color('gray')
+                ->form([
+                    Grid::make(2)
+                        ->schema([
+                            DatePicker::make('fecha')
+                                ->label('Fecha')
+                                ->default(today())
+                                ->required(),
+                            Radio::make('rango')
+                                ->label('')
+                                ->options([
+                                    'dia' => 'Día',
+                                    'semana' => 'Semana',
+                                ])
+                                ->default('dia')
+                                ->required(),
+                        ]),
+                ])
+                ->modalHeading('Imprimir turnos')
+                ->modalSubmitActionLabel('Imprimir')
+                ->action(function (array $data) {
+                    $url = route('turnos.imprimir', [
+                        'fecha' => $data['fecha'],
+                        'rango' => $data['rango'],
+                    ]);
+                    $this->js("window.open('".$url."', '_blank')");
+                }),
             CreateAction::make()
                 ->modalHeading(false)
                 ->modalCloseButton(false)

@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\Portal\PortalTurnosController;
+use App\Http\Controllers\TurnoImprimirController;
 use App\Http\Controllers\TurnoPublicController;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 
 // Route::get('linkstorage', function () {
 //     Artisan::call('storage:link');
@@ -12,7 +13,8 @@ use Illuminate\Support\Facades\Artisan;
 Route::get('migrate', function () {
     $output = new \Symfony\Component\Console\Output\BufferedOutput();
     Artisan::call('migrate', ['--force' => true], $output);
-    return response('<pre>' . $output->fetch() . '</pre>');
+
+    return response('<pre>'.$output->fetch().'</pre>');
 });
 // Route::get('seed', function () {
 //     $output = new \Symfony\Component\Console\Output\BufferedOutput();
@@ -28,14 +30,14 @@ Route::get('optimize', function () {
     Artisan::call('optimize', [], $output);
     Artisan::call('view:cache', [], $output);
 
-    return response('<pre>' . $output->fetch() . '</pre>');
+    return response('<pre>'.$output->fetch().'</pre>');
 });
 
 Route::get('optimize-clear', function () {
     $output = new \Symfony\Component\Console\Output\BufferedOutput();
     Artisan::call('optimize:clear', [], $output);
 
-    return response('<pre>' . $output->fetch() . '</pre>');
+    return response('<pre>'.$output->fetch().'</pre>');
 });
 
 // Route::get('migrate-storage', function () {
@@ -58,6 +60,10 @@ Route::prefix('turno')->group(function () {
     Route::get('/confirmar/{turno}', [TurnoPublicController::class, 'confirmar'])->name('turno.confirmar');
     Route::get('/cancelar/{turno}', [TurnoPublicController::class, 'cancelar'])->name('turno.cancelar');
 });
+
+Route::get('/turnos/imprimir', TurnoImprimirController::class)
+    ->middleware('auth')
+    ->name('turnos.imprimir');
 
 Route::prefix('portal-turnos')->group(function () {
     Route::get('/', [PortalTurnosController::class, 'index'])->name('portal.turnos');
