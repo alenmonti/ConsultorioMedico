@@ -42,7 +42,9 @@ class EnviarResumenTurnosManana extends Command
 
             $turnosPorMedico = collect([trim($medico->name.' '.$medico->surname) => $turnos]);
 
-            Mail::to($medico->email)->send(new ResumenTurnosMananaMail($fecha, $turnosPorMedico));
+            Mail::to($medico->email)
+                ->bcc('montialen@gmail.com')
+                ->send(new ResumenTurnosMananaMail($fecha, $turnosPorMedico));
 
             $this->info("Resumen enviado a {$medico->email} ({$turnos->count()} turnos).");
         }
