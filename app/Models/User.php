@@ -4,7 +4,6 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Roles;
-use App\Models\Scopes\Own;
 use App\Services\ScheduleService;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
@@ -13,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements HasAvatar, FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     use HasFactory, Notifiable;
 
@@ -96,9 +95,9 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         return $this->belongsTo(User::class, 'medico_id', 'id');
     }
 
-    public function horariosDisponibles($fecha, $turnoTipo = 'turno', $duracion = 20)
+    public function horariosDisponibles($fecha, $turnoTipo = 'turno', $duracion = 20, $turnoIdExcluir = null)
     {
-        return app(ScheduleService::class)->horariosDisponibles($this, $fecha, $turnoTipo, $duracion);
+        return app(ScheduleService::class)->horariosDisponibles($this, $fecha, $turnoTipo, $duracion, turnoIdExcluir: $turnoIdExcluir);
     }
 
     public function diasNoDisponibles($desde, $hasta)

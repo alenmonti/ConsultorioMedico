@@ -38,6 +38,7 @@ class TurnoResource extends Resource
     public static function getFormSchema(): array
     {
         return [
+            Hidden::make('id'),
             Select::make('tipo')
                 ->required()
                 ->searchable()
@@ -70,7 +71,7 @@ class TurnoResource extends Resource
                         ? (Practica::find($practicaId)?->duracion_min ?? 20)
                         : 20;
 
-                    if (! array_key_exists($hora, Auth::user()->horariosDisponibles($fecha, $tipo, $duracion))) {
+                    if (! array_key_exists($hora, Auth::user()->horariosDisponibles($fecha, $tipo, $duracion, $get('id')))) {
                         $set('hora', null);
                     }
                 }),
@@ -94,7 +95,7 @@ class TurnoResource extends Resource
                                 ? (Practica::find($practicaId)?->duracion_min ?? 20)
                                 : 20;
 
-                            return Auth::user()->horariosDisponibles($fecha, $tipo, $duracion);
+                            return Auth::user()->horariosDisponibles($fecha, $tipo, $duracion, $get('id'));
                         }),
                 ]),
             Grid::make('')

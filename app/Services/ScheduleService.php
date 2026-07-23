@@ -13,7 +13,7 @@ use Carbon\Carbon;
 
 class ScheduleService
 {
-    public function horariosDisponibles(User $medico, string $fecha, string $tipo = 'turno', int $duracion = 20, bool $ignorarCancelados = false, bool $portal = false): array
+    public function horariosDisponibles(User $medico, string $fecha, string $tipo = 'turno', int $duracion = 20, bool $ignorarCancelados = false, bool $portal = false, ?int $turnoIdExcluir = null): array
     {
         $fechaCarbon = Carbon::parse($fecha);
 
@@ -87,6 +87,7 @@ class ScheduleService
         $turnosDelDia = Turno::where('medico_id', $medico->medico_id)
             ->where('fecha', $fecha)
             ->when($ignorarCancelados, fn ($q) => $q->where('estado', '!=', EstadosTurno::Cancelado))
+            ->when($turnoIdExcluir, fn ($q) => $q->where('id', '!=', $turnoIdExcluir))
             ->with('practica')
             ->get();
 
