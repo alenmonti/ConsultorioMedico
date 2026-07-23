@@ -479,21 +479,6 @@ class ListRecordatorios extends ListRecords
         $businessDates = static::nextBusinessDays(2);
 
         return [
-            'aviso_asignacion' => Tab::make('Turno asignado')
-                ->icon('heroicon-o-calendar-days')
-                ->badge(
-                    Turno::query()
-                        ->whereNull('aviso_asignacion_enviado_at')
-                        ->whereIn('estado', $estadosActivos)
-                        ->whereDate('fecha', '>=', today())
-                        ->count()
-                )
-                ->modifyQueryUsing(fn ($query) => $query
-                    ->whereNull('aviso_asignacion_enviado_at')
-                    ->whereIn('estado', $estadosActivos)
-                    ->whereDate('fecha', '>=', today())
-                ),
-
             'sin_informar' => Tab::make('Sin informar seña')
                 ->icon('heroicon-o-bell-slash')
                 ->badge(
@@ -524,6 +509,23 @@ class ListRecordatorios extends ListRecords
                 ->modifyQueryUsing(fn ($query) => $query
                     ->whereNotNull('senia_informada_at')
                     ->whereNull('senia_pagada_at')
+                    ->whereIn('estado', $estadosActivos)
+                    ->whereDate('fecha', '>=', today())
+                ),
+
+            'aviso_asignacion' => Tab::make('Turno asignado')
+                ->icon('heroicon-o-calendar-days')
+                ->badge(
+                    Turno::query()
+                        ->whereNull('aviso_asignacion_enviado_at')
+                        ->whereNotNull('senia_pagada_at')
+                        ->whereIn('estado', $estadosActivos)
+                        ->whereDate('fecha', '>=', today())
+                        ->count()
+                )
+                ->modifyQueryUsing(fn ($query) => $query
+                    ->whereNull('aviso_asignacion_enviado_at')
+                    ->whereNotNull('senia_pagada_at')
                     ->whereIn('estado', $estadosActivos)
                     ->whereDate('fecha', '>=', today())
                 ),

@@ -134,13 +134,6 @@ class TurnoResource extends Resource
             Grid::make(4)
                 ->columnSpan(2)
                 ->schema([
-                    Forms\Components\Toggle::make('_aviso_asignacion_enviado')
-                        ->label('Turno asignado')
-                        ->dehydrated(false)
-                        ->afterStateHydrated(fn ($component, $record) => $component->state($record?->aviso_asignacion_enviado_at !== null))
-                        ->live()
-                        ->hint(fn (Get $get) => $get('aviso_asignacion_enviado_at') ? Carbon::parse($get('aviso_asignacion_enviado_at'))->format('d/m/Y H:i') : null)
-                        ->afterStateUpdated(fn ($state, Set $set) => $set('aviso_asignacion_enviado_at', $state ? now()->toDateTimeString() : null)),
                     Forms\Components\Toggle::make('_senia_informada')
                         ->label('Seña avisada')
                         ->dehydrated(false)
@@ -155,6 +148,13 @@ class TurnoResource extends Resource
                         ->live()
                         ->hint(fn (Get $get) => $get('senia_pagada_at') ? Carbon::parse($get('senia_pagada_at'))->format('d/m/Y H:i') : null)
                         ->afterStateUpdated(fn ($state, Set $set) => $set('senia_pagada_at', $state ? now()->toDateTimeString() : null)),
+                    Forms\Components\Toggle::make('_aviso_asignacion_enviado')
+                        ->label('Turno asignado')
+                        ->dehydrated(false)
+                        ->afterStateHydrated(fn ($component, $record) => $component->state($record?->aviso_asignacion_enviado_at !== null))
+                        ->live()
+                        ->hint(fn (Get $get) => $get('aviso_asignacion_enviado_at') ? Carbon::parse($get('aviso_asignacion_enviado_at'))->format('d/m/Y H:i') : null)
+                        ->afterStateUpdated(fn ($state, Set $set) => $set('aviso_asignacion_enviado_at', $state ? now()->toDateTimeString() : null)),
                     Forms\Components\Toggle::make('_recordatorio_enviado')
                         ->label('Recordatorio enviado')
                         ->dehydrated(false)
