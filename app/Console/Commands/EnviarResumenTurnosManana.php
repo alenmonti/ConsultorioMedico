@@ -40,6 +40,12 @@ class EnviarResumenTurnosManana extends Command
                 ->orderBy('hora')
                 ->get();
 
+            if ($turnos->isEmpty()) {
+                $this->info("Sin turnos para {$medico->email}, no se envía resumen.");
+
+                continue;
+            }
+
             $turnosPorMedico = collect([trim($medico->name.' '.$medico->surname) => $turnos]);
 
             Mail::to($medico->email)
