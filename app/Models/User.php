@@ -106,4 +106,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return app(ScheduleService::class)->diasNoDisponibles($this, $desde, $hasta);
     }
+
+    public function diasSinSlots($desde, $hasta)
+    {
+        return app(ScheduleService::class)->diasSinSlots($this, $desde, $hasta);
+    }
 }

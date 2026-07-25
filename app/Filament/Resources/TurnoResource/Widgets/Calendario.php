@@ -71,7 +71,13 @@ class Calendario extends FullCalendarWidget
 
         $slotEvents = $this->getAvailableSlotEvents($fetchInfo['start'], $fetchInfo['end']);
 
-        return array_merge($turnos, $slotEvents);
+        $diasSinSlots = user()->diasSinSlots($fetchInfo['start'], $fetchInfo['end']);
+        $disableDays = [];
+        foreach ($diasSinSlots as $dia) {
+            $disableDays[] = ['start' => $dia.' 00:00:00', 'end' => Carbon::parse($dia)->addDay()->format('Y-m-d').' 00:00:00', 'display' => 'background', 'backgroundColor' => '#ff5858', 'allDay' => false, 'disableClick' => true];
+        }
+
+        return array_merge($turnos, $slotEvents, $disableDays);
     }
 
     private function getAvailableSlotEvents(string $desde, string $hasta): array

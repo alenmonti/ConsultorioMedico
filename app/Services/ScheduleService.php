@@ -149,6 +149,37 @@ class ScheduleService
     }
 
     /**
+     * A diferencia de diasNoDisponibles(), acá un día solo cuenta como no disponible
+     * si no tiene ningún slot configurado (sin horario ni horario especial), sin
+     * importar si los slots existentes ya están todos ocupados.
+     */
+    public function diasSinSlots(User $medico, string $desde, string $hasta): array
+    {
+        $fechaDesde = Carbon::parse($desde);
+        $fechaHasta = Carbon::parse($hasta);
+
+        [$mesesAbiertos, $horariosPorDia, $turnosPorFecha, $especialesPorFecha] =
+            $this->cargarDatosRango($medico, $fechaDesde, $fechaHasta, false, false);
+
+        $diasSinSlots = [];
+        $cursor = $fechaDesde->copy();
+
+        while ($cursor <= $fechaHasta) {
+            $fechaStr = $cursor->format('Y-m-d');
+
+            $dia = $this->calcularSlotsDia($cursor, $mesesAbiertos, $horariosPorDia, $especialesPorFecha, $turnosPorFecha, false);
+
+            if (empty($dia['slots'])) {
+                $diasSinSlots[] = $fechaStr;
+            }
+
+            $cursor->addDay();
+        }
+
+        return $diasSinSlots;
+    }
+
+    /**
      * Disponibilidad completa de un médico para un rango de fechas, pensada para
      * traer de una sola vez todo lo que necesita el portal de pacientes (evita
      * repetir requests semana a semana / día a día).
