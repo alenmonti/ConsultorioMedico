@@ -127,10 +127,14 @@ class TurnoResource extends Resource
                 ->rows(3)
                 ->columnSpan(2)
                 ->autosize(),
-            Hidden::make('aviso_asignacion_enviado_at'),
-            Hidden::make('senia_informada_at'),
-            Hidden::make('senia_pagada_at'),
-            Hidden::make('recordatorio_enviado_at'),
+            Hidden::make('aviso_asignacion_enviado_at')
+                ->afterStateHydrated(fn ($component, $record) => $component->state($record?->aviso_asignacion_enviado_at?->toDateTimeString())),
+            Hidden::make('senia_informada_at')
+                ->afterStateHydrated(fn ($component, $record) => $component->state($record?->senia_informada_at?->toDateTimeString())),
+            Hidden::make('senia_pagada_at')
+                ->afterStateHydrated(fn ($component, $record) => $component->state($record?->senia_pagada_at?->toDateTimeString())),
+            Hidden::make('recordatorio_enviado_at')
+                ->afterStateHydrated(fn ($component, $record) => $component->state($record?->recordatorio_enviado_at?->toDateTimeString())),
             Grid::make(4)
                 ->columnSpan(2)
                 ->schema([
