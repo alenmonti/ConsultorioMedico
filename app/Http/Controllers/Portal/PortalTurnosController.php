@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Practica;
 use App\Models\Turno;
 use App\Models\User;
+use App\Notifications\TurnoSolicitadoNotification;
 use App\Services\ScheduleService;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
@@ -185,7 +186,7 @@ class PortalTurnosController extends Controller
             ->first();
 
         try {
-            DB::transaction(function () use ($medico, $data, $consulta, $notas) {
+            $turno = DB::transaction(function () use ($medico, $data, $consulta, $notas) {
                 // Remove any cancelled turno that occupies this slot
                 Turno::withoutGlobalScopes()
                     ->where('medico_id', $medico->id)
@@ -194,7 +195,7 @@ class PortalTurnosController extends Controller
                     ->where('estado', EstadosTurno::Cancelado)
                     ->delete();
 
-                Turno::withoutGlobalScopes()->create([
+                return Turno::withoutGlobalScopes()->create([
                     'medico_id'   => $medico->id,
                     'paciente_id' => null,
                     'practica_id' => $consulta?->id,
@@ -206,6 +207,8 @@ class PortalTurnosController extends Controller
                     'origen'      => 'web',
                 ]);
             });
+
+            $medico->notify(new TurnoSolicitadoNotification($turno));
         } catch (QueryException $e) {
             if (str_contains($e->getMessage(), 'UNIQUE constraint failed') || $e->getCode() === '23000') {
                 return response()->json([

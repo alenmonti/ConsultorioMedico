@@ -74,6 +74,8 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->viteTheme('resources/css/filament/dashboard/theme.css')
             ->topNavigation()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             // ->sidebarCollapsibleOnDesktop()
             ->renderHook(
                 PanelsRenderHook::BODY_END,

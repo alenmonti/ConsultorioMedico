@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\EstadosTurno;
 use App\Models\Turno;
+use App\Notifications\TurnoCanceladoNotification;
+use App\Notifications\TurnoConfirmadoNotification;
 use Illuminate\Http\Request;
 
 class TurnoPublicController extends Controller
@@ -22,6 +24,10 @@ class TurnoPublicController extends Controller
 
         if ($turno->estado !== EstadosTurno::Cancelado) {
             $turno->update(['estado' => EstadosTurno::Confirmado]);
+
+            if ($turno->medico) {
+                $turno->medico->notify(new TurnoConfirmadoNotification($turno));
+            }
         }
 
         return view('turno.respuesta', [
@@ -47,6 +53,10 @@ class TurnoPublicController extends Controller
         }
 
         $turno->update(['estado' => EstadosTurno::Cancelado]);
+
+        if ($turno->medico) {
+            $turno->medico->notify(new TurnoCanceladoNotification($turno));
+        }
 
         return view('turno.respuesta', [
             'exito'   => true,
