@@ -38,11 +38,13 @@ class Practica extends Model
                     ? "{$base} - $" . number_format($this->costo, 2, ',', '.')
                     : $base;
 
-                $conCodigo = $this->codigo_osde
-                    ? "{$conCosto} - {$this->codigo_osde}"
-                    : $conCosto;
+                $texto = "{$conCosto} ({$this->duracion_min} min)";
 
-                return "{$conCodigo} ({$this->duracion_min} min)";
+                if ($this->codigo_osde) {
+                    $texto .= " - cod: {$this->codigo_osde}";
+                }
+
+                return $texto;
             }
         );
     }
