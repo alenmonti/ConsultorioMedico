@@ -86,9 +86,10 @@ class RecordatoriosTabQueryTest extends TestCase
 
     public function test_tab1_excluye_turnos_cancelados_o_atendidos(): void
     {
-        foreach ([EstadosTurno::Cancelado, EstadosTurno::Atendido, EstadosTurno::Ausente] as $estado) {
+        foreach ([EstadosTurno::Cancelado, EstadosTurno::Atendido, EstadosTurno::Ausente] as $i => $estado) {
             $this->crearTurno([
                 'fecha'              => now()->addDays(5)->toDateString(),
+                'hora'               => sprintf('%02d:00', 10 + $i),
                 'senia_informada_at' => null,
                 'senia_pagada_at'    => null,
                 'estado'             => $estado,

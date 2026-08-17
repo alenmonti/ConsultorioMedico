@@ -19,24 +19,24 @@ class NextBusinessDaysTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_desde_jueves_devuelve_viernes_y_lunes(): void
+    public function test_desde_jueves_devuelve_viernes_y_sabado(): void
     {
         Carbon::setTestNow('2026-07-02'); // jueves
 
         $dates = ListRecordatorios::nextBusinessDays(2);
 
-        $this->assertEquals(['2026-07-03', '2026-07-06'], $dates);
+        $this->assertEquals(['2026-07-03', '2026-07-04'], $dates);
 
         Carbon::setTestNow();
     }
 
-    public function test_desde_viernes_devuelve_lunes_y_martes(): void
+    public function test_desde_viernes_devuelve_sabado_y_lunes(): void
     {
         Carbon::setTestNow('2026-07-03'); // viernes
 
         $dates = ListRecordatorios::nextBusinessDays(2);
 
-        $this->assertEquals(['2026-07-06', '2026-07-07'], $dates);
+        $this->assertEquals(['2026-07-04', '2026-07-06'], $dates);
 
         Carbon::setTestNow();
     }
@@ -103,12 +103,12 @@ class NextBusinessDaysTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_business_days_since_no_cuenta_fin_de_semana(): void
+    public function test_business_days_since_cuenta_sabado_como_habil(): void
     {
         Carbon::setTestNow('2026-07-06'); // lunes
 
-        $desde = Carbon::parse('2026-07-03'); // viernes → sábado y domingo no cuentan
-        $this->assertEquals(1, ListRecordatorios::businessDaysSince($desde));
+        $desde = Carbon::parse('2026-07-03'); // viernes → sábado cuenta, domingo no
+        $this->assertEquals(2, ListRecordatorios::businessDaysSince($desde));
 
         Carbon::setTestNow();
     }
@@ -123,9 +123,9 @@ class NextBusinessDaysTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_business_days_since_viernes_a_lunes_es_1(): void
+    public function test_business_days_since_viernes_a_sabado_es_1(): void
     {
-        Carbon::setTestNow('2026-07-06'); // lunes
+        Carbon::setTestNow('2026-07-04'); // sábado
 
         $desde = Carbon::parse('2026-07-03'); // viernes
         $this->assertEquals(1, ListRecordatorios::businessDaysSince($desde));
@@ -133,12 +133,12 @@ class NextBusinessDaysTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_business_days_since_viernes_a_martes_es_2(): void
+    public function test_business_days_since_viernes_a_martes_es_3(): void
     {
         Carbon::setTestNow('2026-07-07'); // martes
 
-        $desde = Carbon::parse('2026-07-03'); // viernes
-        $this->assertEquals(2, ListRecordatorios::businessDaysSince($desde));
+        $desde = Carbon::parse('2026-07-03'); // viernes → sábado, lunes y martes cuentan
+        $this->assertEquals(3, ListRecordatorios::businessDaysSince($desde));
 
         Carbon::setTestNow();
     }

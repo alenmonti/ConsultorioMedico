@@ -161,7 +161,7 @@ class Calendario extends FullCalendarWidget
                     $fin = $rango['hasta'];
                     $iv = $rango['intervalo'];
 
-                    while ($time->copy()->addMinutes($iv) <= $fin) {
+                    while ($time->lte($fin)) {
                         $horaStr = $time->format('H:i');
 
                         if (! isset($emitidos[$horaStr])) {
