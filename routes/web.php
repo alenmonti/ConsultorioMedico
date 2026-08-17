@@ -58,7 +58,9 @@ Route::get('optimize-clear', function () {
 
 Route::prefix('turno')->group(function () {
     Route::get('/confirmar/{turno}', [TurnoPublicController::class, 'confirmar'])->name('turno.confirmar');
+    Route::post('/confirmar/{turno}', [TurnoPublicController::class, 'confirmarStore'])->name('turno.confirmar.store');
     Route::get('/cancelar/{turno}', [TurnoPublicController::class, 'cancelar'])->name('turno.cancelar');
+    Route::post('/cancelar/{turno}', [TurnoPublicController::class, 'cancelarStore'])->name('turno.cancelar.store');
 });
 
 Route::get('/turnos/imprimir', TurnoImprimirController::class)

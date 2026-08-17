@@ -32,13 +32,24 @@ class TurnoPublicControllerTest extends TestCase
         ]);
     }
 
-    // --- confirmar ---
+    // --- confirmar (GET = vista previa, no debe tener efectos secundarios) ---
 
-    public function test_confirmar_con_token_valido_actualiza_estado(): void
+    public function test_confirmar_get_con_token_valido_no_confirma_todavia(): void
     {
         $turno = $this->crearTurno(['turno_token' => 'token-valido-123']);
 
         $this->get("/turno/confirmar/{$turno->id}?token=token-valido-123")
+            ->assertOk()
+            ->assertViewIs('turno.confirmar');
+
+        $this->assertEquals(EstadosTurno::Pendiente, $turno->fresh()->estado);
+    }
+
+    public function test_confirmar_post_con_token_valido_actualiza_estado(): void
+    {
+        $turno = $this->crearTurno(['turno_token' => 'token-valido-123']);
+
+        $this->post("/turno/confirmar/{$turno->id}", ['token' => 'token-valido-123'])
             ->assertOk()
             ->assertViewIs('turno.respuesta')
             ->assertViewHas('exito', true);
@@ -47,15 +58,28 @@ class TurnoPublicControllerTest extends TestCase
         $this->assertNotNull($turno->fresh()->turno_token);
     }
 
-    public function test_confirmar_con_mismo_token_dos_veces_sigue_exitoso(): void
+    public function test_confirmar_post_con_mismo_token_dos_veces_sigue_exitoso(): void
     {
         $turno = $this->crearTurno(['turno_token' => 'token-one-time']);
 
-        $this->get("/turno/confirmar/{$turno->id}?token=token-one-time")->assertOk();
+        $this->post("/turno/confirmar/{$turno->id}", ['token' => 'token-one-time'])->assertOk();
 
         // El link es reutilizable, el segundo intento también debe ser exitoso
-        $this->get("/turno/confirmar/{$turno->id}?token=token-one-time")
+        $this->post("/turno/confirmar/{$turno->id}", ['token' => 'token-one-time'])
             ->assertOk()
+            ->assertViewHas('exito', true);
+    }
+
+    public function test_confirmar_get_ya_confirmado_muestra_respuesta_exitosa(): void
+    {
+        $turno = $this->crearTurno([
+            'estado'      => EstadosTurno::Confirmado,
+            'turno_token' => 'token-ya-confirmado',
+        ]);
+
+        $this->get("/turno/confirmar/{$turno->id}?token=token-ya-confirmado")
+            ->assertOk()
+            ->assertViewIs('turno.respuesta')
             ->assertViewHas('exito', true);
     }
 
@@ -64,6 +88,11 @@ class TurnoPublicControllerTest extends TestCase
         $turno = $this->crearTurno(['turno_token' => 'token-correcto']);
 
         $this->get("/turno/confirmar/{$turno->id}?token=token-incorrecto")
+            ->assertOk()
+            ->assertViewIs('turno.respuesta')
+            ->assertViewHas('exito', false);
+
+        $this->post("/turno/confirmar/{$turno->id}", ['token' => 'token-incorrecto'])
             ->assertOk()
             ->assertViewHas('exito', false);
 
@@ -95,16 +124,51 @@ class TurnoPublicControllerTest extends TestCase
 
         $this->get("/turno/confirmar/{$turno->id}?token=token-cancelado")
             ->assertOk()
+            ->assertViewIs('turno.respuesta')
+            ->assertViewHas('exito', false);
+
+        $this->post("/turno/confirmar/{$turno->id}", ['token' => 'token-cancelado'])
+            ->assertOk()
             ->assertViewHas('exito', false);
     }
 
-    // --- cancelar ---
+    public function test_confirmar_turno_vencido_muestra_error(): void
+    {
+        $turno = $this->crearTurno([
+            'fecha'       => now()->subDays(2)->toDateString(),
+            'turno_token' => 'token-vencido',
+        ]);
 
-    public function test_cancelar_con_token_valido_actualiza_estado(): void
+        $this->get("/turno/confirmar/{$turno->id}?token=token-vencido")
+            ->assertOk()
+            ->assertViewIs('turno.respuesta')
+            ->assertViewHas('exito', false);
+
+        $this->post("/turno/confirmar/{$turno->id}", ['token' => 'token-vencido'])
+            ->assertOk()
+            ->assertViewHas('exito', false);
+
+        $this->assertEquals(EstadosTurno::Pendiente, $turno->fresh()->estado);
+    }
+
+    // --- cancelar (GET = vista previa, no debe tener efectos secundarios) ---
+
+    public function test_cancelar_get_con_token_valido_no_cancela_todavia(): void
     {
         $turno = $this->crearTurno(['turno_token' => 'token-cancel-123']);
 
         $this->get("/turno/cancelar/{$turno->id}?token=token-cancel-123")
+            ->assertOk()
+            ->assertViewIs('turno.cancelar');
+
+        $this->assertEquals(EstadosTurno::Pendiente, $turno->fresh()->estado);
+    }
+
+    public function test_cancelar_post_con_token_valido_actualiza_estado(): void
+    {
+        $turno = $this->crearTurno(['turno_token' => 'token-cancel-123']);
+
+        $this->post("/turno/cancelar/{$turno->id}", ['token' => 'token-cancel-123'])
             ->assertOk()
             ->assertViewIs('turno.respuesta')
             ->assertViewHas('exito', true);
@@ -113,14 +177,14 @@ class TurnoPublicControllerTest extends TestCase
         $this->assertNotNull($turno->fresh()->turno_token);
     }
 
-    public function test_cancelar_con_mismo_token_dos_veces_sigue_exitoso(): void
+    public function test_cancelar_post_con_mismo_token_dos_veces_sigue_exitoso(): void
     {
         $turno = $this->crearTurno(['turno_token' => 'token-cancel-one']);
 
-        $this->get("/turno/cancelar/{$turno->id}?token=token-cancel-one")->assertOk();
+        $this->post("/turno/cancelar/{$turno->id}", ['token' => 'token-cancel-one'])->assertOk();
 
         // El link es reutilizable, el segundo intento también debe ser exitoso
-        $this->get("/turno/cancelar/{$turno->id}?token=token-cancel-one")
+        $this->post("/turno/cancelar/{$turno->id}", ['token' => 'token-cancel-one'])
             ->assertOk()
             ->assertViewHas('exito', true);
     }
@@ -161,7 +225,27 @@ class TurnoPublicControllerTest extends TestCase
 
         $this->get("/turno/cancelar/{$turno->id}?token=token-ya-cancelado")
             ->assertOk()
+            ->assertViewIs('turno.respuesta')
             ->assertViewHas('exito', true);
+    }
+
+    public function test_cancelar_turno_vencido_muestra_error(): void
+    {
+        $turno = $this->crearTurno([
+            'fecha'       => now()->subDays(2)->toDateString(),
+            'turno_token' => 'token-vencido-cancel',
+        ]);
+
+        $this->get("/turno/cancelar/{$turno->id}?token=token-vencido-cancel")
+            ->assertOk()
+            ->assertViewIs('turno.respuesta')
+            ->assertViewHas('exito', false);
+
+        $this->post("/turno/cancelar/{$turno->id}", ['token' => 'token-vencido-cancel'])
+            ->assertOk()
+            ->assertViewHas('exito', false);
+
+        $this->assertEquals(EstadosTurno::Pendiente, $turno->fresh()->estado);
     }
 
     // --- helpers ---
