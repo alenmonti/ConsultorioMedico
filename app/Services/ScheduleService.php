@@ -49,7 +49,7 @@ class ScheduleService
             $desde = Carbon::parse($horario->desde);
             $hasta = Carbon::parse($horario->hasta);
             $intervalo = (int) Carbon::parse($horario->intervalo)->format('i');
-            while ($desde->lte($hasta)) {
+            while ($desde->copy()->addMinutes($intervalo) <= $hasta) {
                 $slots[] = $desde->format('H:i');
                 $desde->addMinutes($intervalo);
             }
@@ -64,7 +64,7 @@ class ScheduleService
             }
             $desde = Carbon::parse($especial->desde);
             $hasta = Carbon::parse($especial->hasta);
-            while ($desde->lte($hasta)) {
+            while ($desde->copy()->addMinutes($intervalo) <= $hasta) {
                 $slots[] = $desde->format('H:i');
                 $desde->addMinutes($intervalo);
             }
@@ -314,7 +314,7 @@ class ScheduleService
             $time = Carbon::parse($horario->desde);
             $fin = Carbon::parse($horario->hasta);
             $iv = (int) Carbon::parse($horario->intervalo)->format('i');
-            while ($time->lte($fin)) {
+            while ($time->copy()->addMinutes($iv) <= $fin) {
                 $slots[] = $time->format('H:i');
                 $time->addMinutes($iv);
             }
@@ -329,7 +329,7 @@ class ScheduleService
             }
             $time = Carbon::parse($especial->desde);
             $fin = Carbon::parse($especial->hasta);
-            while ($time->lte($fin)) {
+            while ($time->copy()->addMinutes($intervalo) <= $fin) {
                 $slots[] = $time->format('H:i');
                 $time->addMinutes($intervalo);
             }

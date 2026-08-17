@@ -57,7 +57,7 @@ class ScheduleServiceTest extends TestCase
 
     public function test_returns_all_slots_when_no_turnos_booked(): void
     {
-        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        $this->createHorario('lunes', '09:00', '10:00', '00:20');
 
         $result = $this->service->horariosDisponibles($this->medico, '2024-01-01');
 
@@ -66,7 +66,7 @@ class ScheduleServiceTest extends TestCase
 
     public function test_excludes_occupied_slots_for_turno_type(): void
     {
-        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        $this->createHorario('lunes', '09:00', '10:00', '00:20');
         $this->createTurno('2024-01-01', '09:00');
 
         $result = $this->service->horariosDisponibles($this->medico, '2024-01-01');
@@ -88,8 +88,8 @@ class ScheduleServiceTest extends TestCase
 
     public function test_only_returns_slots_for_requested_day(): void
     {
-        $this->createHorario('lunes', '09:00', '09:00', '00:20');
-        $this->createHorario('martes', '10:00', '10:00', '00:20');
+        $this->createHorario('lunes', '09:00', '09:20', '00:20');
+        $this->createHorario('martes', '10:00', '10:20', '00:20');
 
         $resultLunes = $this->service->horariosDisponibles($this->medico, '2024-01-01');
         $resultMartes = $this->service->horariosDisponibles($this->medico, '2024-01-02');
@@ -102,7 +102,7 @@ class ScheduleServiceTest extends TestCase
     {
         $otroMedico = $this->createMedicoSilently();
 
-        $this->createHorario('lunes', '09:00', '09:00', '00:20');
+        $this->createHorario('lunes', '09:00', '09:20', '00:20');
 
         Turno::create([
             'paciente_id' => $this->paciente->id,
@@ -129,7 +129,7 @@ class ScheduleServiceTest extends TestCase
 
     public function test_does_not_mark_day_unavailable_when_slots_exist(): void
     {
-        $this->createHorario('lunes', '09:00', '09:00', '00:20');
+        $this->createHorario('lunes', '09:00', '09:20', '00:20');
 
         $result = $this->service->diasNoDisponibles($this->medico, '2024-01-01', '2024-01-01');
 
@@ -138,7 +138,7 @@ class ScheduleServiceTest extends TestCase
 
     public function test_marks_day_unavailable_when_all_slots_booked(): void
     {
-        $this->createHorario('lunes', '09:00', '09:00', '00:20');
+        $this->createHorario('lunes', '09:00', '09:20', '00:20');
         $this->createTurno('2024-01-01', '09:00');
 
         $result = $this->service->diasNoDisponibles($this->medico, '2024-01-01', '2024-01-01');
@@ -163,7 +163,7 @@ class ScheduleServiceTest extends TestCase
 
     public function test_multi_slot_turno_blocks_all_covered_slots(): void
     {
-        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        $this->createHorario('lunes', '09:00', '10:00', '00:20');
         $practica = $this->createPractica(60);
         $this->createTurno('2024-01-01', '09:00', $practica->id);
 
@@ -178,7 +178,7 @@ class ScheduleServiceTest extends TestCase
     {
         // 09:00, 09:20, 09:40 available; requesting 60 min needs 3 consecutive slots
         // 09:40 only has itself left, so it should NOT be available for 60-min booking
-        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        $this->createHorario('lunes', '09:00', '10:00', '00:20');
 
         $result = $this->service->horariosDisponibles($this->medico, '2024-01-01', 'turno', 60);
 
@@ -189,8 +189,8 @@ class ScheduleServiceTest extends TestCase
 
     public function test_short_duration_fits_in_gap_between_multi_slot_turnos(): void
     {
-        // 09:00–10:20 window; 60-min turno at 09:00 blocks 09:00/09:20/09:40; 10:00 and 10:20 remain
-        $this->createHorario('lunes', '09:00', '10:20', '00:20');
+        // 09:00–10:40 window; 60-min turno at 09:00 blocks 09:00/09:20/09:40; 10:00 y 10:20 remain
+        $this->createHorario('lunes', '09:00', '10:40', '00:20');
         $practica = $this->createPractica(60);
         $this->createTurno('2024-01-01', '09:00', $practica->id);
 
@@ -205,9 +205,9 @@ class ScheduleServiceTest extends TestCase
 
     public function test_long_duration_not_available_when_gap_too_small(): void
     {
-        // 09:00–10:20 window; 60-min turno at 09:00; only 40 min remain (10:00, 10:20),
+        // 09:00–10:40 window; 60-min turno at 09:00; only 40 min remain (10:00, 10:20),
         // so 60-min booking should find no slot
-        $this->createHorario('lunes', '09:00', '10:20', '00:20');
+        $this->createHorario('lunes', '09:00', '10:40', '00:20');
         $practica = $this->createPractica(60);
         $this->createTurno('2024-01-01', '09:00', $practica->id);
 
@@ -221,7 +221,7 @@ class ScheduleServiceTest extends TestCase
     public function test_multi_slot_turno_marks_day_unavailable_when_all_slots_covered(): void
     {
         // 3 slots of 20 min; one 60-min turno covers all three
-        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        $this->createHorario('lunes', '09:00', '10:00', '00:20');
         $practica = $this->createPractica(60);
         $this->createTurno('2024-01-01', '09:00', $practica->id);
 
@@ -233,7 +233,7 @@ class ScheduleServiceTest extends TestCase
     public function test_multi_slot_turno_does_not_mark_day_unavailable_when_slots_remain(): void
     {
         // 5 slots; 60-min turno covers 3, 2 remain
-        $this->createHorario('lunes', '09:00', '10:20', '00:20');
+        $this->createHorario('lunes', '09:00', '10:40', '00:20');
         $practica = $this->createPractica(60);
         $this->createTurno('2024-01-01', '09:00', $practica->id);
 
@@ -293,7 +293,7 @@ class ScheduleServiceTest extends TestCase
 
     public function test_dia_con_todos_slots_cancelados_es_no_disponible_por_defecto(): void
     {
-        $this->createHorario('lunes', '09:00', '09:00', '00:20');
+        $this->createHorario('lunes', '09:00', '09:20', '00:20');
         Turno::create([
             'paciente_id' => $this->paciente->id,
             'medico_id'   => $this->medico->id,
@@ -310,7 +310,7 @@ class ScheduleServiceTest extends TestCase
 
     public function test_dia_con_todos_slots_cancelados_es_disponible_con_ignorar_cancelados(): void
     {
-        $this->createHorario('lunes', '09:00', '09:00', '00:20');
+        $this->createHorario('lunes', '09:00', '09:20', '00:20');
         Turno::create([
             'paciente_id' => $this->paciente->id,
             'medico_id'   => $this->medico->id,
@@ -327,7 +327,7 @@ class ScheduleServiceTest extends TestCase
 
     public function test_dia_con_slot_pendiente_sigue_siendo_no_disponible_con_ignorar_cancelados(): void
     {
-        $this->createHorario('lunes', '09:00', '09:00', '00:20');
+        $this->createHorario('lunes', '09:00', '09:20', '00:20');
         $this->createTurno('2024-01-01', '09:00');
 
         $result = $this->service->diasNoDisponibles($this->medico, '2024-01-01', '2024-01-01', ignorarCancelados: true);
@@ -349,7 +349,7 @@ class ScheduleServiceTest extends TestCase
 
     public function test_exclusion_parcial_quita_solo_los_slots_del_rango(): void
     {
-        $this->createHorario('lunes', '09:00', '10:00', '00:20');
+        $this->createHorario('lunes', '09:00', '10:20', '00:20');
         $this->createEspecial('2024-01-01', TipoHorarioEspecial::Exclusion, desde: '09:00', hasta: '09:20');
 
         $result = $this->service->horariosDisponibles($this->medico, '2024-01-01');
@@ -375,7 +375,7 @@ class ScheduleServiceTest extends TestCase
     public function test_adicion_agrega_slots_en_dia_sin_horario_configurado(): void
     {
         // domingo sin Horario semanal configurado
-        $this->createEspecial('2024-01-07', TipoHorarioEspecial::Adicion, desde: '10:00', hasta: '10:40');
+        $this->createEspecial('2024-01-07', TipoHorarioEspecial::Adicion, desde: '10:00', hasta: '11:00');
 
         $result = $this->service->horariosDisponibles($this->medico, '2024-01-07');
 
@@ -384,8 +384,8 @@ class ScheduleServiceTest extends TestCase
 
     public function test_adicion_agrega_slots_fuera_del_rango_del_horario_semanal(): void
     {
-        $this->createHorario('lunes', '09:00', '09:20', '00:20');
-        $this->createEspecial('2024-01-01', TipoHorarioEspecial::Adicion, desde: '18:00', hasta: '18:20');
+        $this->createHorario('lunes', '09:00', '09:40', '00:20');
+        $this->createEspecial('2024-01-01', TipoHorarioEspecial::Adicion, desde: '18:00', hasta: '18:40');
 
         $result = $this->service->horariosDisponibles($this->medico, '2024-01-01');
 
@@ -408,7 +408,7 @@ class ScheduleServiceTest extends TestCase
 
     public function test_dia_con_solo_adicion_no_se_marca_no_disponible(): void
     {
-        $this->createEspecial('2024-01-07', TipoHorarioEspecial::Adicion, desde: '10:00', hasta: '10:00');
+        $this->createEspecial('2024-01-07', TipoHorarioEspecial::Adicion, desde: '10:00', hasta: '10:20');
 
         $result = $this->service->diasNoDisponibles($this->medico, '2024-01-07', '2024-01-07');
 
@@ -466,7 +466,7 @@ class ScheduleServiceTest extends TestCase
     {
         // 2024-01 es pasado respecto a "hoy": si quedó una fila cerrada de cuando
         // todavía era un mes futuro, el toggle ya no debe aplicar.
-        $this->createHorario('lunes', '09:00', '09:00', '00:20', 2024, 1);
+        $this->createHorario('lunes', '09:00', '09:20', '00:20', 2024, 1);
 
         $apertura = AperturaMensual::create([
             'medico_id' => $this->medico->id,
@@ -488,8 +488,8 @@ class ScheduleServiceTest extends TestCase
     public function test_horario_de_un_mes_no_se_filtra_en_otro_mes_mismo_dia(): void
     {
         // mismo día de semana (lunes) en dos meses distintos
-        $this->createHorario('lunes', '09:00', '09:00', '00:20', 2024, 1);
-        $this->createHorario('lunes', '10:00', '10:00', '00:20', 2024, 2);
+        $this->createHorario('lunes', '09:00', '09:20', '00:20', 2024, 1);
+        $this->createHorario('lunes', '10:00', '10:20', '00:20', 2024, 2);
 
         $resultEnero = $this->service->horariosDisponibles($this->medico, '2024-01-01');
         $resultFebrero = $this->service->horariosDisponibles($this->medico, '2024-02-05');
@@ -506,7 +506,7 @@ class ScheduleServiceTest extends TestCase
             '2024-01-07',
             TipoHorarioEspecial::Adicion,
             desde: '10:00',
-            hasta: '10:00',
+            hasta: '10:20',
             activoSistema: false,
             activoPortal: true,
         );
@@ -524,7 +524,7 @@ class ScheduleServiceTest extends TestCase
             '2024-01-07',
             TipoHorarioEspecial::Adicion,
             desde: '10:00',
-            hasta: '10:00',
+            hasta: '10:20',
             activoSistema: true,
             activoPortal: false,
         );
