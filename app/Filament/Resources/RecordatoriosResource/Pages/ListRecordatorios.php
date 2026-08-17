@@ -561,7 +561,7 @@ class ListRecordatorios extends ListRecords
         $current = Carbon::today();
         while (count($dates) < $count) {
             $current = $current->copy()->addDay();
-            if (! $current->isWeekend()) {
+            if (static::isDiaHabil($current)) {
                 $dates[] = $current->format('Y-m-d');
             }
         }
@@ -574,11 +574,16 @@ class ListRecordatorios extends ListRecords
         $current = $from->copy()->startOfDay()->addDay();
         $today = Carbon::today();
         while ($current->lte($today)) {
-            if (! $current->isWeekend()) {
+            if (static::isDiaHabil($current)) {
                 $count++;
             }
             $current->addDay();
         }
         return $count;
+    }
+
+    private static function isDiaHabil(Carbon $date): bool
+    {
+        return ! $date->isSunday();
     }
 }
