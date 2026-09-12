@@ -76,14 +76,28 @@ class ScheduleServiceTest extends TestCase
         $this->assertArrayHasKey('09:40', $result);
     }
 
-    public function test_returns_only_occupied_slots_for_sobre_turno_type(): void
+    public function test_sobre_turno_type_offers_full_range_regardless_of_horario_or_ocupacion(): void
+    {
+        // Sin ningún horario configurado ni turnos existentes.
+        $result = $this->service->horariosDisponibles($this->medico, '2024-01-01', 'sobre_turno');
+
+        $this->assertCount(31, $result); // 08:00 a 18:00 cada 20 minutos, inclusive
+        $this->assertArrayHasKey('08:00', $result);
+        $this->assertArrayHasKey('18:00', $result);
+        $this->assertArrayHasKey('09:00', $result);
+    }
+
+    public function test_sobre_turno_type_includes_slots_outside_horario_configurado(): void
     {
         $this->createHorario('lunes', '09:00', '09:40', '00:20');
         $this->createTurno('2024-01-01', '09:00');
 
         $result = $this->service->horariosDisponibles($this->medico, '2024-01-01', 'sobre_turno');
 
-        $this->assertSame(['09:00' => '09:00'], $result);
+        // Fuera del horario configurado (09:00-09:40) y ocupados igual aparecen.
+        $this->assertArrayHasKey('08:00', $result);
+        $this->assertArrayHasKey('09:00', $result);
+        $this->assertArrayHasKey('17:00', $result);
     }
 
     public function test_only_returns_slots_for_requested_day(): void

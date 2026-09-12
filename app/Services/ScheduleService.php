@@ -21,6 +21,10 @@ class ScheduleService
             return [];
         }
 
+        if ($tipo !== 'turno') {
+            return $this->horariosSobreTurno($fecha);
+        }
+
         $diaSemana = $this->dayOfWeekToString($fechaCarbon->dayOfWeek);
 
         $configHorarios = Horario::where('medico_id', $medico->medico_id)
@@ -93,13 +97,6 @@ class ScheduleService
 
         $slotsOcupados = $this->expandirSlotsOcupados($turnosDelDia, $intervalo);
 
-        if ($tipo !== 'turno') {
-            $horasConTurno = $turnosDelDia->pluck('hora')->toArray();
-            $result = array_intersect($slots, $horasConTurno);
-
-            return array_combine($result, $result);
-        }
-
         $bloquesSolicitados = max(1, (int) ceil($duracion / $intervalo));
         $slotsSet = array_flip($slots);
 
@@ -117,6 +114,26 @@ class ScheduleService
             if ($libre) {
                 $result[$slot] = $slot;
             }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Para un sobre turno se ofrece todo el rango 08:00-18:00 sin importar el
+     * horario configurado por el médico ni la ocupación existente: un sobre
+     * turno puede crearse fuera de horario o superpuesto a otro turno.
+     */
+    private function horariosSobreTurno(string $fecha, int $intervalo = 20, string $desde = '08:00', string $hasta = '18:00'): array
+    {
+        $result = [];
+        $time = Carbon::parse($fecha.' '.$desde);
+        $fin = Carbon::parse($fecha.' '.$hasta);
+
+        while ($time <= $fin) {
+            $hora = $time->format('H:i');
+            $result[$hora] = $hora;
+            $time->addMinutes($intervalo);
         }
 
         return $result;
