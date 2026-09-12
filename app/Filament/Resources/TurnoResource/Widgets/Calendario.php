@@ -220,7 +220,7 @@ class Calendario extends FullCalendarWidget
         $mes = now()->month;
 
         $min = Carbon::parse('09:00:00');
-        $max = Carbon::parse('18:00:00');
+        $max = Carbon::parse('19:00:00');
 
         $horarios = Horario::where('medico_id', user()->medico_id)
             ->where('anio', $anio)
