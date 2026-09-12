@@ -216,22 +216,43 @@ class Calendario extends FullCalendarWidget
 
     private function getSlotRange(): array
     {
+        $anio = now()->year;
+        $mes = now()->month;
+
+        $min = Carbon::parse('09:00:00');
+        $max = Carbon::parse('18:00:00');
+
         $horarios = Horario::where('medico_id', user()->medico_id)
-            ->where('anio', now()->year)
-            ->where('mes', now()->month)
+            ->where('anio', $anio)
+            ->where('mes', $mes)
             ->where('activo_sistema', true)
             ->get();
 
-        if ($horarios->isEmpty()) {
-            return ['slotMinTime' => '06:00:00', 'slotMaxTime' => '20:00:00'];
+        $adiciones = HorarioEspecial::where('medico_id', user()->medico_id)
+            ->where('activo_sistema', true)
+            ->where('tipo', TipoHorarioEspecial::Adicion)
+            ->whereYear('fecha', $anio)
+            ->whereMonth('fecha', $mes)
+            ->whereNotNull('desde')
+            ->whereNotNull('hasta')
+            ->get();
+
+        foreach ($horarios->merge($adiciones) as $item) {
+            $desde = Carbon::parse($item->desde);
+            $hasta = Carbon::parse($item->hasta);
+
+            if ($desde->lt($min)) {
+                $min = $desde;
+            }
+
+            if ($hasta->gt($max)) {
+                $max = $hasta;
+            }
         }
 
-        $min = $horarios->min('desde');
-        $max = $horarios->max('hasta');
-
         return [
-            'slotMinTime' => Carbon::parse($min)->format('H:i:s'),
-            'slotMaxTime' => Carbon::parse($max)->format('H:i:s'),
+            'slotMinTime' => $min->format('H:i:s'),
+            'slotMaxTime' => $max->format('H:i:s'),
         ];
     }
 
