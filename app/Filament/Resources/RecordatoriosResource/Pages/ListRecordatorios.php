@@ -228,7 +228,7 @@ class ListRecordatorios extends ListRecords
                         $fecha = Carbon::parse($record->fecha)->format('d/m/Y');
 
                         $mensaje = rawurlencode(
-                            "Hola, ¡buenos días!\n\n" .
+                            "Hola {$paciente->nombre} {$paciente->apellido}, ¡buenos días!\n\n" .
                             "Le confirmamos que su turno con la *{$medicoNombre}* quedó asignado correctamente.\n\n" .
                             "*{$fecha} a las {$record->hora} hs*\n" .
                             "*" . self::DIRECCION_CONSULTORIO . "*\n" .
@@ -264,7 +264,7 @@ class ListRecordatorios extends ListRecords
                             : '0';
 
                         $mensaje = rawurlencode(
-                            "Hola, ¡buenos días!\n\n" .
+                            "Hola {$paciente->nombre} {$paciente->apellido}, ¡buenos días!\n\n" .
                             "Tiene un turno el *{$fecha} a las {$record->hora} hs*, el valor del mismo es de *\${$costoPractica}*.\n" .
                             "Para confirmar su turno deberá abonar una seña{$montoTexto} que luego será descontada del valor total.\n\n" .
                             "Información bancaria para abonar la seña:\n" .
@@ -337,7 +337,7 @@ class ListRecordatorios extends ListRecords
                         $portalUrl = config('app.url') . '/portal-turnos';
 
                         $mensaje = rawurlencode(
-                            "Hola, ¡buenos días!\n\n" .
+                            "Hola {$paciente->nombre} {$paciente->apellido}, ¡buenos días!\n\n" .
                             "Le informamos que su turno del *{$fecha} a las {$record->hora} hs* fue cancelado debido a que no recibimos el pago de la seña dentro del plazo establecido.\n\n" .
                             "Si desea reservar un nuevo turno, puede hacerlo desde nuestro portal:\n{$portalUrl}\n\n" .
                             "También puede comunicarse con nosotros por este mismo chat para asignarle un nuevo turno.\n\n" .
@@ -388,7 +388,7 @@ class ListRecordatorios extends ListRecords
                         $medicoNombre = static::medicoNombreCompleto($record->medico);
 
                         $mensaje = rawurlencode(
-                            "Hola, ¡buenos días!\n\n" .
+                            "Hola {$paciente->nombre} {$paciente->apellido}, ¡buenos días!\n\n" .
                             "Le recordamos que tiene un turno con la *{$medicoNombre}*.\n\n" .
                             "*{$fecha} a las {$record->hora} hs*\n" .
                             "*" . self::DIRECCION_CONSULTORIO . "*\n" .
